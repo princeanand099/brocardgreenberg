@@ -48,12 +48,14 @@ theorem lemma_2_1_ii_part2 :
         · exact Or.inr ⟨⟨hgt, h2⟩, h3⟩
       · rintro (⟨⟨h1, h2⟩, h3⟩ | ⟨⟨h1, h2⟩, h3⟩)
         · exact ⟨⟨h1, le_trans h2 (Nat.sqrt_le_self m)⟩, h3⟩
-        · exact ⟨⟨by omega, h2⟩, h3⟩
+        · exact ⟨⟨h3.two_le, h2⟩, h3⟩
     have hcard_le : ((Finset.Icc 2 m).filter Nat.Prime).card ≤
         Nat.sqrt m + ((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card := by
       rw [hsplit]
       refine le_trans (Finset.card_union_le _ _) (add_le_add_right ?_ _)
-      exact le_trans (Finset.card_filter_le _ _) (by simp [Nat.card_Icc]; omega)
+      have hsub : (Finset.Icc 2 (Nat.sqrt m)).filter Nat.Prime ⊆ Finset.Ioc 0 (Nat.sqrt m) := by
+        intro x hx; simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_Ioc] at hx ⊢; exact ⟨by omega, hx.1.2⟩
+      exact le_trans (Finset.card_le_card hsub) (by simp)
     have hlog_sum : (((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card : ℝ) *
         ((1 / 2 : ℝ) * Real.log m) ≤ Real.log 4 * (m : ℝ) := by
       have h1 : (((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card : ℝ) *
@@ -78,12 +80,12 @@ theorem lemma_2_1_ii_part2 :
           Chebyshev.theta (m : ℝ) := by
         unfold Chebyshev.theta
         rw [Nat.floor_natCast]
-        refine Finset.sum_le_sum_of_subset_of_nonneg ?_ fun p _ _ => Real.log_nonneg (by norm_num)
+        refine Finset.sum_le_sum_of_subset_of_nonneg ?_ fun q hq _ => Real.log_nonneg (by exact_mod_cast (Finset.mem_filter.mp hq).2.one_lt.le)
         intro p hp
         simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_Ioc] at hp ⊢
         exact ⟨⟨hp.2.pos, hp.1.2⟩, hp.2⟩
       exact le_trans h1 (le_trans h2 (Chebyshev.theta_le_log4_mul_x (by positivity)))
-    have hsqrt_le : (Nat.sqrt m : ℝ) ≤ Real.sqrt m := Real.le_sqrt_of_sq_le (by exact_mod_cast Nat.sqrt_le m)
+    have hsqrt_le : (Nat.sqrt m : ℝ) ≤ Real.sqrt m := Real.le_sqrt_of_sq_le (by exact_mod_cast (by simpa [sq] using Nat.sqrt_le m))
     have hcard_hi : (((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card : ℝ) ≤
         2 * Real.log 4 * (m : ℝ) / Real.log m := by
       rw [le_div_iff₀ hlogm_pos]
@@ -112,22 +114,20 @@ theorem lemma_2_1_ii_part2 :
         nlinarith [hsqrt_ge4]
       exact le_trans ha_le_sqrt hsqrt_le_x
     have h2_le_a : 2 ≤ a := by
-      have h1 : x = Real.sqrt x * Real.sqrt x := (Real.mul_self_sqrt (by linarith)).symm
-      rw [div_le_div_iff₀] at *
-      · exact le_trans (by linarith) (show Real.sqrt x ≤ a from by
-          rw [le_div_iff₀ (pow_pos hlogx_pos 2)]
-          nlinarith [Real.mul_self_sqrt (by linarith : 0 ≤ x)])
-      all_goals positivity
+      have hsqrt_le_a : Real.sqrt x ≤ a := by
+        rw [le_div_iff₀ (pow_pos hlogx_pos 2)]
+        nlinarith [Real.mul_self_sqrt (by linarith : 0 ≤ x)]
+      linarith
     have hint1 : IntervalIntegrable (fun t : ℝ => (Real.log t)⁻¹) MeasureTheory.volume 2 a := by
       refine ContinuousOn.intervalIntegrable fun t ht => ?_
       rw [Set.uIcc_of_le h2_le_a] at ht
       have hlt : 1 < t := by linarith [ht.1]
-      exact (Real.continuousAt_log hlt.ne').inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
+      exact (Real.continuousAt_log (by linarith : t ≠ 0)).inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
     have hint2 : IntervalIntegrable (fun t : ℝ => (Real.log t)⁻¹) MeasureTheory.volume a x := by
       refine ContinuousOn.intervalIntegrable fun t ht => ?_
       rw [Set.uIcc_of_le ha_le_x] at ht
       have hlt : 1 < t := by linarith [ht.1, h2_le_a]
-      exact (Real.continuousAt_log hlt.ne').inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
+      exact (Real.continuousAt_log (by linarith : t ≠ 0)).inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
     have hsplit_int : ∫ t in (2 : ℝ)..x, (Real.log t)⁻¹ =
         (∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) + (∫ t in a..x, (Real.log t)⁻¹) :=
       (intervalIntegral.integral_add_adjacent_intervals hint1 hint2).symm
@@ -151,7 +151,7 @@ theorem lemma_2_1_ii_part2 :
       rw [hconst, ← intervalIntegral.integral_sub hint2 (continuous_const.intervalIntegrable _ _)]
       have hle_int : |∫ t in a..x, ((Real.log t)⁻¹ - (Real.log x)⁻¹)| ≤
           ∫ t in a..x, |(Real.log t)⁻¹ - (Real.log x)⁻¹| :=
-        intervalIntegral.abs_integral_le_integral_abs ha_le_x
+        simpa only [Real.norm_eq_abs] using intervalIntegral.norm_integral_le_integral_norm ha_le_x
       have hpt : ∀ t ∈ Set.Icc a x,
           |(Real.log t)⁻¹ - (Real.log x)⁻¹| ≤
             (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
@@ -231,8 +231,9 @@ theorem lemma_2_1_ii_part2 :
           _ = 64 * (x ^ (1 / 8 : ℝ)) ^ 2 := by ring
           _ = 64 * x ^ (1 / 4 : ℝ) := by rw [← Real.rpow_natCast, ← Real.rpow_mul hx_pos.le]; norm_num
       have h64 : (64 : ℝ) ≤ x ^ (1 / 4 : ℝ) := by
-        rw [← Real.rpow_natCast (64 : ℝ) 4] at hx
-        exact (Real.le_rpow_inv_iff_of_pos (by positivity) hx_pos.le (by norm_num : (0 : ℝ) < 4)).mpr (by simpa using hx)
+        have hx' : (64 : ℝ) ^ (4 : ℝ) ≤ x := by
+          rw [show (4 : ℝ) = ((4 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]; exact hx
+        rw [one_div]; exact (Real.le_rpow_inv_iff_of_pos (by positivity) hx_pos.le (by norm_num : (0 : ℝ) < 4)).mpr hx'
       calc (Real.log x) ^ 2 ≤ 64 * x ^ (1 / 4 : ℝ) := h2
         _ ≤ x ^ (1 / 4 : ℝ) * x ^ (1 / 4 : ℝ) := mul_le_mul_of_nonneg_right h64 (by positivity)
         _ = x ^ (1 / 2 : ℝ) := by rw [← Real.rpow_add hx_pos]; norm_num
@@ -258,8 +259,9 @@ theorem lemma_2_1_ii_part2 :
                   mul_le_mul_of_nonneg_left (one_le_pow₀ hge1) (by positivity)
                 _ = max (max M 16) (8 ^ 8) ^ 4 := by ring
             exact le_trans h1 (le_trans h2 hn_big)
-          rw [← Real.rpow_natCast (8 : ℝ) 8] at hbig
-          exact (Real.le_rpow_inv_iff_of_pos (by positivity) hn_pos.le (by norm_num : (0 : ℝ) < 8)).mpr (by simpa using hbig)
+          have hbig' : (8 : ℝ) ^ (8 : ℝ) ≤ (n : ℝ) := by
+            rw [show (8 : ℝ) = ((8 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]; exact hbig
+          rw [one_div]; exact (Real.le_rpow_inv_iff_of_pos (by positivity) hn_pos.le (by norm_num : (0 : ℝ) < 8)).mpr hbig'
         have hlog_le : Real.log n ≤ (n : ℝ) ^ (1 / 4 : ℝ) := by
           have hr8 : 0 < (n : ℝ) ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hn_pos _
           have hlog8 : Real.log ((n : ℝ) ^ (1 / 8 : ℝ)) ≤ (n : ℝ) ^ (1 / 8 : ℝ) := by
@@ -272,8 +274,9 @@ theorem lemma_2_1_ii_part2 :
           have hmax_le : max (max M 16) 16 ^ 4 ≤ (n : ℝ) := by
             have hle : max (max M 16) 16 ≤ max (max M 16) (8 ^ 8) := max_le_max le_rfl (by norm_num)
             exact le_trans (pow_le_pow_left₀ (by positivity) hle 4) hn_big
-          rw [← Real.rpow_natCast (max (max M 16) 16) 4] at hmax_le
-          exact (Real.le_rpow_inv_iff_of_pos (by positivity) (by positivity) (by norm_num : (0 : ℝ) < 4)).mpr hmax_le
+          have hmax_le' : max (max M 16) 16 ^ (4 : ℝ) ≤ (n : ℝ) := by
+            rw [show (4 : ℝ) = ((4 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]; exact hmax_le
+          rw [one_div]; exact (Real.le_rpow_inv_iff_of_pos (by positivity) (by positivity) (by norm_num : (0 : ℝ) < 4)).mpr hmax_le'
         have h2log : 2 * Real.log n + 1 ≤ 3 * (n : ℝ) ^ (1 / 4 : ℝ) := by
           have : (1 : ℝ) ≤ (n : ℝ) ^ (1 / 4 : ℝ) := le_trans (by norm_num) (le_trans (le_max_right _ _) hn4_ge)
           linarith
@@ -288,7 +291,8 @@ theorem lemma_2_1_ii_part2 :
                 refine mul_le_mul_of_nonneg_right ?_ (by positivity)
                 exact le_trans (by norm_num) (le_trans (le_max_right _ _) hn4_ge)
             _ ≤ (n : ℝ) := by
-                rw [← Real.rpow_add (by positivity)]
+                have h34 : (1 / 4 : ℝ) + 1 / 2 = 3 / 4 := by norm_num
+                rw [← Real.rpow_add (by positivity), h34]
                 exact Real.rpow_le_self_of_one_le hn1 (by norm_num)
         · calc (2 * Real.log n + 1) ^ 2
               ≤ (3 * (n : ℝ) ^ (1 / 4 : ℝ)) ^ 2 := pow_le_pow_left₀ (by positivity) h2log 2
@@ -298,20 +302,24 @@ theorem lemma_2_1_ii_part2 :
                 refine mul_le_mul_of_nonneg_right ?_ (by positivity)
                 exact le_trans (by norm_num) (le_trans (le_max_right _ _) hn4_ge)
             _ ≤ (n : ℝ) := by
-                rw [← Real.rpow_add (by positivity)]
+                have h34 : (1 / 4 : ℝ) + 1 / 2 = 3 / 4 := by norm_num
+                rw [← Real.rpow_add (by positivity), h34]
                 exact Real.rpow_le_self_of_one_le hn1 (by norm_num)
       filter_upwards [eventually_ge_atTop 64, hlog_lt] with n hn64 ⟨h1, h2⟩
       refine ⟨hn64, Real.le_sqrt_of_sq_le h2, ?_, ?_⟩
-      · rw [le_div_iff₀ (by have := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)); positivity)]
-        exact le_trans (mul_le_mul_of_nonneg_left (le_max_left _ _) (by have := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)); positivity))
-          (le_trans h1 (mul_le_mul_of_nonneg_left (le_max_left _ _) (by have := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)); positivity) |>.trans h1 |> fun _ => le_rfl))
-      · rw [le_div_iff₀ (by have := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)); positivity)]
-        exact le_trans (mul_le_mul_of_nonneg_left (le_trans (by norm_num : (16 : ℝ) ≤ max (max M 16) 1) (le_rfl)) (by have := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)); positivity)) h1
+      · have hpos_den : 0 < 2 * Real.log n + 1 := by
+          have := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)); linarith
+        rw [le_div_iff₀ hpos_den]
+        exact le_trans (mul_le_mul_of_nonneg_left (le_max_left _ _) hpos_den.le) h1
+      · have hpos_den : 0 < 2 * Real.log n + 1 := by
+          have := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)); linarith
+        rw [le_div_iff₀ hpos_den]
+        exact le_trans (mul_le_mul_of_nonneg_left (le_trans (by norm_num : (16 : ℝ) ≤ max (max M 16) 1) (le_rfl)) hpos_den.le) h1
     filter_upwards [h_n_ev] with n ⟨hn64, hsqrt, hM_le, h16_le⟩
     have hfl_le : (⌊Real.log n⌋₊ : ℝ) ≤ Real.log n := Nat.floor_le (Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)))
     refine ⟨hn64, ?_, ?_, ?_⟩
-    · have h1 : (2 * ⌊Real.log n⌋₊ + 1 : ℝ) ≤ Real.sqrt n := by linarith
-      have h2 : (2 * ⌊Real.log n⌋₊ + 1 : ℝ) ^ 2 ≤ n := by
+    · have h1 : (2 * (⌊Real.log n⌋₊ : ℝ) + 1) ≤ Real.sqrt n := by linarith
+      have h2 : (2 * (⌊Real.log n⌋₊ : ℝ) + 1) ^ 2 ≤ n := by
         have := pow_le_pow_left₀ (by positivity) h1 2
         rwa [Real.sq_sqrt (by positivity)] at this
       exact Nat.le_sqrt.mpr (by exact_mod_cast (by simpa [sq] using h2 : ((2 * ⌊Real.log n⌋₊ + 1) ^ 2 : ℝ) ≤ n))
@@ -392,6 +400,7 @@ theorem lemma_2_1_ii_part2 :
           have hj_odd : j % 2 = 1 := Nat.mod_two_ne_zero.mp (fun h0 => hodd (Nat.dvd_of_mod_eq_zero h0))
           set r := (j + 1) / 2
           have hr_mem : r ∈ Finset.Icc 1 K := Finset.mem_Icc.mpr ⟨by omega, by omega⟩
+          have hr1 : 1 ≤ r := (Finset.mem_Icc.mp hr_mem).1
           have hj_eq : j = 2 * r - 1 := by omega
           refine Finset.mem_biUnion.mpr ⟨r, hr_mem, ?_⟩
           simp only [harmonicLayer, Finset.mem_filter, Finset.mem_Icc]
@@ -508,7 +517,7 @@ theorem lemma_2_1_ii_part2 :
       exact h1.and (h2.and (h3.and h4))
     filter_upwards [h_ev2, h_log_big] with n ⟨hn64, hsqrt, _, hx_ok⟩ ⟨hn4, _, hhalf, hexp⟩
     set K₀ := ⌊Real.log n⌋₊
-    have hK₀_pos : 1 ≤ K₀ := Nat.one_le_floor_iff.mpr (by linarith)
+    have hK₀_pos : 1 ≤ K₀ := Nat.floor_pos.mpr (by linarith)
     have hfl_le : (K₀ : ℝ) ≤ Real.log n := Nat.floor_le (by linarith)
     have hhalf_K₀ : (1 / 2 : ℝ) * Real.log n ≤ Real.log ((n : ℝ) / (2 * (K₀ : ℝ) + 1)) :=
       le_trans hhalf (Real.log_le_log (by positivity)
@@ -531,7 +540,8 @@ theorem lemma_2_1_ii_part2 :
         4 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by
       have h1 : x / Real.log x - x / Real.log n = x * (Real.log n - Real.log x) / (Real.log x * Real.log n) := by
         field_simp [hlogx_pos.ne', hlogn_pos.ne']
-      rw [h1, abs_div, abs_mul, abs_of_nonneg (by linarith), abs_of_nonneg (by linarith),
+      have hx_nn : 0 ≤ x := by linarith [show (0 : ℝ) < (n : ℝ) / (2 * (K₀ : ℝ) + 1) by positivity]
+      rw [h1, abs_div, abs_mul, abs_of_nonneg hx_nn, abs_of_nonneg (by linarith),
         abs_of_nonneg (by positivity)]
       have hden : (1 / 2 * Real.log n) * Real.log n ≤ Real.log x * Real.log n :=
         mul_le_mul_of_nonneg_right hlogx_ge hlogn_pos.le
@@ -547,7 +557,7 @@ theorem lemma_2_1_ii_part2 :
             linarith
     have hexp_x : Real.exp (-c₁ * Real.sqrt (Real.log x)) ≤ 1 / (Real.log n) ^ 2 := by
       refine le_trans (Real.exp_le_exp.mpr ?_) hexp
-      exact mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hlogx_ge) (by linarith)
+      exact mul_le_mul_of_nonpos_left (Real.sqrt_le_sqrt hlogx_ge) (by linarith)
     have hC1_bd : C₁ * x * Real.exp (-c₁ * Real.sqrt (Real.log x)) ≤
         C₁ * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by
       have h1 : C₁ * x * Real.exp (-c₁ * Real.sqrt (Real.log x)) ≤ C₁ * x * (1 / (Real.log n) ^ 2) :=
@@ -577,6 +587,7 @@ theorem lemma_2_1_ii_part2 :
         have : (x / (Real.log x) ^ 2) / Real.log x ≤ (x / ((1 / 4 : ℝ) * (Real.log n) ^ 2)) / 1 :=
           div_le_div₀ (by positivity) (div_le_div_of_nonneg_left (by linarith) (by positivity) hlogx_sq)
             (by positivity) hlogx_ge1
+        have hx_nn : 0 ≤ x := by linarith [show (0 : ℝ) < (n : ℝ) / (2 * (K₀ : ℝ) + 1) by positivity]
         linarith [show (x / ((1 / 4 : ℝ) * (Real.log n) ^ 2)) / 1 = 4 * (x / Real.log n) * 1 / Real.log n by ring,
           show 0 ≤ (x / Real.log n) * 1 / Real.log n by positivity]
       have h3 : x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) ≤

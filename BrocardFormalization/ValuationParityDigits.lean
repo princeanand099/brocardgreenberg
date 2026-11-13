@@ -145,7 +145,7 @@ theorem lemma_2_2_i (p n : ℕ) (hp : p.Prime) (hp3 : 3 ≤ p) (_hn : 4 ≤ n) :
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [Nat.mul_mod, geom_sum_mod_two p j hp_odd]
   by_cases hj : j % 2 = 1
-  · simp only [hj, ↓reduceIte, mul_one]
+  · simp only [hj, ↓reduceIte, mul_one, Nat.mod_mod]
   · have hj0 : j % 2 = 0 := by omega
     simp [hj0]
 
@@ -700,9 +700,12 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       linarith
     have hharm : ∑ k ∈ Finset.Icc 1 H, (2 / (Real.pi * (k : ℝ))) = (2 / Real.pi) * (harmonic H : ℝ) := by
       have heq : (harmonic H : ℝ) = ∑ k ∈ Finset.Icc 1 H, (1 : ℝ) / (k : ℝ) := by
-        induction H with
-        | zero => simp
-        | succ m ihm => rw [Finset.sum_Icc_succ_top (by omega), ← ihm, harmonic_succ]; push_cast; ring
+        have hgen : ∀ N : ℕ, (harmonic N : ℝ) = ∑ k ∈ Finset.Icc 1 N, (1 : ℝ) / (k : ℝ) := by
+          intro N
+          induction N with
+          | zero => simp
+          | succ m ihm => rw [Finset.sum_Icc_succ_top (by omega), ← ihm, harmonic_succ]; push_cast; ring
+        exact hgen H
       rw [heq, Finset.mul_sum]
       refine Finset.sum_congr rfl fun k _ => by ring
     have hharm_le : (harmonic H : ℝ) ≤ 1 + Real.log H := by simpa using harmonic_le_one_add_log H
