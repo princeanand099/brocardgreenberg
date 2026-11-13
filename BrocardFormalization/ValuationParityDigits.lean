@@ -311,7 +311,7 @@ theorem lemma_2_2_ii :
         · exact Or.inr ⟨⟨hgt, h2⟩, h3⟩
       · rintro (⟨⟨h1, h2⟩, h3⟩ | ⟨⟨h1, h2⟩, h3⟩)
         · exact ⟨⟨h1, le_trans h2 (Nat.sqrt_le_self m)⟩, h3⟩
-        · exact ⟨⟨by omega, h2⟩, h3⟩
+        · exact ⟨⟨h3.two_le, h2⟩, h3⟩
     have hpc_eq : (Nat.primeCounting m : ℝ) = ((Finset.Icc 2 m).filter Nat.Prime).card := by
       congr 1
       rw [Nat.primeCounting, Nat.primeCounting', Nat.count_eq_card_filter_range]
@@ -547,7 +547,7 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh1
       have hnot : ¬ (|h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h) := fun ⟨hab, hn, ho⟩ =>
         hh2 (Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr (abs_le.mp hab), hn, ho⟩)
-      rw [cTilde, if_neg hnot, norm_zero]
+      dsimp only [cTilde]; rw [if_neg hnot]
     · intro h hh
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh
       have hok : |h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h := ⟨abs_le.mpr hh.1, hh.2⟩
@@ -604,7 +604,7 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh1
       by_cases h2 : 2 ∣ h
       · have hnot : ¬ (|h| ≤ (H : ℤ) ∧ 2 ∣ h) := fun ⟨hab, _⟩ =>
-          hh2 (Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr (abs_le.mp hab), hh1.2⟩)
+          hh2 (Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr (abs_le.mp hab), hh1.2, h2⟩)
         simp [bTilde, hnot]
       · simp [bTilde, h2]
     · intro h hh
@@ -661,11 +661,11 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
         simp only [Finset.mem_filter, Finset.mem_Icc] at hh1
         have hnot : ¬ (|h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h) := fun ⟨hab, hn, ho⟩ =>
           hh2 (Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr (abs_le.mp hab), hn, ho⟩)
-        rw [cTilde, if_neg hnot, norm_zero]
+        dsimp only [cTilde]; rw [if_neg hnot, norm_zero]
       rw [hz, zero_add]
       refine Finset.sum_le_sum fun h hh => ?_
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh
-      have hok : |h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h := ⟨abs_le.mpr hh.1, hh.2⟩
+      have hok : |h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h := ⟨abs_le.mp hh.1, hh.2⟩
       simp only [cTilde, if_pos hok, norm_mul, norm_neg, Complex.norm_ofNat]
       calc 4 * ‖c h‖ ≤ 4 * (1 / (2 * Real.pi * |(h : ℝ)|)) := mul_le_mul_of_nonneg_left (hc_bd h hh.2.1) (by norm_num)
         _ = 2 / (Real.pi * |(h : ℝ)|) := by ring
@@ -716,5 +716,6 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       _ ≤ 2 * ((2 / Real.pi) * (Real.log (2 * (H : ℝ) + 1) + 1)) := by
           refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (by linarith) (by positivity)) (by norm_num)
       _ = (4 / Real.pi) * (Real.log (2 * (H : ℝ) + 1) + 1) := by ring
+
 
 end BrocardFormalization
