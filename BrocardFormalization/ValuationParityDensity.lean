@@ -61,7 +61,11 @@ private lemma h_li_bd_aux (x lx ln l2n l2 : ℝ)
       have h16_20 := mul_le_mul_of_nonneg_right (by norm_num : (16 : ℝ) ≤ 20) hnn
       linarith [show 20 * ((x / ln) * l2n / ln) = 20 * (x / ln) * l2n / ln by ring]
     linarith
-  linarith
+  calc (x / lx ^ 2) / l2 + (x / lx ^ 2) / lx +
+      x * (2 * Real.log lx) / ((1 / 2 * lx) * lx)
+      ≤ 8 * (x / ln) * l2n / ln + 8 * (x / ln) * l2n / ln + 20 * (x / ln) * l2n / ln :=
+        add_le_add (add_le_add h1 h2) h3
+    _ = 36 * (x / ln) * l2n / ln := by ring
 
 theorem lemma_2_1_ii_part2 :
     Tendsto (fun n : ℕ => ((Podd n).card : ℝ) / (Nat.primeCounting n : ℝ))
@@ -456,7 +460,7 @@ theorem lemma_2_1_ii_part2 :
           have hj_lt : j < 2 * K + 1 := by
             rw [Nat.div_lt_iff_lt_mul hp_prime.pos]
             have h1 : n < (2 * K + 1) * (n / (2 * K + 1) + 1) := by
-              rw [mul_comm]; exact Nat.lt_mul_div_succ n (Nat.succ_pos (2 * K))
+              exact Nat.lt_mul_div_succ n (Nat.succ_pos (2 * K))
             have h2 : n / (2 * K + 1) + 1 ≤ p := hle
             calc n < (2 * K + 1) * (n / (2 * K + 1) + 1) := h1
               _ ≤ (2 * K + 1) * p := Nat.mul_le_mul_left _ h2
@@ -677,7 +681,7 @@ theorem lemma_2_1_ii_part2 :
     have h1 : Tendsto (fun u : ℝ => (Real.log (2 * u + 1) + 1) ^ 2 / u) atTop (𝓝 0) := by
       have hlo : Tendsto (fun x : ℝ => Real.log x / x ^ (1 / 4 : ℝ)) atTop (𝓝 0) := by
         refine squeeze_zero' (by filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx; exact div_nonneg (Real.log_nonneg hx) (by positivity)) ?_
-          ((tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 8)).const_mul 8)
+          (by simpa using (tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 8)).const_mul 8)
         filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
         have hr8 : 0 < x ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hx _
         have hlog8 : Real.log (x ^ (1 / 8 : ℝ)) ≤ x ^ (1 / 8 : ℝ) := by linarith [Real.log_le_sub_one_of_pos hr8]
@@ -776,7 +780,7 @@ theorem lemma_2_1_ii_part2 :
       have hA : Tendsto (fun n : ℕ => 2 * Real.log n / Real.sqrt n) atTop (𝓝 0) := by
         have hlo : Tendsto (fun x : ℝ => Real.log x / x ^ (1 / 2 : ℝ)) atTop (𝓝 0) := by
           refine squeeze_zero' (by filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx; exact div_nonneg (Real.log_nonneg hx) (by positivity)) ?_
-            ((tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 4)).const_mul 4)
+            (by simpa using (tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 4)).const_mul 4)
           filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
           have hr4 : 0 < x ^ (1 / 4 : ℝ) := Real.rpow_pos_of_pos hx _
           have hlog4 : Real.log (x ^ (1 / 4 : ℝ)) ≤ x ^ (1 / 4 : ℝ) := by linarith [Real.log_le_sub_one_of_pos hr4]
