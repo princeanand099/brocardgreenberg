@@ -39,8 +39,11 @@ def harmonicLayer (n j : ℕ) : Finset ℕ :=
 
 private lemma padicValNat_factorial_of_lt_sq {n p : ℕ} (hp : p.Prime) (hnsq : n < p ^ 2) :
     padicValNat p n.factorial = n / p := by
-  haveI : Fact p.Prime := ⟨hp⟩
-  rw [padicValNat_factorial hnsq]
+  by_cases hn0 : n = 0
+  · subst hn0; simp
+  have : Fact p.Prime := ⟨hp⟩
+  have hlog : Nat.log p n < 2 := Nat.log_lt_of_lt_pow hn0 hnsq
+  rw [padicValNat_factorial hlog]
   have hico : Finset.Ico 1 2 = {1} := by decide
   rw [hico, Finset.sum_singleton, pow_one]
 
@@ -48,7 +51,7 @@ private lemma padicValNat_prod_primes {S : Finset ℕ} (hS : ∀ q ∈ S, q.Prim
     (hp : p.Prime) :
     padicValNat p (∏ q ∈ S, q) = if p ∈ S then 1 else 0 := by
   classical
-  haveI : Fact p.Prime := ⟨hp⟩
+  have : Fact p.Prime := ⟨hp⟩
   induction S using Finset.induction with
   | empty => simp
   | @insert q s hqs ih =>
@@ -84,9 +87,7 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
     have hj1_le_p : j + 1 ≤ p := by
       by_contra hlt
       push_neg at hlt
-      have hle : p ≤ j := by omega
       have h3 : n < p * (j + 1) := lt_of_lt_of_le h2 (Nat.mul_le_mul_right _ h1)
-      have h4 : p * (j + 1) ≤ j * (j + 1) := Nat.mul_le_mul_right _ hle
       nlinarith
     have hlt_sq : n < p ^ 2 := by
       have h3 : (n / (j + 1) + 1) * (j + 1) ≤ p * p := Nat.mul_le_mul h1 hj1_le_p
@@ -110,11 +111,12 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
       rw [qn_eq_prod_Podd, padicValNat_prod_primes (fun q hq => (Finset.mem_filter.mp hq).2.1) hp_prime]
       simp [hp_Podd]
     have hfac := factorial_eq_qn_mul_sn_sq n
-    haveI : Fact p.Prime := ⟨hp_prime⟩
+    have : Fact p.Prime := ⟨hp_prime⟩
     have hvs : padicValNat p n.factorial = padicValNat p (qn n) + 2 * padicValNat p (sn n) := by
       conv_lhs => rw [hfac]
       rw [padicValNat.mul (qn_pos n).ne' (pow_ne_zero 2 (sn_pos n).ne'),
-        padicValNat.pow (ha := (sn_pos n).ne')]
+        padicValNat.pow (n := 2) (a := sn n) (sn_pos n).ne']
+    refine ⟨hp_Podd, hvq, ?_⟩
     omega
   · intro r hr p hp
     have hv := hp_val p hp
@@ -127,11 +129,12 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
       rw [qn_eq_prod_Podd, padicValNat_prod_primes (fun q hq => (Finset.mem_filter.mp hq).2.1) hp_prime]
       simp [hnot_Podd]
     have hfac := factorial_eq_qn_mul_sn_sq n
-    haveI : Fact p.Prime := ⟨hp_prime⟩
+    have : Fact p.Prime := ⟨hp_prime⟩
     have hvs : padicValNat p n.factorial = padicValNat p (qn n) + 2 * padicValNat p (sn n) := by
       conv_lhs => rw [hfac]
       rw [padicValNat.mul (qn_pos n).ne' (pow_ne_zero 2 (sn_pos n).ne'),
-        padicValNat.pow (ha := (sn_pos n).ne')]
+        padicValNat.pow (n := 2) (a := sn n) (sn_pos n).ne']
+    refine ⟨hp_Peven, hvq, ?_⟩
     omega
 
 private lemma alternating_harmonic_sum_bound (K : ℕ) :
@@ -161,9 +164,9 @@ private lemma alternating_harmonic_sum_bound (K : ℕ) :
         ∫ t in (0 : ℝ)..1, ∑ j ∈ Finset.range (2 * K), (-t) ^ j := by
     rw [intervalIntegral.integral_finsetSum]
     · refine Finset.sum_congr rfl fun j _ => ?_
-      have hpow : ∀ t : ℝ, (-t) ^ j = (-1 : ℝ) ^ j * t ^ j := fun t => by
-        rw [neg_eq_neg_one_mul, mul_pow]
-      simp_rw [hpow, intervalIntegral.integral_const_mul, integral_pow]
+      have hpow : (fun t : ℝ => (-t) ^ j) = (fun t : ℝ => (-1 : ℝ) ^ j * t ^ j) := by
+        ext t; rw [neg_eq_neg_one_mul, mul_pow]
+      rw [hpow, intervalIntegral.integral_const_mul, integral_pow]
       ring
     · intro j _
       exact (continuous_neg.pow j).intervalIntegrable 0 1
@@ -185,11 +188,12 @@ private lemma alternating_harmonic_sum_bound (K : ℕ) :
     linarith
   have hi1 : IntervalIntegrable (fun t : ℝ => ∑ j ∈ Finset.range (2 * K), (-t) ^ j)
       MeasureTheory.volume 0 1 :=
-    (continuous_finset_sum _ fun j _ => continuous_neg.pow j).intervalIntegrable 0 1
+    (continuous_finsetSum _ fun j _ => continuous_neg.pow j).intervalIntegrable 0 1
   have hi2 : IntervalIntegrable (fun t : ℝ => (1 + t)⁻¹) MeasureTheory.volume 0 1 := by
     refine ContinuousOn.intervalIntegrable fun t ht => ?_
     rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
-    exact ((continuousAt_const.add continuousAt_id).inv₀ (by linarith [ht.1])).continuousWithinAt
+    have ht1 : (1 : ℝ) + t ≠ 0 := by linarith [ht.1]
+    exact ((continuousAt_const.add continuousAt_id).inv₀ ht1).continuousWithinAt
   have hdiff_eq :
       ∑ j ∈ Finset.range (2 * K), (-1 : ℝ) ^ j / ((j : ℝ) + 1) - Real.log 2 =
         - ∫ t in (0 : ℝ)..1, t ^ (2 * K) / (1 + t) := by
@@ -205,8 +209,8 @@ private lemma alternating_harmonic_sum_bound (K : ℕ) :
   have hi3 : IntervalIntegrable (fun t : ℝ => t ^ (2 * K) / (1 + t)) MeasureTheory.volume 0 1 := by
     refine ContinuousOn.intervalIntegrable fun t ht => ?_
     rw [Set.uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at ht
-    exact ((continuousAt_id.pow _).div (continuousAt_const.add continuousAt_id)
-      (by linarith [ht.1])).continuousWithinAt
+    have ht1 : (1 : ℝ) + t ≠ 0 := by linarith [ht.1]
+    exact ((continuousAt_id.pow _).div (continuousAt_const.add continuousAt_id) ht1).continuousWithinAt
   have hle_pow : ∫ t in (0 : ℝ)..1, t ^ (2 * K) / (1 + t) ≤ ∫ t in (0 : ℝ)..1, t ^ (2 * K) := by
     refine intervalIntegral.integral_mono_on (by norm_num) hi3
       ((continuous_id.pow (2 * K)).intervalIntegrable 0 1) fun t ht => ?_
@@ -239,9 +243,6 @@ private lemma geom_sum_mod_two (p j : ℕ) (hp : p % 2 = 1) :
     rw [Finset.sum_range_succ, Nat.add_mod, ih, Nat.pow_mod, hp, one_pow]
     omega
 
-private lemma ofDigits_sub_sum_eq (p : ℕ) (L : List ℕ) :
-    (p - 1) * ((Nat.ofDigits p L) - L.sum) = 0 ∨ True := Or.inr trivial
-
 private lemma ofDigits_eq_sum_range (p : ℕ) (L : List ℕ) :
     Nat.ofDigits p L = ∑ j ∈ Finset.range L.length, L.getD j 0 * p ^ j := by
   induction L with
@@ -249,11 +250,11 @@ private lemma ofDigits_eq_sum_range (p : ℕ) (L : List ℕ) :
   | cons d t ih =>
     simp only [Nat.ofDigits_cons, List.length_cons, Finset.sum_range_succ', pow_zero, mul_one,
       List.getD_cons_zero, List.getD_cons_succ, ih]
-    rw [Finset.mul_sum]
+    rw [Finset.mul_sum, add_comm]
     congr 1
-    · refine Finset.sum_congr rfl fun j _ => ?_
-      rw [pow_succ']
-      ring
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [pow_succ']
+    ring
 
 private lemma list_sum_eq_sum_range (L : List ℕ) :
     L.sum = ∑ j ∈ Finset.range L.length, L.getD j 0 := by
@@ -264,32 +265,50 @@ private lemma list_sum_eq_sum_range (L : List ℕ) :
       List.getD_cons_zero, List.getD_cons_succ, ih]
     ring
 
+private lemma zipIdx_odd_sum (k : ℕ) (L : List ℕ) :
+    (((L.zipIdx k).filter (fun x => x.2 % 2 = 1)).map Prod.fst).sum =
+      ∑ j ∈ (Finset.range L.length).filter (fun j => (k + j) % 2 = 1), L.getD j 0 := by
+  induction L generalizing k with
+  | nil => simp
+  | cons d t ih =>
+    simp only [List.zipIdx_cons, List.filter_cons, List.length_cons]
+    have hsplit :
+        (Finset.range (t.length + 1)).filter (fun j => (k + j) % 2 = 1) =
+          (if k % 2 = 1 then {0} else ∅) ∪
+            ((Finset.range t.length).filter (fun j => (k + 1 + j) % 2 = 1)).map
+              ⟨Nat.succ, Nat.succ_injective⟩ := by
+      ext j
+      simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_range, Finset.mem_map,
+        Function.Embedding.coeFn_mk]
+      cases j with
+      | zero => simp
+      | succ j =>
+        simp only [Nat.succ_eq_add_one, add_lt_add_iff_right]
+        split_ifs <;> simp [add_assoc, add_left_comm, add_comm]
+    rw [hsplit, Finset.sum_union (by
+      rw [Finset.disjoint_left]
+      intro x hx1 hx2
+      simp only [Finset.mem_map, Function.Embedding.coeFn_mk] at hx2
+      rcases hx2 with ⟨y, _, rfl⟩
+      split_ifs at hx1 <;> simp at hx1)]
+    rw [Finset.sum_map]
+    simp only [Function.Embedding.coeFn_mk, List.getD_cons_succ]
+    by_cases hk : k % 2 = 1
+    · simp [hk, List.map_cons, List.sum_cons, ih (k + 1)]
+    · simp [hk, ih (k + 1)]
+
 private lemma oddIndexedDigitSum_eq_sum_range (p n : ℕ) :
     oddIndexedDigitSum p n =
       ∑ j ∈ (Finset.range (Nat.digits p n).length).filter (fun j => j % 2 = 1),
         (Nat.digits p n).getD j 0 := by
   unfold oddIndexedDigitSum
-  generalize Nat.digits p n = L
-  have h : ∀ (k : ℕ) (L : List ℕ),
-      ((L.zipIdx k).filter (fun x => x.2 % 2 = 1)).map Prod.fst |>.sum =
-        ∑ j ∈ (Finset.range L.length).filter (fun j => (k + j) % 2 = 1), L.getD j 0 := by
-    intro k L
-    induction L generalizing k with
-    | nil => simp
-    | cons d t ih =>
-      simp only [List.zipIdx_cons, List.filter_cons, List.length_cons, Finset.range_eq_Ico]
-      sorry
-  sorry
+  simpa using zipIdx_odd_sum 0 (Nat.digits p n)
 
 theorem lemma_2_2_i (p n : ℕ) (hp : p.Prime) (hp3 : 3 ≤ p) (_hn : 4 ≤ n) :
     padicValNat p n.factorial % 2 = oddIndexedDigitSum p n % 2 := by
-  have hleg := sub_one_mul_padicValNat_factorial n p
+  have hleg := sub_one_mul_padicValNat_factorial p n
   have hdigits : Nat.ofDigits p (Nat.digits p n) = n := Nat.ofDigits_digits p n
   have hp1 : 0 < p - 1 := by omega
-  have hsum_le : (Nat.digits p n).sum ≤ n := by
-    rw [← hdigits, ofDigits_eq_sum_range, list_sum_eq_sum_range]
-    refine Finset.sum_le_sum fun j _ => ?_
-    exact Nat.le_mul_of_pos_right _ (pow_pos hp.pos j)
   have hid : (p - 1) * padicValNat p n.factorial =
       (p - 1) * ∑ j ∈ Finset.range (Nat.digits p n).length,
         (Nat.digits p n).getD j 0 * (∑ i ∈ Finset.range j, p ^ i) := by
@@ -312,10 +331,15 @@ theorem lemma_2_2_i (p n : ℕ) (hp : p.Prime) (hp3 : 3 ≤ p) (_hn : 4 ≤ n) :
         (Nat.digits p n).getD j 0 * (∑ i ∈ Finset.range j, p ^ i) :=
     Nat.eq_of_mul_eq_mul_left hp1 hid
   have hp_odd : p % 2 = 1 := hp.eq_two_or_odd.resolve_left (by omega)
-  rw [hval, Finset.sum_nat_mod]
-  simp_rw [Nat.mul_mod, geom_sum_mod_two p _ hp_odd]
-  rw [← Finset.sum_nat_mod]
-  sorry
+  rw [hval, oddIndexedDigitSum_eq_sum_range, Finset.sum_nat_mod, Finset.sum_nat_mod]
+  rw [Finset.sum_filter]
+  congr 1
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [Nat.mul_mod, geom_sum_mod_two p j hp_odd]
+  by_cases hj : j % 2 = 1
+  · simp [hj]
+  · have hj0 : j % 2 = 0 := by omega
+    simp [hj, hj0]
 
 /-- Digit-sum remainder `E_digit(n) := ∑_{3 ≤ p ≤ √n} (-1)^{v_p(n!) - 1} s_p(n) log p / (p - 1)`. -/
 def Edigit (n : ℕ) : ℝ :=
