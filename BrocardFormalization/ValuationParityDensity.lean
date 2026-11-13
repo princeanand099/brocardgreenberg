@@ -80,7 +80,8 @@ private lemma h_err_zero_aux : Tendsto (fun n : ℕ =>
       calc Real.log x / x ^ (1 / 4 : ℝ)
           ≤ (8 * x ^ (1 / 8 : ℝ)) / x ^ (1 / 4 : ℝ) := div_le_div_of_nonneg_right (by linarith) (by positivity)
         _ = 8 * x ^ (-(1 / 8 : ℝ)) := by
-            rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx]; norm_num
+            rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx,
+              show (1 / 8 : ℝ) + -(1 / 4 : ℝ) = -(1 / 8 : ℝ) by norm_num]
     have hcomp : Tendsto (fun u : ℝ => Real.log (2 * u + 1) / (2 * u + 1) ^ (1 / 4 : ℝ)) atTop (𝓝 0) :=
       hlo.comp (tendsto_atTop_add_const_right _ 1 (tendsto_id.const_mul_atTop (by norm_num)))
     have hsq : Tendsto (fun u : ℝ =>
@@ -104,15 +105,15 @@ private lemma h_err_zero_aux : Tendsto (fun n : ℕ =>
         rw [h2u, Real.mul_rpow hu.le (by positivity)]
         have hu1 : u ^ (1 / 2 : ℝ) / u = u ^ (-(1 / 2 : ℝ)) := by
           rw [div_eq_mul_inv, ← Real.rpow_neg_one, ← Real.rpow_add hu]; norm_num
-        rw [mul_div_assoc, mul_comm (u ^ (1 / 2 : ℝ)), ← mul_div_assoc, mul_div_right_comm, hu1, mul_comm]
+        rw [mul_comm (u ^ (1 / 2 : ℝ)), mul_div_assoc, hu1]
       simpa using hsum.mul hrat
     refine hsq.congr' ?_
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
     have h2u : 0 < 2 * u + 1 := by linarith
     have hr : ((2 * u + 1) ^ (1 / 4 : ℝ)) ^ 2 = (2 * u + 1) ^ (1 / 2 : ℝ) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul h2u.le]; norm_num
-    field_simp [h2u.ne', hu.ne']
-    rw [div_pow, hr, div_mul_cancel₀ _ (Real.rpow_pos_of_pos h2u _).ne']
+    rw [← add_div, div_pow, hr, div_mul_div_comm, mul_comm ((2 * u + 1) ^ (1 / 2 : ℝ)),
+      mul_div_mul_right _ _ (Real.rpow_pos_of_pos h2u _).ne']
   exact h1.comp (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop)
 
 private lemma h_li_est_aux : ∀ x : ℝ, 16 ≤ x → (Real.log x) ^ 2 ≤ Real.sqrt x →
@@ -730,8 +731,10 @@ theorem lemma_2_1_ii_part2 :
   have h_pi_lim : Tendsto (fun n : ℕ => (Nat.primeCounting n : ℝ) / ((n : ℝ) / Real.log n)) atTop (𝓝 1) := by
     rw [Metric.tendsto_atTop]
     intro ε hε
-    have h_ev_err := h_err_zero.eventually (Metric.ball_mem_nhds 0 (div_pos hε (by norm_num : (0 : ℝ) < C₁ + 41)))
-    filter_upwards [h_unif, h_ev_err] with n ⟨hK₀, _, hn4, _, hunif_n⟩ herr
+    have h_ev_err := h_err_zero.eventually (Metric.ball_mem_nhds 0 (div_pos hε (by linarith : (0 : ℝ) < C₁ + 41)))
+    obtain ⟨N, hN⟩ := eventually_atTop.mp (h_unif.and h_ev_err)
+    refine ⟨N, fun n hnN => ?_⟩
+    obtain ⟨⟨hK₀, _, hn4, _, hunif_n⟩, herr⟩ := hN n hnN
     have hlogn_pos : 0 < Real.log n := by linarith
     have hn_pos : (0 : ℝ) < n := by
       by_contra h0
@@ -763,17 +766,23 @@ theorem lemma_2_1_ii_part2 :
   have h_podd_lim : Tendsto (fun n : ℕ => ((Podd n).card : ℝ) / ((n : ℝ) / Real.log n)) atTop (𝓝 (Real.log 2)) := by
     rw [Metric.tendsto_atTop]
     intro ε hε
-    have h_K0_atTop : Tendsto (fun n : ℕ => ⌊Real.log n⌋₊) atTop atTop :=
-      Nat.tendsto_floor_atTop.comp (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop)
+    have h_K0_atTop : Tendsto (fun n : ℕ => ⌊Real.log n⌋₊) atTop atTop := by
+      rw [Filter.tendsto_atTop_atTop]
+      intro b
+      filter_upwards [(Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop).eventually
+        (eventually_ge_atTop (b : ℝ))] with n hn
+      exact Nat.le_floor hn
     have h_alt_ev : ∀ᶠ n : ℕ in atTop, 1 / (2 * (⌊Real.log n⌋₊ : ℝ) + 1) < ε / 4 := by
       have h1 : Tendsto (fun n : ℕ => (1 : ℝ) / (2 * (⌊Real.log n⌋₊ : ℝ) + 1)) atTop (𝓝 0) :=
         tendsto_const_nhds.div_atTop
           (tendsto_atTop_add_const_right _ 1 ((tendsto_natCast_atTop_atTop.comp h_K0_atTop).const_mul_atTop (by norm_num)))
-      exact h1.eventually (Metric.ball_mem_nhds 0 (div_pos hε (by norm_num))) |>.mono fun n hn => by
+      exact (h1.eventually (Metric.ball_mem_nhds 0 (div_pos hε (by norm_num : (0 : ℝ) < 4)))).mono fun n hn => by
         simpa [Real.dist_eq, abs_of_pos (by positivity : 0 < (1 : ℝ) / (2 * (⌊Real.log n⌋₊ : ℝ) + 1))] using hn
     have h_err_ev : ∀ᶠ n : ℕ in atTop,
         (C₁ + 40) * 4 * (Real.log (2 * Real.log n + 1) + 1) ^ 2 / Real.log n < ε / 4 := by
-      have h1 := (h_err_zero.const_mul ((C₁ + 40) * 4)).eventually (Metric.ball_mem_nhds 0 (div_pos hε (by norm_num)))
+      have h1 := ((by simpa using h_err_zero.const_mul ((C₁ + 40) * 4) :
+        Tendsto (fun n : ℕ => (C₁ + 40) * 4 * ((Real.log (2 * Real.log n + 1) + 1) ^ 2 / Real.log n)) atTop (𝓝 0))).eventually
+        (Metric.ball_mem_nhds 0 (div_pos hε (by norm_num : (0 : ℝ) < 4)))
       exact h1.mono fun n hn => by
         have : (C₁ + 40) * 4 * ((Real.log (2 * Real.log n + 1) + 1) ^ 2 / Real.log n) =
             (C₁ + 40) * 4 * (Real.log (2 * Real.log n + 1) + 1) ^ 2 / Real.log n := by ring
@@ -792,7 +801,8 @@ theorem lemma_2_1_ii_part2 :
           calc Real.log x / x ^ (1 / 2 : ℝ)
               ≤ (4 * x ^ (1 / 4 : ℝ)) / x ^ (1 / 2 : ℝ) := div_le_div_of_nonneg_right (by linarith) (by positivity)
             _ = 4 * x ^ (-(1 / 4 : ℝ)) := by
-                rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx]; norm_num
+                rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx,
+                  show (1 / 4 : ℝ) + -(1 / 2 : ℝ) = -(1 / 4 : ℝ) by norm_num]
         have h1 : Tendsto (fun n : ℕ => 2 * (Real.log n / (n : ℝ) ^ (1 / 2 : ℝ))) atTop (𝓝 0) := by
           simpa using (hlo.comp tendsto_natCast_atTop_atTop).const_mul 2
         refine h1.congr' ?_
@@ -803,9 +813,11 @@ theorem lemma_2_1_ii_part2 :
           (tendsto_atTop_add_const_right _ 1 ((tendsto_natCast_atTop_atTop.comp h_K0_atTop).const_mul_atTop (by norm_num)))
       have hAB := hA.add hB
       simp only [add_zero] at hAB
-      exact (hAB.eventually (Metric.ball_mem_nhds 0 (div_pos hε (by norm_num)))).mono fun n hn =>
-        lt_of_le_of_lt (le_abs_self _) hn
-    filter_upwards [h_unif, h_ev2, h_alt_ev, h_err_ev, h_tail_ev] with n ⟨hK₀, hsqrt, hn4, hhalf_K₀, hunif_n⟩ ⟨hn64, _, _, _⟩ halt_bd herr_bd htail_bd
+      exact (hAB.eventually (Metric.ball_mem_nhds 0 (div_pos hε (by norm_num : (0 : ℝ) < 4)))).mono fun n hn => by
+        simpa [Real.dist_eq] using lt_of_le_of_lt (le_abs_self _) hn
+    obtain ⟨N, hN⟩ := eventually_atTop.mp (h_unif.and (h_ev2.and (h_alt_ev.and (h_err_ev.and h_tail_ev))))
+    refine ⟨N, fun n hnN => ?_⟩
+    obtain ⟨⟨hK₀, hsqrt, hn4, hhalf_K₀, hunif_n⟩, ⟨hn64, _, _, _⟩, halt_bd, herr_bd, htail_bd⟩ := hN n hnN
     set K₀ := ⌊Real.log n⌋₊
     have hlogn_pos : 0 < Real.log n := by linarith
     have hn_pos : (0 : ℝ) < n := by positivity
@@ -1009,6 +1021,7 @@ theorem lemma_2_1_ii_part2 :
     exact_mod_cast (by omega : Nat.primeCounting n ≠ 0)
   have hlog_ne : Real.log n ≠ 0 := (Real.log_pos (by exact_mod_cast (by omega : 1 < n))).ne'
   have hden_ne : (n : ℝ) / Real.log n ≠ 0 := div_ne_zero (by positivity) hlog_ne
+  dsimp only [Pi.div_apply]
   field_simp [hpc_pos, hden_ne]
 
 

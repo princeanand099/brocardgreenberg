@@ -36,18 +36,18 @@ def SigmaParityTrunc (r n B : ℕ) : ℝ :=
 
 private lemma truncParitySign_sq {p r n : ℕ} : (truncParitySign p r n) ^ 2 = 1 := by
   unfold truncParitySign
-  rw [neg_sq, Finset.prod_pow]
+  rw [neg_sq, ← Finset.prod_pow]
   refine Finset.prod_eq_one fun m _ => ?_
   rw [← pow_mul, mul_comm, pow_mul, neg_one_sq, one_pow]
 
 private lemma abs_truncParitySign {p r n : ℕ} : |truncParitySign p r n| = 1 := by
-  rw [← sq_eq_one_iff]
-  exact truncParitySign_sq
+  nlinarith [sq_abs (truncParitySign p r n), truncParitySign_sq (p := p) (r := r) (n := n),
+    abs_nonneg (truncParitySign p r n)]
 
 private lemma truncParitySign_periodic {p r n k : ℕ} (hp : 0 < p) :
     truncParitySign p r (n + k * p ^ (2 * r + 1)) = truncParitySign p r n := by
   unfold truncParitySign
-  congr 2
+  congr 1
   refine Finset.prod_congr rfl fun m hm => ?_
   have hm_lt : m < r := Finset.mem_range.mp hm
   have hdiv : p ^ (2 * m + 1) * p ∣ p ^ (2 * r + 1) := by
@@ -66,8 +66,8 @@ private lemma truncParitySign_mod_eq {p r n M : ℕ} (hp : 0 < p) (hdvd : p ^ (2
   rcases hdvd with ⟨t, ht⟩
   have h1 : n % M + (n / M * t) * p ^ (2 * r + 1) = n := by
     have := Nat.mod_add_div n M
-    rw [ht] at this
-    linarith
+    rw [ht] at this ⊢
+    rw [← this]; ring
   calc truncParitySign p r (n % M)
       = truncParitySign p r (n % M + (n / M * t) * p ^ (2 * r + 1)) :=
         (truncParitySign_periodic hp).symm
@@ -102,8 +102,8 @@ private lemma truncParitySign_sum_period {p : ℕ} (hp : p.Prime) (hp3 : 3 ≤ p
         (fun qa => qa.2 + p ^ (2 * r + 1) * qa.1) ?_ ?_ ?_ ?_ ?_
       · intro n hn
         rw [Finset.mem_range, hpow_eq] at hn
-        exact Finset.mem_product.mpr ⟨(Nat.div_lt_iff_lt_mul (pow_pos hp.pos _)).mpr
-          (by linarith), Nat.mod_lt n (pow_pos hp.pos _)⟩
+        exact Finset.mem_product.mpr ⟨Nat.div_lt_of_lt_mul (by linarith),
+          Nat.mod_lt n (pow_pos hp.pos _)⟩
       · intro ⟨q, a⟩ hqa
         rw [Finset.mem_product, Finset.mem_range, Finset.mem_range] at hqa
         rw [Finset.mem_range, hpow_eq]
@@ -115,7 +115,7 @@ private lemma truncParitySign_sum_period {p : ℕ} (hp : p.Prime) (hp3 : 3 ≤ p
         ext
         · simp [Nat.add_mul_div_left a q (pow_pos hp.pos _), Nat.div_eq_of_lt hqa.2]
         · simp [Nat.mod_eq_of_lt hqa.2]
-      · intro _ _; rfl
+      · intro n _; rw [Nat.mod_add_div]
     rw [h1, Finset.sum_product]
     have h2 : ∀ q ∈ Finset.range (p * p),
         ∑ a ∈ Finset.range (p ^ (2 * r + 1)),
@@ -141,7 +141,6 @@ private lemma truncParitySign_sum_period {p : ℕ} (hp : p.Prime) (hp3 : 3 ≤ p
             a / p ^ (2 * m + 1) + (t * q) * p := by
           rw [ht, show p ^ (2 * m + 1) * p * t * q = (t * q * p) * p ^ (2 * m + 1) by ring]
           rw [Nat.add_mul_div_right a (t * q * p) (pow_pos hp.pos _)]
-          ring
         rw [hdiv_eq, Nat.add_mul_mod_self_right]
       rw [hlast, hprev]
       ring
@@ -153,7 +152,7 @@ private lemma truncParitySign_sum_period {p : ℕ} (hp : p.Prime) (hp3 : 3 ≤ p
           ?_ ?_ ?_ ?_ ?_
         · intro q hq
           rw [Finset.mem_range] at hq
-          exact Finset.mem_product.mpr ⟨(Nat.div_lt_iff_lt_mul hp.pos).mpr (by linarith),
+          exact Finset.mem_product.mpr ⟨Nat.div_lt_of_lt_mul (by linarith),
             Nat.mod_lt q hp.pos⟩
         · intro ⟨e, d⟩ hed
           rw [Finset.mem_product, Finset.mem_range, Finset.mem_range] at hed
@@ -233,17 +232,22 @@ private lemma crt_prod_sum (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime ∧ 3 ≤
           have h1 : (1 : ℤ) ≤ |k| := Int.one_le_abs hk_ne
           have h2 : (A * B₀ : ℤ) ≤ (A * B₀ : ℤ) * |k| := le_mul_of_one_le_right (by positivity) h1
           rw [← abs_of_pos (by positivity : (0 : ℤ) < A * B₀), ← abs_mul, ← hk] at h2
-          omega
+          linarith
         rw [hk0, mul_zero] at hk
         omega
       have hmaps : Set.MapsTo (fun n => (n % A, n % B₀)) (Finset.range (A * B₀) : Set ℕ)
           (Finset.range A ×ˢ Finset.range B₀ : Set (ℕ × ℕ)) := by
         intro n _
-        exact Finset.mem_product.mpr ⟨Nat.mod_lt n hA_pos, Nat.mod_lt n hB₀_pos⟩
+        exact Finset.mem_coe.mpr (Finset.mem_product.mpr ⟨Finset.mem_range.mpr (Nat.mod_lt n hA_pos),
+          Finset.mem_range.mpr (Nat.mod_lt n hB₀_pos)⟩)
       have hcard : (Finset.range A ×ˢ Finset.range B₀).card ≤ (Finset.range (A * B₀)).card := by
         simp [Finset.card_product]
-      have hsurj := Finset.surjOn_of_injOn_of_card_le hmaps hinj hcard
-      refine Finset.sum_nbij (fun n => (n % A, n % B₀)) hmaps hinj hsurj fun n _ => ?_
+      have hsurj : Set.SurjOn (fun n => (n % A, n % B₀)) (Finset.range (A * B₀) : Set ℕ)
+          (Finset.range A ×ˢ Finset.range B₀ : Set (ℕ × ℕ)) :=
+        Finset.surjOn_of_injOn_of_card_le _ hmaps hinj hcard
+      refine Finset.sum_nbij (fun n => (n % A, n % B₀))
+        (fun n _ => Finset.mem_product.mpr ⟨Finset.mem_range.mpr (Nat.mod_lt n hA_pos),
+          Finset.mem_range.mpr (Nat.mod_lt n hB₀_pos)⟩) hinj hsurj fun n _ => ?_
       congr 1
       · rw [truncParitySign_mod_eq hp₀_pr.pos dvd_rfl]
       · refine Finset.prod_congr rfl fun p hp => ?_
@@ -251,7 +255,9 @@ private lemma crt_prod_sum (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime ∧ 3 ≤
         rw [truncParitySign_mod_eq (hS' p hp).1.pos hdvd]
     rw [Finset.prod_insert hp₀]
     simp_rw [Finset.prod_insert hp₀]
-    rw [hbij, Finset.sum_product, Finset.sum_mul_sum, ih hS']
+    rw [hbij, Finset.sum_product]
+    dsimp only
+    rw [Finset.sum_mul_sum, ih hS']
 
 private def rademacherMoment (S : Finset ℕ) (k : ℕ) : ℝ :=
   (1 / (2 : ℝ) ^ S.card) *
@@ -285,7 +291,7 @@ private lemma rademacherMoment_eq_even_sum (S : Finset ℕ) (m : ℕ) :
       rw [← Finset.prod_biUnion]
       · congr 1; ext i; simp
       · intro p _ q _ hpq
-        rw [Finset.disjoint_left]
+        rw [Function.onFun, Finset.disjoint_left]
         intro i hi1 hi2
         simp only [Finset.mem_filter] at hi1 hi2
         exact hpq (hi1.2.symm.trans hi2.2)
@@ -305,11 +311,9 @@ private lemma rademacherMoment_eq_even_sum (S : Finset ℕ) (m : ℕ) :
       ∏ p : S, ((1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card +
         (-1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card) := by
     rw [Fintype.prod_sum (fun p b => (if b then (1 : ℝ) else -1) ^ (Finset.univ.filter fun i => g i = p).card)]
-    refine Finset.prod_congr rfl fun p _ => ?_
-    simp [Fintype.sum_bool]
   rw [hprod_sum]
   by_cases hev : ∀ p : S, Even (Finset.univ.filter fun i => g i = p).card
-  · simp only [hev, ↓reduceIte]
+  · rw [if_pos hev]
     have h2 : ∏ p : S, ((1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card +
         (-1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card) = (2 : ℝ) ^ S.card := by
       calc ∏ p : S, ((1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card +
@@ -317,16 +321,16 @@ private lemma rademacherMoment_eq_even_sum (S : Finset ℕ) (m : ℕ) :
           = ∏ _p : S, (2 : ℝ) := by
             refine Finset.prod_congr rfl fun p _ => ?_
             rcases hev p with ⟨k, hk⟩
-            rw [hk, ← two_mul, pow_mul, one_pow, neg_one_sq, one_pow]; norm_num
+            simp [hk, ← two_mul, pow_mul]; norm_num
         _ = (2 : ℝ) ^ S.card := by simp
     rw [h2, one_div_mul_cancel (by positivity)]
-  · simp only [hev, ↓reduceIte, mul_zero]
+  · rw [if_neg hev, zero_mul]
     push_neg at hev
     rcases hev with ⟨p₀, hp₀⟩
     have h0 : (1 : ℝ) ^ (Finset.univ.filter fun i => g i = p₀).card +
         (-1 : ℝ) ^ (Finset.univ.filter fun i => g i = p₀).card = 0 := by
       rcases Nat.not_even_iff_odd.mp hp₀ with ⟨k, hk⟩
-      rw [hk, pow_add, pow_mul, neg_one_sq, one_pow, one_pow]; norm_num
+      simp [hk, pow_add, pow_mul]; norm_num
     rw [Finset.prod_eq_zero (Finset.mem_univ p₀) h0, mul_zero]
 
 private lemma two_pow_mul_fact_le_two_mul_fact (k : ℕ) :
@@ -334,8 +338,12 @@ private lemma two_pow_mul_fact_le_two_mul_fact (k : ℕ) :
   induction k with
   | zero => simp
   | succ k ih =>
-    rw [Nat.mul_succ, Nat.factorial_succ, Nat.factorial_succ, Nat.factorial_succ, pow_succ]
-    nlinarith
+    rw [Nat.mul_succ, Nat.factorial_succ, Nat.factorial_succ, pow_succ]
+    calc 2 ^ k * 2 * ((k + 1) * k.factorial)
+        = (2 * k + 2) * (2 ^ k * k.factorial) := by ring
+      _ ≤ (2 * k + 2) * (2 * k).factorial := Nat.mul_le_mul_left _ ih
+      _ ≤ (2 * k + 2) * ((2 * k + 1) * (2 * k).factorial) :=
+          Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ (by omega))
 
 private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (m : ℕ) :
     (1 / (2 : ℝ) ^ S.card) *
@@ -347,9 +355,9 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
   | empty =>
     cases m with
     | zero => simp
-    | succ m => simp [Nat.zero_pow (by omega : 2 * (m + 1) ≠ 0)]
+    | succ m => simp [Nat.zero_pow (by omega : 0 < 2 * (m + 1))]
   | @insert p₀ S' hp₀ ih =>
-    have hcard : (insert p₀ S').card = S'.card + 1 := Finset.card_insert_of_not_mem hp₀
+    have hcard : (insert p₀ S').card = S'.card + 1 := Finset.card_insert_of_notMem hp₀
     have hsum_ins : ∑ p ∈ insert p₀ S', (a p) ^ 2 = (a p₀) ^ 2 + ∑ p ∈ S', (a p) ^ 2 :=
       Finset.sum_insert hp₀
     let eOpt : Option ↥S' ≃ ↥(insert p₀ S') :=
@@ -379,11 +387,9 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
           · simp [h]; congr 1; exact Subtype.ext h.symm
           · simp [h]
         right_inv := fun ⟨b, σ'⟩ => by
-          ext
-          · simp
-          · intro p
-            have hne : p.1 ≠ p₀ := fun h => hp₀ (h ▸ p.2)
-            simp [hne] }
+          refine Prod.ext (by simp) (funext fun p => ?_)
+          have hne : p.1 ≠ p₀ := fun h => hp₀ (h ▸ p.2)
+          simp [hne] }
     have hsplit_sum : ∑ σ : ↥(insert p₀ S') → Bool,
         (∑ p : ↥(insert p₀ S'), (if σ p then (1 : ℝ) else -1) * a p) ^ (2 * m) =
         ∑ b : Bool, ∑ σ' : ↥S' → Bool,
@@ -392,8 +398,7 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
       rw [← Fintype.sum_prod_type']
       refine Fintype.sum_equiv e _ _ fun σ => ?_
       congr 1
-      rw [← Fintype.sum_equiv eOpt _ (fun o => (if σ (eOpt o) then (1 : ℝ) else -1) * a (eOpt o))
-        (fun _ => rfl), Fintype.sum_option]
+      rw [← Equiv.sum_comp eOpt (fun p => (if σ p then (1 : ℝ) else -1) * a p), Fintype.sum_option]
       rfl
     rw [hcard, hsplit_sum, hsum_ins, Fintype.sum_bool]
     have hbin : ∀ X : ℝ, (a p₀ + X) ^ (2 * m) + (-a p₀ + X) ^ (2 * m) =
@@ -432,9 +437,8 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
         · intro j hj
           rw [Finset.mem_filter] at hj
           rcases hj.2 with ⟨t, rfl⟩
-          have : t + t = 2 * t := by ring
-          have hdiv : (t + t) / 2 = t := by omega
-          rw [this, hdiv, show 2 * m - 2 * t = 2 * (m - t) by omega]
+          rw [show t + t = 2 * t by ring, show (2 * t) / 2 = t by omega,
+            show 2 * m - 2 * t = 2 * (m - t) by omega]
       exact hbij
     have hsum_eq : (∑ σ' : ↥S' → Bool,
         ((1 : ℝ) * a p₀ + ∑ p : ↥S', (if σ' p then (1 : ℝ) else -1) * a p) ^ (2 * m)) +
@@ -443,7 +447,9 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
         2 * ∑ k ∈ Finset.range (m + 1), (Nat.choose (2 * m) (2 * k) : ℝ) * (a p₀) ^ (2 * k) *
           ∑ σ' : ↥S' → Bool, (∑ p : ↥S', (if σ' p then (1 : ℝ) else -1) * a p) ^ (2 * (m - k)) := by
       rw [← Finset.sum_add_distrib]
-      simp_rw [one_mul, neg_one_mul, hbin, ← Finset.mul_sum, Finset.sum_comm, Finset.mul_sum]
+      simp_rw [one_mul, neg_one_mul, hbin]
+      rw [← Finset.mul_sum, Finset.sum_comm]
+      simp_rw [Finset.mul_sum]
       refine Finset.sum_congr rfl fun k _ => ?_
       rw [Finset.mul_sum]
     rw [show (if true then (1 : ℝ) else -1) = 1 from rfl,
@@ -459,7 +465,6 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
       refine Finset.sum_congr rfl fun k _ => ?_
       rw [pow_succ', ← pow_mul]
       field_simp
-      ring
     rw [hpow_half]
     calc ∑ k ∈ Finset.range (m + 1), (Nat.choose (2 * m) (2 * k) : ℝ) * ((a p₀) ^ 2) ^ k *
           ((1 / (2 : ℝ) ^ S'.card) *
@@ -480,9 +485,9 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
             have h2k_le : 2 * k ≤ 2 * m := by omega
             have hch1 : (Nat.choose (2 * m) (2 * k) : ℝ) * ((2 * k).factorial : ℝ) * ((2 * (m - k)).factorial : ℝ) =
                 ((2 * m).factorial : ℝ) := by
-              exact_mod_cast (by
-                rw [show 2 * m - 2 * k = 2 * (m - k) by omega]
-                exact Nat.choose_mul_factorial_mul_factorial h2k_le)
+              have hnat := Nat.choose_mul_factorial_mul_factorial h2k_le
+              rw [show 2 * m - 2 * k = 2 * (m - k) by omega] at hnat
+              exact_mod_cast hnat
             have hch2 : (Nat.choose m k : ℝ) * (k.factorial : ℝ) * ((m - k).factorial : ℝ) =
                 (m.factorial : ℝ) := by
               exact_mod_cast Nat.choose_mul_factorial_mul_factorial hk_le
@@ -490,7 +495,7 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
               rw [← pow_add, Nat.add_sub_cancel' hk_le]
             have hfact_k : (2 : ℝ) ^ k * (k.factorial : ℝ) ≤ ((2 * k).factorial : ℝ) := by
               exact_mod_cast two_pow_mul_fact_le_two_mul_fact k
-            rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity) (by positivity)]
+            rw [← mul_div_assoc, div_mul_eq_mul_div, div_le_div_iff₀ (by positivity) (by positivity)]
             calc (Nat.choose (2 * m) (2 * k) : ℝ) * ((2 * (m - k)).factorial : ℝ) * ((2 : ℝ) ^ m * (m.factorial : ℝ))
                 = ((Nat.choose (2 * m) (2 * k) : ℝ) * ((2 * (m - k)).factorial : ℝ)) *
                     ((2 : ℝ) ^ k * (2 : ℝ) ^ (m - k) * (m.factorial : ℝ)) := by rw [hpow_m]
@@ -529,8 +534,8 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
 private lemma summable_prime_log_div_sub_one_sq :
     Summable (fun p : ℕ => if p.Prime ∧ 3 ≤ p then (Real.log p / ((p : ℝ) - 1)) ^ 2 else 0) := by
   have h1 : Summable (fun p : ℕ => (64 : ℝ) / (p : ℝ) ^ (3 / 2 : ℝ)) :=
-    (Real.summable_one_div_nat_rpow.mpr (by norm_num : (1 : ℝ) < 3 / 2)).const_mul 64 |>.congr fun p => by
-      simp [div_eq_mul_inv]
+    ((Real.summable_one_div_nat_rpow.mpr (by norm_num : (1 : ℝ) < 3 / 2)).mul_left 64).congr fun p => by
+      simp [div_eq_mul_inv, mul_comm]
   refine Summable.of_nonneg_of_le (fun p => by split_ifs <;> positivity) (fun p => ?_) h1
   split_ifs with hp
   · have hp3 : (3 : ℝ) ≤ p := by exact_mod_cast hp.2
@@ -546,9 +551,11 @@ private lemma summable_prime_log_div_sub_one_sq :
           ≤ (4 * (p : ℝ) ^ (1 / 4 : ℝ)) / ((1 / 2 : ℝ) * p) :=
             div_le_div₀ (by positivity) hlog_le (by positivity) hp1
         _ = 8 / (p : ℝ) ^ (3 / 4 : ℝ) := by
-            rw [show (p : ℝ) = (p : ℝ) ^ (1 / 4 : ℝ) * (p : ℝ) ^ (3 / 4 : ℝ) by
-              rw [← Real.rpow_add hp_pos]; norm_num]
-            field_simp [hr4.ne']
+            have hr34 : 0 < (p : ℝ) ^ (3 / 4 : ℝ) := Real.rpow_pos_of_pos hp_pos _
+            have hp_eq : (p : ℝ) = (p : ℝ) ^ (1 / 4 : ℝ) * (p : ℝ) ^ (3 / 4 : ℝ) := by
+              rw [← Real.rpow_add hp_pos]; norm_num
+            rw [hp_eq]
+            field_simp [hr4.ne', hr34.ne']
             ring
     have hsq_le : (Real.log p / ((p : ℝ) - 1)) ^ 2 ≤ (8 / (p : ℝ) ^ (3 / 4 : ℝ)) ^ 2 :=
       pow_le_pow_left₀ (div_nonneg (Real.log_nonneg (by linarith)) (by linarith)) hdiv_le 2
@@ -569,7 +576,9 @@ private lemma rademacher_charfun (S : Finset ℕ) (a : ℕ → ℝ) (τ : ℝ) :
     intro σ
     rw [Finset.mul_sum, Complex.exp_sum]
   simp_rw [h1]
-  rw [← Fintype.prod_sum (fun p b => Complex.exp (Complex.I * τ * ((if b then (1 : ℂ) else -1) * a p)))]
+  have hps := Fintype.prod_sum (fun (p : S) (b : Bool) =>
+    Complex.exp (Complex.I * τ * ((if b then (1 : ℂ) else -1) * a p)))
+  rw [← hps]
   have hprod_cos : ∏ p : S, ∑ b : Bool, Complex.exp (Complex.I * τ * ((if b then (1 : ℂ) else -1) * a p)) =
       (2 : ℂ) ^ S.card * ∏ p ∈ S, (Real.cos (τ * a p) : ℂ) := by
     have hterm : ∀ p : S,
@@ -611,10 +620,12 @@ private lemma centralDiff_exp (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
       rw [← Complex.exp_nat_mul]; congr 1; push_cast; ring
     rw [hmul_exp, Finset.mul_sum]
     refine Finset.sum_congr rfl fun j _ => ?_
-    rw [one_pow, mul_one, neg_pow, ← Complex.exp_nat_mul, ← Complex.exp_add]
+    simp only [one_pow, one_mul, neg_pow]
+    rw [← Complex.exp_nat_mul, ← Complex.exp_add]
     have hexp_eq : Complex.I * (m : ℝ) * h * x + (j : ℂ) * (-Complex.I * (h * x)) =
         Complex.I * (((m : ℝ) - (j : ℝ)) * h) * x := by push_cast; ring
     rw [hexp_eq]; ring
+  dsimp only
   rw [hsum]
   have hsin : Complex.exp (Complex.I * (h * x / 2)) - Complex.exp (-Complex.I * (h * x / 2)) =
       2 * Complex.I * (Real.sin (h * x / 2) : ℂ) := by
@@ -634,7 +645,7 @@ private lemma centralDiff_exp (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
 
 private lemma sinc_sq_bound (u : ℝ) :
     0 ≤ u ^ 2 - (Real.sin u) ^ 2 ∧ u ^ 2 - (Real.sin u) ^ 2 ≤ u ^ 4 := by
-  have h1 : |Real.sin u| ≤ |u| := Real.abs_sin_le_abs u
+  have h1 : |Real.sin u| ≤ |u| := Real.abs_sin_le_abs
   have hsq : (Real.sin u) ^ 2 ≤ u ^ 2 := by nlinarith [sq_abs (Real.sin u), sq_abs u]
   refine ⟨sub_nonneg.mpr hsq, ?_⟩
   by_cases hu : 1 ≤ |u|
@@ -645,16 +656,20 @@ private lemma sinc_sq_bound (u : ℝ) :
   · push_neg at hu
     have hsin_diff : |u - Real.sin u| ≤ |u| ^ 3 / 6 := by
       rcases le_total 0 u with hu0 | hu0
-      · have hlo : u - u ^ 3 / 6 ≤ Real.sin u := Real.sin_gt_sub_cube hu0 (by linarith [abs_of_nonneg hu0])
+      · rcases eq_or_lt_of_le hu0 with rfl | hu0_pos
+        · simp
+        · have hlo : u - u ^ 3 / 6 ≤ Real.sin u := Real.sin_gt_sub_cube hu0_pos (by linarith [abs_of_nonneg hu0])
         have hhi : Real.sin u ≤ u := Real.sin_le hu0
         rw [abs_of_nonneg (sub_nonneg.mpr hhi), abs_of_nonneg hu0]
         linarith
-      · have hlo : (-u) - (-u) ^ 3 / 6 ≤ Real.sin (-u) :=
-          Real.sin_gt_sub_cube (neg_nonneg.mpr hu0) (by linarith [abs_of_nonpos hu0])
-        have hhi : Real.sin (-u) ≤ -u := Real.sin_le (neg_nonneg.mpr hu0)
-        rw [Real.sin_neg] at hlo hhi
-        rw [abs_of_nonpos (by linarith), abs_of_nonpos hu0]
-        linarith
+      · rcases eq_or_lt_of_le hu0 with rfl | hu0_neg
+        · simp
+        · have hlo : (-u) - (-u) ^ 3 / 6 ≤ Real.sin (-u) :=
+            Real.sin_gt_sub_cube (neg_pos.mpr hu0_neg) (by linarith [abs_of_nonpos hu0])
+          have hhi : Real.sin (-u) ≤ -u := Real.sin_le (neg_nonneg.mpr hu0)
+          rw [Real.sin_neg] at hlo hhi
+          rw [abs_of_nonpos (by linarith), abs_of_nonpos hu0]
+          linarith
     have hprod : u ^ 2 - (Real.sin u) ^ 2 = (u - Real.sin u) * (u + Real.sin u) := by ring
     rw [hprod]
     calc (u - Real.sin u) * (u + Real.sin u)
@@ -678,7 +693,7 @@ private lemma sinc_pow_diff_bound (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
   set B : ℝ := (Real.sin (h * x / 2) / (h / 2)) ^ 2
   have hB_nn : 0 ≤ B := sq_nonneg _
   have hBA : B ≤ A := by
-    have h1 := Real.abs_sin_le_abs (h * x / 2)
+    have h1 : |Real.sin (h * x / 2)| ≤ |h * x / 2| := Real.abs_sin_le_abs
     have h2 : |Real.sin (h * x / 2) / (h / 2)| ≤ |x| := by
       rw [abs_div, div_le_iff₀ (abs_pos.mpr (by positivity : h / 2 ≠ 0))]
       calc |Real.sin (h * x / 2)| ≤ |h * x / 2| := h1
@@ -687,8 +702,9 @@ private lemma sinc_pow_diff_bound (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
   have hdiff_AB : A - B ≤ h ^ 2 * x ^ 4 := by
     have hs := (sinc_sq_bound (h * x / 2)).2
     have hAB_eq : A - B = ((h * x / 2) ^ 2 - (Real.sin (h * x / 2)) ^ 2) / (h / 2) ^ 2 := by
-      have hh2 : (h / 2) ^ 2 ≠ 0 := pow_ne_zero 2 (by positivity)
-      field_simp [hh2]; ring
+      dsimp only [A, B]
+      rw [div_pow]
+      field_simp [hh]
     rw [hAB_eq, div_le_iff₀ (pow_pos (abs_pos.mpr (by positivity : h / 2 ≠ 0)) 2 |>.trans_le (by rw [sq_abs]))]
     calc (h * x / 2) ^ 2 - Real.sin (h * x / 2) ^ 2
         ≤ (h * x / 2) ^ 4 := hs
@@ -705,29 +721,32 @@ private lemma sinc_pow_diff_bound (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
       refine ⟨add_nonneg (mul_nonneg (sub_nonneg.mpr hBA) (pow_nonneg (sq_nonneg x) k))
         (mul_nonneg hB_nn ih.1), ?_⟩
       rcases k with _ | k
-      · simp; nlinarith
+      · simp
       · have hB_le_A : B ≤ A := hBA
         calc (A - B) * A ^ (k + 1) + B * (A ^ (k + 1) - B ^ (k + 1))
             ≤ (A - B) * A ^ (k + 1) + A * ((k + 1 : ℝ) * A ^ k * (A - B)) := by
               refine add_le_add le_rfl (le_trans (mul_le_mul_of_nonneg_left ih.2 hB_nn) ?_)
-              exact mul_le_mul_of_nonneg_right hB_le_A (by positivity)
+              refine mul_le_mul_of_nonneg_right hB_le_A ?_
+              exact mul_nonneg (mul_nonneg (by positivity) (pow_nonneg (sq_nonneg x) _)) (sub_nonneg.mpr hBA)
           _ = ((k + 1 : ℕ) + 1 : ℝ) * A ^ ((k + 1) + 1 - 1) * (A - B) := by
-              push_cast; simp; ring
-  have hpowA : A ^ m = x ^ (2 * m) := by rw [← pow_mul]; ring_nf
-  have hpowB : B ^ m = (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) := by rw [← pow_mul]; ring_nf
+              simp only [Nat.add_sub_cancel]; push_cast; ring
+  have hpowA : A ^ m = x ^ (2 * m) := by dsimp only [A]; rw [← pow_mul]
+  have hpowB : B ^ m = (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) := by dsimp only [B]; rw [← pow_mul]
   rw [← hpowA, ← hpowB]
   refine ⟨hpow_AB.1, ?_⟩
   rcases m with _ | m
-  · simp [hpow_AB.1]
+  · simp
   · refine le_trans hpow_AB.2 ?_
     have h1 : A ^ m * (A - B) ≤ A ^ m * (h ^ 2 * x ^ 4) :=
       mul_le_mul_of_nonneg_left hdiff_AB (pow_nonneg (sq_nonneg x) m)
     have h2 : ((m + 1 : ℕ) : ℝ) * A ^ m * (h ^ 2 * x ^ 4) =
         ((m + 1 : ℕ) : ℝ) * h ^ 2 * x ^ (2 * (m + 1 + 1)) := by
-      have : A ^ m = x ^ (2 * m) := by rw [← pow_mul]; ring_nf
+      have : A ^ m = x ^ (2 * m) := by dsimp only [A]; rw [← pow_mul]
       rw [this, show 2 * (m + 1 + 1) = 2 * m + 4 by omega, pow_add]
       ring
-    linarith [mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg (m + 1))]
+    have h3 := mul_le_mul_of_nonneg_left h1 (Nat.cast_nonneg (m + 1))
+    simp only [Nat.add_sub_cancel]
+    linarith
 
 theorem prop_2_6 :
     ∃ (Φ ρ : ℝ → ℝ),
@@ -762,7 +781,9 @@ theorem prop_2_6 :
     mul_nonneg (by positivity) (pow_nonneg (tsum_nonneg fun p => by split_ifs <;> positivity) k)
   have hrad_bd : ∀ (B k : ℕ), rademacherMoment ((Finset.Icc 3 B).filter Nat.Prime) (2 * k) ≤ M_const k := by
     intro B k
-    refine le_trans (rademacherMoment_le_factorial _ _ k) ?_
+    unfold rademacherMoment
+    refine le_trans (rademacherMoment_le_factorial ((Finset.Icc 3 B).filter Nat.Prime)
+      (fun p => Real.log p / ((p : ℝ) - 1)) k) ?_
     exact mul_le_mul_of_nonneg_left
       (pow_le_pow_left₀ (Finset.sum_nonneg fun _ _ => sq_nonneg _) (hS2_bd B) k)
       (by positivity)
@@ -840,13 +861,13 @@ theorem prop_2_6 :
             (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
               ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
                 Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) *
-                  (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                  (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
                     (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
             (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
               ∑ j ∈ Finset.range (2 * k + 1),
                 (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
                   Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
                       (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1)))) := by
           rw [Finset.mul_sum, Finset.sum_comm]
           refine Finset.sum_congr rfl fun j _ => ?_
@@ -858,7 +879,7 @@ theorem prop_2_6 :
               ∑ j ∈ Finset.range (2 * k + 1),
                 (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
                   Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
                       (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
             (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
               centralDiff (fun τ => Complex.exp (Complex.I * τ *
@@ -933,6 +954,7 @@ theorem prop_2_6 :
       rw [hcd_Φ_eq (1 / ((N : ℝ) + 1)) hN_ne k] at hbd
       have hintN : MeasureTheory.Integrable (fun x : ℝ =>
           (Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)) ^ (2 * k) * ρ x) := by
+        -- Bounded by `(2(N+1))^{2k} * ρ x`
         refine MeasureTheory.Integrable.mono' (hρ_int.const_mul (((2 : ℝ) * ((N : ℝ) + 1)) ^ (2 * k))) ?_ ?_
         · exact (Continuous.mul (by continuity) hρ_smooth.continuous).aestronglyMeasurable
         · filter_upwards with x
@@ -962,6 +984,7 @@ theorem prop_2_6 :
       rw [Real.norm_of_nonneg hnn]
     rw [hcon]
     exact lt_of_le_of_lt hfatou ENNReal.ofReal_lt_top
+  -- Now choose `h > 0` small enough that truncation error is `≤ ε / 6` for both `Φ` and `Φ_B`
   set I_m1 : ℝ := ∫ x : ℝ, x ^ (2 * (m + 1)) * ρ x
   have hI_m1_nn : 0 ≤ I_m1 :=
     MeasureTheory.integral_nonneg fun x => mul_nonneg (by positivity) (hρ_pos x).1.le
@@ -1011,6 +1034,7 @@ theorem prop_2_6 :
                 mul_le_mul_of_nonneg_left (le_max_left _ _) (Nat.cast_nonneg m)
             _ ≤ K_tail := by linarith
       _ = ε / 6 := by rw [hh_sq]; field_simp [hK_pos.ne']
+  -- Choose `B₀` such that `|(centralDiff Φ_B h m).re - (centralDiff Φ h m).re| ≤ ε / 6` for `B ≥ B₀`
   let Φ_B (B : ℕ) (τ : ℝ) : ℝ :=
     ∏ p ∈ (Finset.Icc 3 B).filter Nat.Prime, Real.cos (τ * Real.log p / ((p : ℝ) - 1))
   have hlim_cd : Tendsto (fun B : ℕ => (centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re) atTop
@@ -1023,6 +1047,7 @@ theorem prop_2_6 :
   refine ⟨B₀, fun B hB => ?_⟩
   set P_B := (Finset.Icc 3 B).filter Nat.Prime
   have h_err_B_rad : |rademacherMoment P_B (2 * m) - ∫ x : ℝ, x ^ (2 * m) * ρ x| ≤ ε / 2 := by
+    -- First `|rademacherMoment P_B (2 * m) - (centralDiff Φ_B h m).re| ≤ ε / 6`
     have h_cf_B : ∀ τ : ℝ, (Φ_B B τ : ℂ) =
         (1 / (2 : ℂ) ^ P_B.card) *
           ∑ σ : P_B → Bool, Complex.exp (Complex.I * τ *
@@ -1048,13 +1073,13 @@ theorem prop_2_6 :
             (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
               ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
                 Complex.exp (Complex.I * (((m : ℝ) - (j : ℝ)) * h) *
-                  (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                  (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
                     (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
             (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
               ∑ j ∈ Finset.range (2 * m + 1),
                 (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
                   Complex.exp (Complex.I * (((m : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
                       (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1)))) := by
           rw [Finset.mul_sum, Finset.sum_comm]
           refine Finset.sum_congr rfl fun j _ => ?_
@@ -1066,7 +1091,7 @@ theorem prop_2_6 :
               ∑ j ∈ Finset.range (2 * m + 1),
                 (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
                   Complex.exp (Complex.I * (((m : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
                       (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
             (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
               centralDiff (fun τ => Complex.exp (Complex.I * τ *
@@ -1118,9 +1143,10 @@ theorem prop_2_6 :
       (rademacherMoment P_B (2 * m) - (centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re)
       ((centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re - (centralDiff (fun τ => (Φ τ : ℂ)) h m).re),
       abs_add_le
-      (rademacherMoment P_B (2 * m) - (centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re)
+      (rademacherMoment P_B (2 * m) - (centralDiff (fun τ => (Φ τ : ℂ)) h m).re)
       ((centralDiff (fun τ => (Φ τ : ℂ)) h m).re - ∫ x : ℝ, x ^ (2 * m) * ρ x),
       abs_sub_comm (∫ x : ℝ, x ^ (2 * m) * ρ x) (centralDiff (fun τ => (Φ τ : ℂ)) h m).re]
+  -- Now choose `r₀` for `B`
   set A_B : ℝ := ∑ p ∈ P_B, Real.log p / ((p : ℝ) - 1)
   have hA_B_nn : 0 ≤ A_B := Finset.sum_nonneg fun p hp => by
     have hp3 : 3 ≤ p := (Finset.mem_Icc.mp (Finset.mem_filter.mp hp).1).1
@@ -1258,6 +1284,7 @@ theorem prop_2_6 :
       rfl
     rw [hsum_A, mul_comm]
     exact le_of_lt (by simpa [Real.dist_eq, abs_of_nonneg (mul_nonneg (pow_nonneg hA_B_nn _) (by positivity))] using hr₀ r hr)
+  -- Finally choose `N₀` for `B` and `r`
   have hN_lim : Tendsto (fun N : ℕ =>
       (2 * (M_B : ℝ) * A_B ^ (2 * m)) / (N : ℝ)) atTop (𝓝 0) :=
     tendsto_const_nhds.div_atTop tendsto_natCast_atTop_atTop
@@ -1334,6 +1361,20 @@ theorem prop_2_6 :
     rw [hQM_diff]
     have hR_lt : (R : ℝ) + 1 ≤ (M_B : ℝ) := by
       exact_mod_cast (Nat.mod_lt N hM_B_pos)
+    have h_part1 : |(1 / (N : ℝ)) * (-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n))| ≤
+        ((M_B : ℝ) * A_B ^ (2 * m)) / (N : ℝ) := by
+      rw [abs_mul, abs_of_nonneg (by positivity : 0 ≤ 1 / (N : ℝ)), one_div_mul_eq_div]
+      refine div_le_div_of_nonneg_right ?_ (by positivity)
+      calc |-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n)|
+          ≤ |f 0| + |∑ n ∈ Finset.range (R + 1), f (Q * M_B + n)| := by
+            simpa [abs_neg] using abs_add_le (-f 0) (∑ n ∈ Finset.range (R + 1), f (Q * M_B + n))
+        _ ≤ A_B ^ (2 * m) + ((R + 1 : ℕ) : ℝ) * A_B ^ (2 * m) := add_le_add (hbd_val 0) hR_bd
+        _ = ((R : ℝ) + 2) * A_B ^ (2 * m) := by push_cast; ring
+        _ ≤ ((M_B : ℝ) + 1) * A_B ^ (2 * m) :=
+            mul_le_mul_of_nonneg_right (by linarith) (pow_nonneg hA_B_nn _)
+        _ ≤ (2 * (M_B : ℝ)) * A_B ^ (2 * m) :=
+            mul_le_mul_of_nonneg_right (by linarith [show (1 : ℝ) ≤ M_B by exact_mod_cast hM_B_pos])
+              (pow_nonneg hA_B_nn _)
     have h_part1' : |(1 / (N : ℝ)) * (-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n))| ≤
         (((M_B : ℝ) + 1) * A_B ^ (2 * m)) / (N : ℝ) := by
       rw [abs_mul, abs_of_nonneg (by positivity : 0 ≤ 1 / (N : ℝ)), one_div_mul_eq_div]
