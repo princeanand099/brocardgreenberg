@@ -52,7 +52,7 @@ theorem lemma_2_1_ii_part2 :
     have hcard_le : ((Finset.Icc 2 m).filter Nat.Prime).card ≤
         Nat.sqrt m + ((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card := by
       rw [hsplit]
-      refine le_trans (Finset.card_union_le _ _) (add_le_add_right ?_ _)
+      refine le_trans (Finset.card_union_le _ _) (add_le_add ?_ le_rfl)
       have hsub : (Finset.Icc 2 (Nat.sqrt m)).filter Nat.Prime ⊆ Finset.Ioc 0 (Nat.sqrt m) := by
         intro x hx; simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_Ioc] at hx ⊢; exact ⟨by omega, hx.1.2⟩
       exact le_trans (Finset.card_le_card hsub) (by simp)
@@ -104,15 +104,11 @@ theorem lemma_2_1_ii_part2 :
     have hlogx_pos : 0 < Real.log x := Real.log_pos (by linarith)
     have hsqrt_ge4 : 4 ≤ Real.sqrt x := Real.le_sqrt_of_sq_le (by linarith)
     set a : ℝ := x / (Real.log x) ^ 2
-    have ha_le_sqrt : a ≤ Real.sqrt x := by
-      rw [div_le_iff₀ (pow_pos hlogx_pos 2)]
-      have hsq : Real.sqrt x * Real.sqrt x = x := Real.mul_self_sqrt (by linarith)
-      nlinarith [Real.sqrt_nonneg x]
     have ha_le_x : a ≤ x := by
-      have hsqrt_le_x : Real.sqrt x ≤ x := by
-        have : Real.sqrt x * Real.sqrt x = x := Real.mul_self_sqrt (by linarith)
-        nlinarith [hsqrt_ge4]
-      exact le_trans ha_le_sqrt hsqrt_le_x
+      have hlog1 : 1 ≤ Real.log x := by
+        have h3 : (Real.exp 1 : ℝ) ≤ x := by linarith [Real.exp_one_lt_d9]
+        simpa using Real.log_le_log (Real.exp_pos 1) h3
+      exact div_le_self (by linarith) (one_le_pow₀ hlog1)
     have h2_le_a : 2 ≤ a := by
       have hsqrt_le_a : Real.sqrt x ≤ a := by
         rw [le_div_iff₀ (pow_pos hlogx_pos 2)]
@@ -144,7 +140,7 @@ theorem lemma_2_1_ii_part2 :
           ≤ (a - 2) * (Real.log 2)⁻¹ := hbd
         _ ≤ a * (Real.log 2)⁻¹ := mul_le_mul_of_nonneg_right (by linarith) (inv_nonneg.mpr hlog2.le)
         _ = a / Real.log 2 := (div_eq_mul_inv _ _).symm
-    have h2_bd : |∫ t in a..x, (Real.log t)⁻¹ - (x - a) / Real.log x| ≤
+    have h2_bd : |(∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x| ≤
         x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
       have hconst : (x - a) / Real.log x = ∫ _t in a..x, (Real.log x)⁻¹ := by
         rw [intervalIntegral.integral_const, smul_eq_mul, div_eq_mul_inv]
@@ -945,5 +941,6 @@ theorem lemma_2_1_ii_part2 :
   have hlog_ne : Real.log n ≠ 0 := (Real.log_pos (by exact_mod_cast (by omega : 1 < n))).ne'
   have hden_ne : (n : ℝ) / Real.log n ≠ 0 := div_ne_zero (by positivity) hlog_ne
   field_simp [hpc_pos, hden_ne]
+
 
 end BrocardFormalization
