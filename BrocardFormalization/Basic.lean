@@ -12,7 +12,7 @@ import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 import Mathlib.Algebra.Polynomial.Eval.Defs
 import Mathlib.Algebra.Order.Floor.Defs
 import Mathlib.Algebra.QuadraticAlgebra.Basic
-import Mathlib.NumberTheory.NumberField.ClassNumber
+import Mathlib.NumberTheory.NumberField.Basic
 import Mathlib.NumberTheory.FundamentalDiscriminant
 
 /-!
