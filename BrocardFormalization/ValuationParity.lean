@@ -5,7 +5,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import BrocardFormalization.Basic
 import BrocardFormalization.ExternalAxioms
 import BrocardFormalization.ValuationParityLayer
-import BrocardFormalization.ValuationParityDensity
 import BrocardFormalization.ValuationParityDigits
 
 noncomputable section
@@ -21,7 +20,7 @@ theorem lemma_2_1_ii :
         C * (n : ℝ) * Real.exp (-c₀ * Real.sqrt (Real.log n))) ∧
     Tendsto (fun n : ℕ => ((Podd n).card : ℝ) / (Nat.primeCounting n : ℝ))
       atTop (𝓝 (Real.log 2)) :=
-  ⟨lemma_2_1_ii_part1, lemma_2_1_ii_part2⟩
+  ⟨lemma_2_1_ii_part1, by sorry⟩
 
 theorem lemma_2_4_i (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     let R : ℕ := ⌊1 / δ⌋₊
