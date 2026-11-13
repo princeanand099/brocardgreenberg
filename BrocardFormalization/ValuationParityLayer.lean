@@ -78,7 +78,7 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
         calc n = (j + 1) * (n / (j + 1)) + n % (j + 1) := (Nat.div_add_mod n (j + 1)).symm
           _ < (j + 1) * (n / (j + 1)) + (j + 1) := Nat.add_lt_add_left (Nat.mod_lt n (Nat.succ_pos j)) _
           _ = (j + 1) * (n / (j + 1) + 1) := by ring
-      have h3 : (j + 1) * (j + 1) ≤ n := hsq_le
+      have h3 : (j + 1) * (j + 1) ≤ n := by simpa [sq] using hsq_le
       have h4 : j + 1 ≤ n / (j + 1) + 1 := by
         by_contra hlt
         push_neg at hlt
@@ -117,7 +117,8 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
       conv_lhs => rw [hfac]
       rw [padicValNat.mul (qn_pos n).ne' (pow_ne_zero 2 (sn_pos n).ne'), padicValNat.pow (sn n) 2]
     rw [hv, hvq, hr] at hvs
-    omega
+    have h2r : 2 * padicValNat p (sn n) = 2 * (r - 1) := by omega
+    exact Nat.eq_of_mul_eq_mul_left (by norm_num) h2r
   · intro r hr p hp
     have hv := hp_val p hp
     simp only [harmonicLayer, Finset.mem_filter, Finset.mem_Icc] at hp
@@ -134,7 +135,7 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
       conv_lhs => rw [hfac]
       rw [padicValNat.mul (qn_pos n).ne' (pow_ne_zero 2 (sn_pos n).ne'), padicValNat.pow (sn n) 2]
     rw [hv, hvq, hr] at hvs
-    omega
+    exact Nat.eq_of_mul_eq_mul_left (by norm_num) (by linarith)
 
 private lemma alternating_harmonic_sum_bound (K : ℕ) :
     |∑ r ∈ Finset.Icc 1 K, ((1 : ℝ) / (2 * (r : ℝ) - 1) - 1 / (2 * (r : ℝ))) - Real.log 2| ≤
@@ -241,7 +242,10 @@ theorem lemma_2_1_ii_part1 :
       ∀ r ∈ Finset.Icc 1 K, ∀ s ∈ Finset.Icc 1 K, r ≠ s →
         Disjoint (harmonicLayer n (2 * r - 1)) (harmonicLayer n (2 * s - 1)) := by
     intro n hn K L Tail
-    have hK_le : 2 * K + 1 ≤ Nat.sqrt n := by have : 2 * K ≤ Nat.sqrt n - 1 := Nat.mul_div_le _ 2; omega
+    have hK_le : 2 * K + 1 ≤ Nat.sqrt n := by
+      have h2K : 2 * ((Nat.sqrt n - 1) / 2) ≤ Nat.sqrt n - 1 := Nat.mul_div_le _ 2
+      change 2 * ((Nat.sqrt n - 1) / 2) + 1 ≤ Nat.sqrt n
+      omega
     have hdisj_rs : ∀ r ∈ Finset.Icc 1 K, ∀ s ∈ Finset.Icc 1 K, r ≠ s →
         Disjoint (harmonicLayer n (2 * r - 1)) (harmonicLayer n (2 * s - 1)) := by
       intro r hr s hs hrs
@@ -403,18 +407,16 @@ theorem lemma_2_1_ii_part1 :
         have hA := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 2).const_mul ((4 / c₁) ^ 2)
         have h0 : Tendsto (fun x : ℝ => (1 + Real.log 2) * Real.exp (-x)) atTop (𝓝 0) := by
           simpa using (Real.tendsto_exp_neg_atTop_nhds_zero).const_mul (1 + Real.log 2)
-        have hadd := h0.add hA
-        rw [add_zero] at hadd
+        have hadd : Tendsto (fun x : ℝ => (1 + Real.log 2) * Real.exp (-x) + (4 / c₁) ^ 2 * (x ^ 2 * Real.exp (-x)))
+            atTop (𝓝 0) := by simpa using h0.add hA
         refine hadd.congr fun x => ?_
         ring
       have hcomp : Tendsto (fun n : ℕ =>
           (1 + Real.log 2 + (4 / c₁) ^ 2 * ((c₁ / 4) * Real.sqrt (Real.log n)) ^ 2) *
             Real.exp (-((c₁ / 4) * Real.sqrt (Real.log n)))) atTop (𝓝 0) :=
         hexp0.comp (Tendsto.const_mul_atTop (by positivity) h_sqrt_log)
-      filter_upwards [h2, hcomp.eventually (ge_mem_nhds (by norm_num : (0 : ℝ) < 1))] with n hn2 hn1
-      have hlog_nn : 0 ≤ Real.log n := by
-        have : (4 : ℝ) ≤ Real.sqrt (Real.log n) := by linarith
-        nlinarith [Real.sq_sqrt (Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 16))]
+      filter_upwards [h1, h2, hcomp.eventually (ge_mem_nhds (by norm_num : (0 : ℝ) < 1))] with n hn16 hn2 hn1
+      have hlog_nn : 0 ≤ Real.log n := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n))
       have hmul : (4 / c₁) ^ 2 * ((c₁ / 4) * Real.sqrt (Real.log n)) ^ 2 = Real.log n := by
         rw [mul_pow, Real.sq_sqrt hlog_nn]
         field_simp [hc₁.ne']
@@ -484,8 +486,9 @@ theorem lemma_2_1_ii_part1 :
       have h1 : ((2 * r - 1 : ℕ) : ℝ) = 2 * (r : ℝ) - 1 := by
         have : 1 ≤ 2 * r := by omega
         push_cast [this]; ring
-      have h2 : ((2 * r - 1 : ℕ) : ℝ) + 1 = 2 * (r : ℝ) := by rw [h1]; ring
-      rw [h1, h2]
+      rw [h1]
+      congr 2
+      ring
     have hsqrt_ge4 : (4 : ℝ) ≤ Real.sqrt n := by
       have : (16 : ℝ) ≤ n := by exact_mod_cast hn16
       have : (4 : ℝ) ^ 2 ≤ n := by linarith
@@ -554,7 +557,7 @@ theorem lemma_2_1_ii_part1 :
       have hr1 : 1 ≤ r := (Finset.mem_Icc.mp hr).1
       have hrK : r ≤ K := (Finset.mem_Icc.mp hr).2
       have hsqrt_le_real : (Nat.sqrt n : ℝ) ≤ Real.sqrt n :=
-        Real.le_sqrt_of_sq_le (by exact_mod_cast Nat.sqrt_le n)
+        Real.le_sqrt_of_sq_le (by exact_mod_cast (by simpa [sq] using Nat.sqrt_le n))
       have h2r_le : 2 * (r : ℝ) ≤ Real.sqrt n := by
         have : 2 * r ≤ Nat.sqrt n := by have : 2 * K ≤ Nat.sqrt n - 1 := Nat.mul_div_le _ 2; omega
         exact le_trans (by exact_mod_cast this) hsqrt_le_real
@@ -633,9 +636,11 @@ theorem lemma_2_1_ii_part1 :
         exact_mod_cast hle_nat
       by_cases hK0 : K = 0
       · simp [hK0]
-        exact Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n))
+        have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast (by omega : 1 ≤ n)
+        exact Real.log_nonneg hn1
       · have h2K_pos : (0 : ℝ) < 2 * (K : ℝ) := by positivity
         have := Real.log_le_log h2K_pos h2K_le
+        push_cast at h1
         linarith
     have htheta_err :
         |∑ r ∈ Finset.Icc 1 K,
@@ -742,7 +747,7 @@ theorem lemma_2_1_ii_part1 :
             (2 + 2 * Real.log 4) * Real.sqrt n := by ring
         _ ≤ C₁ * (n : ℝ) * Real.exp (-(c₁ / 4) * Real.sqrt (Real.log n)) +
             (2 + 2 * Real.log 4) * ((n : ℝ) * Real.exp (-(c₁ / 4) * Real.sqrt (Real.log n))) :=
-              add_le_add_left (mul_le_mul_of_nonneg_left hsqrt_le_exp (by positivity)) _
+              add_le_add_left (mul_le_mul_of_nonneg_left hsqrt_le_exp (by positivity : (0 : ℝ) ≤ 2 + 2 * Real.log 4)) _
         _ = (C₁ + 2 + 2 * Real.log 4) * (n : ℝ) * Real.exp (-(c₁ / 4) * Real.sqrt (Real.log n)) := by ring
     refine le_trans hbd_all ?_
     have hC_le : C₁ + 2 + 2 * Real.log 4 ≤ max (max C_fin 1) (2 * C₁ + 2 * Real.log 4 + 2) :=
