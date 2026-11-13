@@ -118,7 +118,7 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
       rw [padicValNat.mul (qn_pos n).ne' (pow_ne_zero 2 (sn_pos n).ne'), padicValNat.pow (sn n) 2]
     rw [hv, hvq, hr] at hvs
     have h2r : 2 * padicValNat p (sn n) = 2 * (r - 1) := by omega
-    exact Nat.eq_of_mul_eq_mul_left (by norm_num) h2r
+    exact ⟨hp_Podd, hvq, Nat.eq_of_mul_eq_mul_left (by norm_num) h2r⟩
   · intro r hr p hp
     have hv := hp_val p hp
     simp only [harmonicLayer, Finset.mem_filter, Finset.mem_Icc] at hp
@@ -135,7 +135,8 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
       conv_lhs => rw [hfac]
       rw [padicValNat.mul (qn_pos n).ne' (pow_ne_zero 2 (sn_pos n).ne'), padicValNat.pow (sn n) 2]
     rw [hv, hvq, hr] at hvs
-    exact Nat.eq_of_mul_eq_mul_left (by norm_num) (by linarith)
+    have h2r : 2 * padicValNat p (sn n) = 2 * r := by omega
+    exact ⟨hp_Peven, hvq, Nat.eq_of_mul_eq_mul_left (by norm_num) h2r⟩
 
 private lemma alternating_harmonic_sum_bound (K : ℕ) :
     |∑ r ∈ Finset.Icc 1 K, ((1 : ℝ) / (2 * (r : ℝ) - 1) - 1 / (2 * (r : ℝ))) - Real.log 2| ≤
@@ -243,6 +244,7 @@ theorem lemma_2_1_ii_part1 :
         Disjoint (harmonicLayer n (2 * r - 1)) (harmonicLayer n (2 * s - 1)) := by
     intro n hn K L Tail
     have hK_le : 2 * K + 1 ≤ Nat.sqrt n := by
+      have hsq1 : 1 ≤ Nat.sqrt n := Nat.sqrt_pos.mpr (by omega)
       have h2K : 2 * ((Nat.sqrt n - 1) / 2) ≤ Nat.sqrt n - 1 := Nat.mul_div_le _ 2
       change 2 * ((Nat.sqrt n - 1) / 2) + 1 ≤ Nat.sqrt n
       omega
@@ -637,7 +639,7 @@ theorem lemma_2_1_ii_part1 :
       by_cases hK0 : K = 0
       · simp [hK0]
         have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast (by omega : 1 ≤ n)
-        exact Real.log_nonneg hn1
+        linarith [Real.log_nonneg hn1]
       · have h2K_pos : (0 : ℝ) < 2 * (K : ℝ) := by positivity
         have := Real.log_le_log h2K_pos h2K_le
         push_cast at h1
@@ -747,7 +749,7 @@ theorem lemma_2_1_ii_part1 :
             (2 + 2 * Real.log 4) * Real.sqrt n := by ring
         _ ≤ C₁ * (n : ℝ) * Real.exp (-(c₁ / 4) * Real.sqrt (Real.log n)) +
             (2 + 2 * Real.log 4) * ((n : ℝ) * Real.exp (-(c₁ / 4) * Real.sqrt (Real.log n))) :=
-              add_le_add_left (mul_le_mul_of_nonneg_left hsqrt_le_exp (by positivity : (0 : ℝ) ≤ 2 + 2 * Real.log 4)) _
+              add_le_add le_rfl (mul_le_mul_of_nonneg_left hsqrt_le_exp (by positivity))
         _ = (C₁ + 2 + 2 * Real.log 4) * (n : ℝ) * Real.exp (-(c₁ / 4) * Real.sqrt (Real.log n)) := by ring
     refine le_trans hbd_all ?_
     have hC_le : C₁ + 2 + 2 * Real.log 4 ≤ max (max C_fin 1) (2 * C₁ + 2 * Real.log 4 + 2) :=
