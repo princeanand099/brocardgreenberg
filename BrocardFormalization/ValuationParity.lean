@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import BrocardFormalization.Basic
 import BrocardFormalization.ExternalAxioms
 import BrocardFormalization.ValuationParityLayer
+import BrocardFormalization.ValuationParityDensity
 import BrocardFormalization.ValuationParityDigits
 
 noncomputable section
@@ -20,22 +21,22 @@ theorem lemma_2_1_ii :
         C * (n : ℝ) * Real.exp (-c₀ * Real.sqrt (Real.log n))) ∧
     Tendsto (fun n : ℕ => ((Podd n).card : ℝ) / (Nat.primeCounting n : ℝ))
       atTop (𝓝 (Real.log 2)) :=
-  ⟨lemma_2_1_ii_part1, by sorry⟩
+  ⟨lemma_2_1_ii_part1, lemma_2_1_ii_part2⟩
 
 theorem lemma_2_4_i (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     let R : ℕ := ⌊1 / δ⌋₊
-    let AR : ℕ := 6 * R + 16
+    let AR : ℕ := 6 * R + 30
     ∃ (η'_δ C_δ C'_δ : ℝ), 0 < η'_δ ∧ 0 < C_δ ∧ 0 < C'_δ ∧ ∃ N₀ : ℕ, 16 ≤ N₀ ∧
       ∀ (n : ℕ) (P : ℝ) (a b : ℝ) (A : Finset ℕ) (h : ℕ → ℤ) (w : ℝ → ℝ) (W₀ : ℝ),
         N₀ ≤ n → (n : ℝ) ^ δ ≤ P → P ≤ (n : ℝ) / (Real.log n) ^ 12 →
         P ≤ a → a ≤ b → b ≤ 2 * P →
         A ⊆ Finset.Icc 1 R → A.Nonempty →
         (∀ r ∈ A, (n : ℝ) / P ^ r ≥ (2 : ℝ) ^ (-(R : ℤ)) * (Real.log n) ^ AR) →
-        (∃ r ∈ A, h r ≠ 0) →
+        (hnonzero : ∃ r ∈ A, h r ≠ 0) →
         (∀ r ∈ A, |h r| ≤ 2 * ⌊(Real.log n) ^ (R + 2)⌋₊ + 1) →
         0 ≤ W₀ → (∀ t ∈ Set.Icc P (2 * P), |w t| ≤ W₀) →
         (∫ t in P..(2 * P), |deriv w t|) ≤ W₀ →
-        let r₀ : ℕ := (A.filter (fun r => h r ≠ 0)).min' (by sorry)
+        let r₀ : ℕ := (A.filter (fun r => h r ≠ 0)).min' (let ⟨r, hr, hhr⟩ := hnonzero; ⟨r, Finset.mem_filter.mpr ⟨hr, hhr⟩⟩)
         let T₀ : ℝ := (|(h r₀ : ℝ)| * n) / P ^ r₀
         T₀ ≥ (2 : ℝ) ^ (-(R : ℤ)) * (Real.log n) ^ AR →
         ‖∑ p ∈ (Finset.Icc ⌈a⌉₊ ⌊b⌋₊).filter Nat.Prime,
@@ -53,11 +54,11 @@ theorem lemma_2_4_ii (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         N₀ ≤ n → (n : ℝ) ^ δ ≤ P → P ≤ (n : ℝ) / (Real.log n) ^ 12 →
         P ≤ a → a ≤ b → b ≤ 2 * P →
         A ⊆ Finset.Icc 1 R → A.Nonempty →
-        (∃ r ∈ A, h r ≠ 0) →
+        (hnonzero : ∃ r ∈ A, h r ≠ 0) →
         (∀ r ∈ A, |h r| ≤ 2 * ⌊(Real.log n) ^ (R + 2)⌋₊ + 1) →
         0 ≤ W₀ → (∀ t ∈ Set.Icc P (2 * P), |w t| ≤ W₀) →
         (∫ t in P..(2 * P), |deriv w t|) ≤ W₀ →
-        let r₀ : ℕ := (A.filter (fun r => h r ≠ 0)).min' (by sorry)
+        let r₀ : ℕ := (A.filter (fun r => h r ≠ 0)).min' (let ⟨r, hr, hhr⟩ := hnonzero; ⟨r, Finset.mem_filter.mpr ⟨hr, hhr⟩⟩)
         let T₀ : ℝ := (|(h r₀ : ℝ)| * n) / P ^ r₀
         T₀ ≥ (n : ℝ) ^ (δ / 2) →
         ‖∑ p ∈ (Finset.Icc ⌈a⌉₊ ⌊b⌋₊).filter Nat.Prime,

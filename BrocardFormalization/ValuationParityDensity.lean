@@ -211,14 +211,24 @@ theorem lemma_2_1_ii_part2 :
       ∀ x : ℝ, (n : ℝ) / (2 * (⌊Real.log n⌋₊ : ℝ) + 1) ≤ x → x ≤ (n : ℝ) →
         16 ≤ x ∧ (Real.log x) ^ 2 ≤ Real.sqrt x := by
     have hlo_sq : ∀ᶠ x : ℝ in atTop, (Real.log x) ^ 2 ≤ Real.sqrt x := by
-      have hlo := Real.isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 4)
-      filter_upwards [hlo.bound zero_lt_one, eventually_ge_atTop (1 : ℝ)] with x hx hx1
-      have h1 : Real.log x ≤ x ^ (1 / 4 : ℝ) := by
-        simpa [Real.norm_of_nonneg (Real.log_nonneg hx1), Real.norm_of_nonneg (by positivity : 0 ≤ x ^ (1 / 4 : ℝ))] using hx
-      have h2 : (Real.log x) ^ 2 ≤ (x ^ (1 / 4 : ℝ)) ^ 2 :=
-        pow_le_pow_left₀ (Real.log_nonneg hx1) h1 2
-      calc (Real.log x) ^ 2 ≤ (x ^ (1 / 4 : ℝ)) ^ 2 := h2
-        _ = x ^ (1 / 2 : ℝ) := by rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]; norm_num
+      filter_upwards [eventually_ge_atTop ((64 : ℝ) ^ 4)] with x hx
+      have hx1 : (1 : ℝ) ≤ x := le_trans (by norm_num) hx
+      have hx_pos : 0 < x := by positivity
+      have hr8 : 0 < x ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hx_pos _
+      have hlog8 : Real.log (x ^ (1 / 8 : ℝ)) ≤ x ^ (1 / 8 : ℝ) := by
+        linarith [Real.log_le_sub_one_of_pos hr8]
+      rw [Real.log_rpow hx_pos] at hlog8
+      have h1 : Real.log x ≤ 8 * x ^ (1 / 8 : ℝ) := by linarith
+      have h2 : (Real.log x) ^ 2 ≤ 64 * x ^ (1 / 4 : ℝ) := by
+        calc (Real.log x) ^ 2 ≤ (8 * x ^ (1 / 8 : ℝ)) ^ 2 := pow_le_pow_left₀ (Real.log_nonneg hx1) h1 2
+          _ = 64 * (x ^ (1 / 8 : ℝ)) ^ 2 := by ring
+          _ = 64 * x ^ (1 / 4 : ℝ) := by rw [← Real.rpow_natCast, ← Real.rpow_mul hx_pos.le]; norm_num
+      have h64 : (64 : ℝ) ≤ x ^ (1 / 4 : ℝ) := by
+        rw [← Real.rpow_natCast (64 : ℝ) 4] at hx
+        exact (Real.le_rpow_inv_iff_of_pos (by positivity) hx_pos.le (by norm_num : (0 : ℝ) < 4)).mpr (by simpa using hx)
+      calc (Real.log x) ^ 2 ≤ 64 * x ^ (1 / 4 : ℝ) := h2
+        _ ≤ x ^ (1 / 4 : ℝ) * x ^ (1 / 4 : ℝ) := mul_le_mul_of_nonneg_right h64 (by positivity)
+        _ = x ^ (1 / 2 : ℝ) := by rw [← Real.rpow_add hx_pos]; norm_num
         _ = Real.sqrt x := (Real.sqrt_eq_rpow x).symm
     obtain ⟨M, hM⟩ := eventually_atTop.mp hlo_sq
     have h_n_ev : ∀ᶠ n : ℕ in atTop,
@@ -226,17 +236,37 @@ theorem lemma_2_1_ii_part2 :
         M ≤ (n : ℝ) / (2 * Real.log n + 1) ∧ 16 ≤ (n : ℝ) / (2 * Real.log n + 1) := by
       have hlog_lt : ∀ᶠ n : ℕ in atTop, (2 * Real.log n + 1) * max (max M 16) 1 ≤ (n : ℝ) ∧
           (2 * Real.log n + 1) ^ 2 ≤ (n : ℝ) := by
-        have h1 := (Real.isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 4)).bound zero_lt_one
-        filter_upwards [tendsto_natCast_atTop_atTop.eventually h1,
-          tendsto_natCast_atTop_atTop.eventually (eventually_ge_atTop (max (max M 16) 16 ^ 4))] with n hn hn_big
+        filter_upwards [tendsto_natCast_atTop_atTop.eventually (eventually_ge_atTop (max (max M 16) (8 ^ 8) ^ 4))] with n hn_big
         have hn1 : (1 : ℝ) ≤ n := by
-          have := le_trans (by norm_num : (1 : ℝ) ≤ 16 ^ 4) (le_trans (pow_le_pow_left₀ (by positivity) (le_max_right _ _) 4) hn_big)
-          exact this
+          have h16 : (16 : ℝ) ≤ max (max M 16) (8 ^ 8) := le_trans (by norm_num) (le_max_right _ _)
+          exact le_trans (by norm_num : (1 : ℝ) ≤ 16 ^ 4) (le_trans (pow_le_pow_left₀ (by positivity) h16 4) hn_big)
+        have hn_pos : (0 : ℝ) < n := by positivity
+        have h8_8 : (8 : ℝ) ≤ (n : ℝ) ^ (1 / 8 : ℝ) := by
+          have hbig : (8 : ℝ) ^ (8 : ℕ) ≤ (n : ℝ) := by
+            have h1 : (8 : ℝ) ^ (8 : ℕ) ≤ max (max M 16) (8 ^ 8) := le_max_right _ _
+            have h2 : max (max M 16) (8 ^ 8) ≤ max (max M 16) (8 ^ 8) ^ 4 := by
+              have hge1 : (1 : ℝ) ≤ max (max M 16) (8 ^ 8) := le_trans (by norm_num) h1
+              calc max (max M 16) (8 ^ 8) ≤ max (max M 16) (8 ^ 8) * 1 := by ring
+                _ ≤ max (max M 16) (8 ^ 8) * max (max M 16) (8 ^ 8) ^ 3 :=
+                  mul_le_mul_of_nonneg_left (one_le_pow₀ hge1) (by positivity)
+                _ = max (max M 16) (8 ^ 8) ^ 4 := by ring
+            exact le_trans h1 (le_trans h2 hn_big)
+          rw [← Real.rpow_natCast (8 : ℝ) 8] at hbig
+          exact (Real.le_rpow_inv_iff_of_pos (by positivity) hn_pos.le (by norm_num : (0 : ℝ) < 8)).mpr (by simpa using hbig)
         have hlog_le : Real.log n ≤ (n : ℝ) ^ (1 / 4 : ℝ) := by
-          simpa [Real.norm_of_nonneg (Real.log_nonneg hn1), Real.norm_of_nonneg (by positivity : 0 ≤ (n : ℝ) ^ (1 / 4 : ℝ))] using hn
+          have hr8 : 0 < (n : ℝ) ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hn_pos _
+          have hlog8 : Real.log ((n : ℝ) ^ (1 / 8 : ℝ)) ≤ (n : ℝ) ^ (1 / 8 : ℝ) := by
+            linarith [Real.log_le_sub_one_of_pos hr8]
+          rw [Real.log_rpow hn_pos] at hlog8
+          calc Real.log n ≤ 8 * (n : ℝ) ^ (1 / 8 : ℝ) := by linarith
+            _ ≤ (n : ℝ) ^ (1 / 8 : ℝ) * (n : ℝ) ^ (1 / 8 : ℝ) := mul_le_mul_of_nonneg_right h8_8 (by positivity)
+            _ = (n : ℝ) ^ (1 / 4 : ℝ) := by rw [← Real.rpow_add hn_pos]; norm_num
         have hn4_ge : max (max M 16) 16 ≤ (n : ℝ) ^ (1 / 4 : ℝ) := by
-          rw [← Real.rpow_natCast (max (max M 16) 16) 4] at hn_big
-          exact (Real.le_rpow_inv_iff_of_pos (by positivity) (by positivity) (by norm_num : (0 : ℝ) < 4)).mpr hn_big
+          have hmax_le : max (max M 16) 16 ^ 4 ≤ (n : ℝ) := by
+            have hle : max (max M 16) 16 ≤ max (max M 16) (8 ^ 8) := max_le_max le_rfl (by norm_num)
+            exact le_trans (pow_le_pow_left₀ (by positivity) hle 4) hn_big
+          rw [← Real.rpow_natCast (max (max M 16) 16) 4] at hmax_le
+          exact (Real.le_rpow_inv_iff_of_pos (by positivity) (by positivity) (by norm_num : (0 : ℝ) < 4)).mpr hmax_le
         have h2log : 2 * Real.log n + 1 ≤ 3 * (n : ℝ) ^ (1 / 4 : ℝ) := by
           have : (1 : ℝ) ≤ (n : ℝ) ^ (1 / 4 : ℝ) := le_trans (by norm_num) (le_trans (le_max_right _ _) hn4_ge)
           linarith
@@ -440,8 +470,19 @@ theorem lemma_2_1_ii_part2 :
           have h0 : Tendsto (fun x : ℝ => ((2 / c₁ ^ 2) * x ^ 2) ^ 2 * Real.exp (-x)) atTop (𝓝 0) := by
             have := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 4).const_mul ((2 / c₁ ^ 2) ^ 2)
             simpa [pow_mul, mul_pow] using this
-          have harg : Tendsto (fun n : ℕ => c₁ * Real.sqrt ((1 / 2 : ℝ) * Real.log n)) atTop atTop :=
-            (tendsto_sqrt_atTop.comp ((Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop).const_mul_atTop (by norm_num))).const_mul_atTop hc₁
+          have harg : Tendsto (fun n : ℕ => c₁ * Real.sqrt ((1 / 2 : ℝ) * Real.log n)) atTop atTop := by
+            rw [Filter.tendsto_atTop_atTop]
+            intro b
+            have hb : ∀ᶠ n : ℕ in atTop, 2 * (max b 0 / c₁) ^ 2 ≤ Real.log n :=
+              (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop).eventually_ge_atTop _
+            obtain ⟨N, hN⟩ := Filter.eventually_atTop.mp hb
+            refine ⟨N, fun n hn => ?_⟩
+            have h1 : max b 0 / c₁ ≤ Real.sqrt ((1 / 2 : ℝ) * Real.log n) := by
+              rw [← Real.sqrt_sq (div_nonneg (le_max_right b 0) hc₁.le)]
+              exact Real.sqrt_le_sqrt (by linarith [hN n hn])
+            calc b ≤ max b 0 := le_max_left b 0
+              _ = c₁ * (max b 0 / c₁) := by field_simp [hc₁.ne']
+              _ ≤ c₁ * Real.sqrt ((1 / 2 : ℝ) * Real.log n) := mul_le_mul_of_nonneg_left h1 hc₁.le
           refine (h0.comp harg).congr' ?_
           filter_upwards [h1] with n hn4
           have hsq : (c₁ * Real.sqrt ((1 / 2 : ℝ) * Real.log n)) ^ 2 = c₁ ^ 2 * ((1 / 2 : ℝ) * Real.log n) := by
@@ -556,8 +597,17 @@ theorem lemma_2_1_ii_part2 :
   have h_err_zero : Tendsto (fun n : ℕ =>
       (Real.log (2 * Real.log n + 1) + 1) ^ 2 / Real.log n) atTop (𝓝 0) := by
     have h1 : Tendsto (fun u : ℝ => (Real.log (2 * u + 1) + 1) ^ 2 / u) atTop (𝓝 0) := by
-      have hlo := Real.isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 4)
-      rw [Asymptotics.isLittleO_iff_tendsto' (by filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx; positivity)] at hlo
+      have hlo : Tendsto (fun x : ℝ => Real.log x / x ^ (1 / 4 : ℝ)) atTop (𝓝 0) := by
+        refine squeeze_zero' (by filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx; exact div_nonneg (Real.log_nonneg hx) (by positivity)) ?_
+          ((tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 8)).const_mul 8)
+        filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+        have hr8 : 0 < x ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hx _
+        have hlog8 : Real.log (x ^ (1 / 8 : ℝ)) ≤ x ^ (1 / 8 : ℝ) := by linarith [Real.log_le_sub_one_of_pos hr8]
+        rw [Real.log_rpow hx] at hlog8
+        calc Real.log x / x ^ (1 / 4 : ℝ)
+            ≤ (8 * x ^ (1 / 8 : ℝ)) / x ^ (1 / 4 : ℝ) := div_le_div_of_nonneg_right (by linarith) (by positivity)
+          _ = 8 * x ^ (-(1 / 8 : ℝ)) := by
+              rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx]; norm_num
       have hcomp : Tendsto (fun u : ℝ => Real.log (2 * u + 1) / (2 * u + 1) ^ (1 / 4 : ℝ)) atTop (𝓝 0) :=
         hlo.comp (tendsto_atTop_add_const_right _ 1 (tendsto_id.const_mul_atTop (by norm_num)))
       have hsq : Tendsto (fun u : ℝ =>
@@ -646,8 +696,17 @@ theorem lemma_2_1_ii_part2 :
     have h_tail_ev : ∀ᶠ n : ℕ in atTop,
         2 * Real.log n / Real.sqrt n + 8 * Real.log 4 / (2 * (⌊Real.log n⌋₊ : ℝ) + 1) < ε / 4 := by
       have hA : Tendsto (fun n : ℕ => 2 * Real.log n / Real.sqrt n) atTop (𝓝 0) := by
-        have hlo := Real.isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)
-        rw [Asymptotics.isLittleO_iff_tendsto' (by filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx; positivity)] at hlo
+        have hlo : Tendsto (fun x : ℝ => Real.log x / x ^ (1 / 2 : ℝ)) atTop (𝓝 0) := by
+          refine squeeze_zero' (by filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx; exact div_nonneg (Real.log_nonneg hx) (by positivity)) ?_
+            ((tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 4)).const_mul 4)
+          filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+          have hr4 : 0 < x ^ (1 / 4 : ℝ) := Real.rpow_pos_of_pos hx _
+          have hlog4 : Real.log (x ^ (1 / 4 : ℝ)) ≤ x ^ (1 / 4 : ℝ) := by linarith [Real.log_le_sub_one_of_pos hr4]
+          rw [Real.log_rpow hx] at hlog4
+          calc Real.log x / x ^ (1 / 2 : ℝ)
+              ≤ (4 * x ^ (1 / 4 : ℝ)) / x ^ (1 / 2 : ℝ) := div_le_div_of_nonneg_right (by linarith) (by positivity)
+            _ = 4 * x ^ (-(1 / 4 : ℝ)) := by
+                rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx]; norm_num
         have h1 : Tendsto (fun n : ℕ => 2 * (Real.log n / (n : ℝ) ^ (1 / 2 : ℝ))) atTop (𝓝 0) := by
           simpa using (hlo.comp tendsto_natCast_atTop_atTop).const_mul 2
         refine h1.congr' ?_
@@ -865,6 +924,5 @@ theorem lemma_2_1_ii_part2 :
   have hlog_ne : Real.log n ≠ 0 := (Real.log_pos (by exact_mod_cast (by omega : 1 < n))).ne'
   have hden_ne : (n : ℝ) / Real.log n ≠ 0 := div_ne_zero (by positivity) hlog_ne
   field_simp [hpc_pos, hden_ne]
-
 
 end BrocardFormalization

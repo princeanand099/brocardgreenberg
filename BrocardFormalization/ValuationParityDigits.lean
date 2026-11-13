@@ -116,9 +116,13 @@ theorem lemma_2_2_i (p n : ℕ) (hp : p.Prime) (hp3 : 3 ≤ p) (_hn : 4 ≤ n) :
         (Nat.digits p n).getD j 0 * (∑ i ∈ Finset.range j, p ^ i) := by
     have hadd1 : (p - 1) * padicValNat p n.factorial + (Nat.digits p n).sum = n := by
       have hsum_le : (Nat.digits p n).sum ≤ n := by
-        conv_lhs => rw [← hdigits]
-        rw [ofDigits_eq_sum_range, list_sum_eq_sum_range]
-        exact Finset.sum_le_sum fun j _ => Nat.le_mul_of_pos_right _ (pow_pos hp.pos j)
+        calc (Nat.digits p n).sum
+            = ∑ j ∈ Finset.range (Nat.digits p n).length, (Nat.digits p n).getD j 0 := by
+                rw [list_sum_eq_sum_range]
+          _ ≤ ∑ j ∈ Finset.range (Nat.digits p n).length, (Nat.digits p n).getD j 0 * p ^ j :=
+                Finset.sum_le_sum fun j _ => Nat.le_mul_of_pos_right _ (pow_pos hp.pos j)
+          _ = Nat.ofDigits p (Nat.digits p n) := (ofDigits_eq_sum_range _ _).symm
+          _ = n := hdigits
       omega
     have hadd2 : (p - 1) * ∑ j ∈ Finset.range (Nat.digits p n).length,
           (Nat.digits p n).getD j 0 * (∑ i ∈ Finset.range j, p ^ i) + (Nat.digits p n).sum = n := by
@@ -140,7 +144,7 @@ theorem lemma_2_2_i (p n : ℕ) (hp : p.Prime) (hp3 : 3 ≤ p) (_hn : 4 ≤ n) :
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [Nat.mul_mod, geom_sum_mod_two p j hp_odd]
   by_cases hj : j % 2 = 1
-  · simp only [hj, ↓reduceIte, mul_one, Nat.mod_mod]
+  · simp only [hj, ↓reduceIte, mul_one]
   · have hj0 : j % 2 = 0 := by omega
     simp [hj0]
 
@@ -182,15 +186,17 @@ theorem lemma_2_2_ii :
       have hleg := sub_one_mul_padicValNat_factorial (p := p) n
       have hlegR : ((p : ℝ) - 1) * (padicValNat p n.factorial : ℝ) = (n : ℝ) - ((Nat.digits p n).sum : ℝ) := by
         have hsum_le : (Nat.digits p n).sum ≤ n := by
-          have hd := Nat.ofDigits_digits p n
-          conv_lhs => rw [← hd]
-          rw [ofDigits_eq_sum_range, list_sum_eq_sum_range]
-          exact Finset.sum_le_sum fun j _ => Nat.le_mul_of_pos_right _ (pow_pos hp_prime.pos j)
+          calc (Nat.digits p n).sum
+              = ∑ j ∈ Finset.range (Nat.digits p n).length, (Nat.digits p n).getD j 0 := by
+                  rw [list_sum_eq_sum_range]
+            _ ≤ ∑ j ∈ Finset.range (Nat.digits p n).length, (Nat.digits p n).getD j 0 * p ^ j :=
+                  Finset.sum_le_sum fun j _ => Nat.le_mul_of_pos_right _ (pow_pos hp_prime.pos j)
+            _ = Nat.ofDigits p (Nat.digits p n) := (ofDigits_eq_sum_range _ _).symm
+            _ = n := Nat.ofDigits_digits p n
         have h1 : (p - 1) * padicValNat p n.factorial + (Nat.digits p n).sum = n := by omega
-        have h2 : ((p - 1 : ℕ) : ℝ) * (padicValNat p n.factorial : ℝ) + ((Nat.digits p n).sum : ℝ) = n := by
+        have h2 : ((p - 1 : ℕ) : ℝ) * (padicValNat p n.factorial : ℝ) + ((Nat.digits p n).sum : ℝ) = (n : ℝ) := by
           exact_mod_cast h1
-        rw [Nat.cast_sub (by omega)] at h2
-        norm_num at h2
+        rw [Nat.cast_sub (by omega : 1 ≤ p), Nat.cast_one] at h2
         linarith
       have hp1_ne : (p : ℝ) - 1 ≠ 0 := by
         have : (3 : ℝ) ≤ p := by exact_mod_cast hp3
@@ -297,7 +303,7 @@ theorem lemma_2_2_ii :
         ((Finset.Icc 2 (Nat.sqrt m)).filter Nat.Prime) ∪
         ((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime) := by
       have : Nat.sqrt m ≤ m := Nat.sqrt_le_self m
-      ext p; simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_Icc]; dsimp only [m] at *; omega
+      ext p; simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_Icc]; constructor <;> intro hp <;> rcases le_or_gt p (Nat.sqrt m) with hle | hgt <;> omega
     have hpc_eq : (Nat.primeCounting m : ℝ) = ((Finset.Icc 2 m).filter Nat.Prime).card := by
       congr 1
       rw [Nat.primeCounting, Nat.primeCounting', Nat.count_eq_card_filter_range]
@@ -307,7 +313,7 @@ theorem lemma_2_2_ii :
         Nat.sqrt m + ((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card := by
       rw [hsplit]
       refine le_trans (Finset.card_union_le _ _) (add_le_add ?_ le_rfl)
-      exact le_trans (Finset.card_filter_le _ _) (by simp [Finset.card_Icc]; omega)
+      exact le_trans (Finset.card_filter_le _ _) (by simp only [Nat.card_Icc]; omega)
     have hlogm_ge : (1 / 4 : ℝ) * Real.log n ≤ Real.log m := by
       have hm_ge : (1 / 2 : ℝ) * Real.sqrt n ≤ m := by
         have := Nat.lt_succ_sqrt n
@@ -337,7 +343,7 @@ theorem lemma_2_2_ii :
         rw [Real.log_pow] at this; norm_num at this; linarith
       have h2 : ∑ p ∈ (Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime, Real.log p ≤ Chebyshev.theta (m : ℝ) := by
         unfold Chebyshev.theta; rw [Nat.floor_natCast]
-        refine Finset.sum_le_sum_of_subset_of_nonneg ?_ fun _ _ _ => Real.log_nonneg (by norm_num)
+        refine Finset.sum_le_sum_of_subset_of_nonneg ?_ fun q hq _ => Real.log_nonneg (by exact_mod_cast (Finset.mem_filter.mp hq).2.one_lt.le)
         intro p hp; simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_Ioc] at hp ⊢; exact ⟨⟨hp.2.pos, hp.1.2⟩, hp.2⟩
       exact le_trans h1 (le_trans h2 (Chebyshev.theta_le_log4_mul_x (by positivity)))
     have hm_le_sqrt : (m : ℝ) ≤ Real.sqrt n := Real.le_sqrt_of_sq_le (by exact_mod_cast (by simpa [sq] using Nat.sqrt_le n))
@@ -363,7 +369,6 @@ theorem lemma_2_2_ii :
       exact_mod_cast hcard_le
     linarith
   have hlog_ev : ∀ᶠ n : ℕ in atTop, 16 ≤ n ∧ 4 * (n : ℝ) ^ (1 / 4 : ℝ) * Real.log n ≤ Real.sqrt n := by
-    -- Elementary bound: log n = 8 * log(n^(1/8)) ≤ 8 * n^(1/8), so 4 * n^(1/4) * log n ≤ 32 * n^(3/8) ≤ n^(1/2) for n ≥ 32^8
     filter_upwards [eventually_ge_atTop (32 ^ 8)] with n hn
     refine ⟨by omega, ?_⟩
     have hn_pos : (0 : ℝ) < n := by positivity
@@ -524,17 +529,17 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       have hpow : (-1 : ℂ) ^ (2 * k + 1) = -1 := by rw [zpow_add₀ (by norm_num), zpow_mul]; norm_num
       rw [heq, hpow]; ring
     rw [hsum1]
-    refine (Finset.sum_subset_zero_on_sdiff ?_ ?_ ?_).symm
+    refine Finset.sum_subset_zero_on_sdiff ?_ ?_ ?_
     · intro h hh
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh ⊢
-      exact ⟨⟨by omega, by omega⟩, hh.2⟩
+      exact ⟨⟨by linarith [Int.natCast_nonneg H], by linarith [Int.natCast_nonneg H]⟩, hh.2⟩
     · intro h hh
       rw [Finset.mem_sdiff] at hh
       rcases hh with ⟨hh1, hh2⟩
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh1
       have hnot : ¬ (|h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h) := fun ⟨hab, hn, ho⟩ =>
         hh2 (Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr (abs_le.mp hab), hn, ho⟩)
-      simp [cTilde, hnot]
+      rw [cTilde, if_neg hnot, norm_zero]
     · intro h hh
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh
       have hok : |h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h := ⟨abs_le.mpr hh.1, hh.2⟩
@@ -581,10 +586,10 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       have hpow : (-1 : ℂ) ^ (k + k) = 1 := by rw [← two_mul, zpow_mul]; norm_num
       rw [heq, hpow]; ring
     rw [hsum1]
-    refine (Finset.sum_subset_zero_on_sdiff ?_ ?_ ?_).symm
+    refine Finset.sum_subset_zero_on_sdiff ?_ ?_ ?_
     · intro h hh
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh ⊢
-      exact ⟨⟨by omega, by omega⟩, hh.2.1⟩
+      exact ⟨⟨by linarith [Int.natCast_nonneg H], by linarith [Int.natCast_nonneg H]⟩, hh.2.1⟩
     · intro h hh
       rw [Finset.mem_sdiff] at hh
       rcases hh with ⟨hh1, hh2⟩
@@ -648,7 +653,7 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
         simp only [Finset.mem_filter, Finset.mem_Icc] at hh1
         have hnot : ¬ (|h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h) := fun ⟨hab, hn, ho⟩ =>
           hh2 (Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr (abs_le.mp hab), hn, ho⟩)
-        simp [cTilde, hnot]
+        rw [cTilde, if_neg hnot, norm_zero]
       rw [hz, zero_add]
       refine Finset.sum_le_sum fun h hh => ?_
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh
@@ -689,7 +694,7 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       have heq : (harmonic H : ℝ) = ∑ k ∈ Finset.Icc 1 H, (1 : ℝ) / (k : ℝ) := by
         induction H with
         | zero => simp
-        | succ m ihm => rw [Finset.sum_Icc_succ_top (by omega), ihm, harmonic_succ]; push_cast; ring
+        | succ m ihm => rw [Finset.sum_Icc_succ_top (by omega), ← ihm, harmonic_succ]; push_cast; ring
       rw [heq, Finset.mul_sum]
       refine Finset.sum_congr rfl fun k _ => by ring
     have hharm_le : (harmonic H : ℝ) ≤ 1 + Real.log H := by simpa using harmonic_le_one_add_log H
@@ -700,6 +705,5 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       _ ≤ 2 * ((2 / Real.pi) * (Real.log (2 * (H : ℝ) + 1) + 1)) := by
           refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (by linarith) (by positivity)) (by norm_num)
       _ = (4 / Real.pi) * (Real.log (2 * (H : ℝ) + 1) + 1) := by ring
-
 
 end BrocardFormalization
