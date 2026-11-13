@@ -23,7 +23,7 @@ namespace BrocardFormalization
 def harmonicLayer (n j : ℕ) : Finset ℕ :=
   (Finset.Icc 2 n).filter fun p => p.Prime ∧ n / (j + 1) < p ∧ p ≤ n / j
 
-private lemma padicValNat_factorial_of_lt_sq {n p : ℕ} (hp : p.Prime) (hnsq : n < p ^ 2) :
+lemma padicValNat_factorial_of_lt_sq {n p : ℕ} (hp : p.Prime) (hnsq : n < p ^ 2) :
     padicValNat p n.factorial = n / p := by
   by_cases hn0 : n = 0
   · subst hn0; simp
@@ -234,7 +234,6 @@ theorem lemma_2_1_ii_part1 :
     rw [qn_eq_prod_Podd, Nat.cast_prod, Real.log_prod]
     intro p hp
     exact Nat.cast_ne_zero.mpr (Finset.mem_filter.mp hp).2.1.ne_zero
-  -- Harmonic layer union / disjointness on odd layers
   have hpart_odd : ∀ n : ℕ, 4 ≤ n →
       let K := (Nat.sqrt n - 1) / 2
       let L := (Finset.Icc 1 K).biUnion (fun r => harmonicLayer n (2 * r - 1))
@@ -324,7 +323,6 @@ theorem lemma_2_1_ii_part1 :
           · rw [← hj_eq]
             exact (Nat.le_div_iff_mul_le hj1).mpr (by
               rw [mul_comm]; exact Nat.div_mul_le_self n p)
-  -- Chebyshev theta difference helper
   have htheta_layer : ∀ n j : ℕ, 1 ≤ j →
       ∑ p ∈ harmonicLayer n j, Real.log p =
         Chebyshev.theta ((n : ℝ) / (j : ℝ)) - Chebyshev.theta ((n : ℝ) / ((j : ℝ) + 1)) := by
@@ -383,7 +381,6 @@ theorem lemma_2_1_ii_part1 :
     rw [hfloor1, hfloor2, htheta_eq (n / j), htheta_eq (n / (j + 1)), ← hunion,
       Finset.sum_union hdisj]
     ring
--- Pick `c₀ := c₁ / 4` and sufficiently large `C`
   have h_sqrt_log : Tendsto (fun n : ℕ => Real.sqrt (Real.log n)) atTop atTop := by
     rw [Filter.tendsto_atTop_atTop]
     intro b
@@ -450,7 +447,6 @@ theorem lemma_2_1_ii_part1 :
         _ = (n : ℝ) := by rw [← Real.rpow_add hn_pos]; norm_num
     exact h1.and (h2.and (h3.and h4))
   obtain ⟨N₀, hN₀⟩ := eventually_atTop.mp h_ev
-  -- For `4 ≤ n < max N₀ 4`, bound `|log q_n - log 2 * n|` by a finite max constant `C_fin`
   set C_fin : ℝ := (Finset.Icc 4 (max N₀ 4)).sup' ⟨4, Finset.mem_Icc.mpr ⟨le_rfl, le_max_right _ _⟩⟩
     (fun n => |Real.log (qn n) - Real.log 2 * n| / ((n : ℝ) * Real.exp (-(c₁ / 4) * Real.sqrt (Real.log n))))
   refine ⟨c₁ / 4, max (max C_fin 1) (2 * C₁ + 2 * Real.log 4 + 2), by positivity, by positivity, ?_⟩
@@ -524,7 +520,6 @@ theorem lemma_2_1_ii_part1 :
           Real.log_nonneg (by exact_mod_cast (Finset.mem_filter.mp hp).2.one_le)
       have htheta_cheb : ∑ p ∈ (Finset.Icc 2 (n / (2 * K + 1))).filter Nat.Prime, Real.log p ≤
           Real.log 4 * ((n / (2 * K + 1) : ℕ) : ℝ) := by
-        -- Chebyshev theta ≤ log 4 * x
         have h1 : Chebyshev.theta ((n / (2 * K + 1) : ℕ) : ℝ) =
             ∑ p ∈ (Finset.Icc 2 (n / (2 * K + 1))).filter Nat.Prime, Real.log p := by
           unfold Chebyshev.theta
@@ -548,7 +543,6 @@ theorem lemma_2_1_ii_part1 :
         rw [Real.sq_sqrt (by positivity)]
       linarith [mul_le_mul_of_nonneg_left (le_trans hdiv_le (le_trans hdiv_le2 hsqrt_eq.le))
         (Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 4))]
-    -- Layer log bounds
     have hterm_err : ∀ r ∈ Finset.Icc 1 K,
         |Chebyshev.theta ((n : ℝ) / (2 * (r : ℝ) - 1)) -
           Chebyshev.theta ((n : ℝ) / (2 * (r : ℝ))) -

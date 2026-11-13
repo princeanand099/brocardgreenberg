@@ -41,7 +41,14 @@ theorem lemma_2_1_ii_part2 :
         ((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime) := by
       ext p
       simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_Icc]
-      omega
+      constructor
+      · rintro ⟨⟨h1, h2⟩, h3⟩
+        rcases le_or_gt p (Nat.sqrt m) with hle | hgt
+        · exact Or.inl ⟨⟨h1, hle⟩, h3⟩
+        · exact Or.inr ⟨⟨hgt, h2⟩, h3⟩
+      · rintro (⟨⟨h1, h2⟩, h3⟩ | ⟨⟨h1, h2⟩, h3⟩)
+        · exact ⟨⟨h1, le_trans h2 (Nat.sqrt_le_self m)⟩, h3⟩
+        · exact ⟨⟨by omega, h2⟩, h3⟩
     have hcard_le : ((Finset.Icc 2 m).filter Nat.Prime).card ≤
         Nat.sqrt m + ((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card := by
       rw [hsplit]
@@ -325,6 +332,7 @@ theorem lemma_2_1_ii_part2 :
     have hdisj_rs : (Finset.Icc 1 K : Set ℕ).PairwiseDisjoint (fun r => harmonicLayer n (2 * r - 1)) := by
       intro r hr s hs hrs
       simp only [Finset.mem_coe, Finset.mem_Icc] at hr hs
+      dsimp only [Function.onFun]
       rw [Finset.disjoint_left]
       intro p hpr hps
       have h1 := (lemma_2_1_i n (2 * r - 1) hn (by omega) (by omega)).1 p hpr
@@ -336,7 +344,9 @@ theorem lemma_2_1_ii_part2 :
       rcases hp with ⟨r, hr, hpr⟩
       simp only [harmonicLayer, Finset.mem_filter] at hpr
       have hle : 2 * r ≤ 2 * K + 1 := by omega
-      exact lt_of_le_of_lt (Nat.div_le_div_left hle (by omega)) hpr.2.2.1
+      have hdiv_lt : n / (2 * r) < p := by
+        simpa [show 2 * r - 1 + 1 = 2 * r by omega] using hpr.2.2.1
+      exact lt_of_le_of_lt (Nat.div_le_div_left hle (by omega)) hdiv_lt
     have hL_sub : L ⊆ Podd n := by
       intro p hp
       simp only [L, Finset.mem_biUnion, Finset.mem_Icc] at hp
@@ -425,7 +435,7 @@ theorem lemma_2_1_ii_part2 :
         (Nat.primeCounting (n / (j + 1)) : ℝ) := (hpc_eq (n / (j + 1))).symm
     have hcast : ((harmonicLayer n j).card : ℝ) +
         (((Finset.Icc 2 (n / (j + 1))).filter Nat.Prime).card : ℝ) =
-        (((Finset.Icc 2 (n / j)).filter Nat.Prime).card : ℝ) := by exact_mod_cast hcard_u
+        (((Finset.Icc 2 (n / j)).filter Nat.Prime).card : ℝ) := by exact_mod_cast hcard_u.symm
     linarith
   have h_unif : ∀ᶠ n : ℕ in atTop,
       let K₀ := ⌊Real.log n⌋₊
@@ -441,7 +451,7 @@ theorem lemma_2_1_ii_part2 :
       have h1 : ∀ᶠ n : ℕ in atTop, 4 ≤ Real.log n :=
         (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop).eventually_ge_atTop 4
       have h2 : ∀ᶠ n : ℕ in atTop, 2 * Real.log (2 * Real.log n + 1) ≤ (1 / 2 : ℝ) * Real.log n := by
-        filter_upwards [(Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop).eventually_ge_atTop 16] with n hn16
+        filter_upwards [(Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop).eventually_ge_atTop 64] with n hn64
         have hlog_pos : 0 < Real.log n := by linarith
         have hle : 2 * Real.log n + 1 ≤ 3 * Real.log n := by linarith
         have h3 : Real.log (2 * Real.log n + 1) ≤ Real.log (3 * Real.log n) :=
@@ -457,7 +467,7 @@ theorem lemma_2_1_ii_part2 :
             have := Real.add_one_lt_exp (by norm_num : (2 : ℝ) ≠ 0)
             linarith
           exact (Real.log_le_iff_le_exp (by norm_num)).mpr this
-        have hsq4 : 4 ≤ Real.sqrt (Real.log n) := Real.le_sqrt_of_sq_le hn16
+        have hsq8 : 8 ≤ Real.sqrt (Real.log n) := Real.le_sqrt_of_sq_le (by linarith)
         nlinarith [Real.sq_sqrt hlog_pos.le]
       have h3 : ∀ᶠ n : ℕ in atTop, (1 / 2 : ℝ) * Real.log n ≤ Real.log ((n : ℝ) / (2 * Real.log n + 1)) := by
         filter_upwards [h1, h2] with n hn4 hn_le

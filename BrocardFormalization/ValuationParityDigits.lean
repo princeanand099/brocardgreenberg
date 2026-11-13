@@ -139,7 +139,8 @@ theorem lemma_2_2_i (p n : ℕ) (hp : p.Prime) (hp3 : 3 ≤ p) (_hn : 4 ≤ n) :
         (Nat.digits p n).getD j 0 * (∑ i ∈ Finset.range j, p ^ i) :=
     Nat.eq_of_mul_eq_mul_left hp1 hid
   have hp_odd : p % 2 = 1 := hp.eq_two_or_odd.resolve_left (by omega)
-  rw [hval, oddIndexedDigitSum_eq_sum_range, Finset.sum_nat_mod, Finset.sum_nat_mod, Finset.sum_filter]
+  rw [hval, oddIndexedDigitSum_eq_sum_range, Finset.sum_filter, Finset.sum_nat_mod]
+  conv_rhs => rw [Finset.sum_nat_mod]
   congr 1
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [Nat.mul_mod, geom_sum_mod_two p j hp_odd]
@@ -302,8 +303,15 @@ theorem lemma_2_2_ii :
     have hsplit : (Finset.Icc 2 m).filter Nat.Prime =
         ((Finset.Icc 2 (Nat.sqrt m)).filter Nat.Prime) ∪
         ((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime) := by
-      have : Nat.sqrt m ≤ m := Nat.sqrt_le_self m
-      ext p; simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_Icc]; constructor <;> intro hp <;> rcases le_or_gt p (Nat.sqrt m) with hle | hgt <;> omega
+      ext p; simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_Icc]
+      constructor
+      · rintro ⟨⟨h1, h2⟩, h3⟩
+        rcases le_or_gt p (Nat.sqrt m) with hle | hgt
+        · exact Or.inl ⟨⟨h1, hle⟩, h3⟩
+        · exact Or.inr ⟨⟨hgt, h2⟩, h3⟩
+      · rintro (⟨⟨h1, h2⟩, h3⟩ | ⟨⟨h1, h2⟩, h3⟩)
+        · exact ⟨⟨h1, le_trans h2 (Nat.sqrt_le_self m)⟩, h3⟩
+        · exact ⟨⟨by omega, h2⟩, h3⟩
     have hpc_eq : (Nat.primeCounting m : ℝ) = ((Finset.Icc 2 m).filter Nat.Prime).card := by
       congr 1
       rw [Nat.primeCounting, Nat.primeCounting', Nat.count_eq_card_filter_range]
