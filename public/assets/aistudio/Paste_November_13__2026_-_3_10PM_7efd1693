@@ -1,0 +1,997 @@
+LEAN MATHEMATICAL FORMALIZATION
+
+STRICT MANDATORY EXECUTION PROTOCOL
+
+PRIMARY MANDATE
+
+Your task is to produce a complete Lean 4 formalization of the entire mathematical manuscript inside its Git repository.
+
+You MUST formalize every substantive mathematical result, preserve every theorem's original mathematical content, prove every result that the manuscript is responsible for establishing, and deliver a reproducible Lean project together with the corrected manuscript, PDF, mathematical correction audit, and progress record.
+
+The objective is a completed mathematical formalization, NOT merely a collection of Lean files that compiles.
+
+You MUST execute every stage below in its prescribed order. You MUST satisfy the completion conditions of each stage before treating that stage as complete.
+
+You MUST NOT:
+
+- Skip a stage.
+- Replace a required task with an easier alternative.
+- Weaken a theorem to obtain compilation.
+- Assume a result that the manuscript is supposed to prove.
+- Leave unfinished work while reporting completion.
+- Stop merely because an obstruction has been discovered.
+- Substitute explanations, recommendations, or a list of problems for actual mathematical repairs.
+
+Make the required changes directly in the repository. Continue the work until the entire prescribed workflow is completed or a genuine, demonstrable limitation prevents further completion.
+
+---
+
+STAGE 1 — ESTABLISH AND VERIFY THE LEAN ENVIRONMENT
+
+1.1 Inspect the complete repository
+
+Before writing or modifying Lean code, inspect the repository.
+
+You MUST inspect:
+
+- The complete directory structure.
+- All existing Lean source files.
+- "lean-toolchain".
+- "lakefile.lean" or "lakefile.toml".
+- "lake-manifest.json".
+- Mathlib configuration and dependencies.
+- Existing build scripts.
+- Existing documentation.
+- The current Git working-tree status.
+
+Do not assume that the environment is ready.
+
+1.2 Install and configure every required component
+
+Verify that Lean 4, Elan, Lake, Mathlib, the project's exact toolchain, and all declared dependencies are installed and functioning.
+
+If any required component is missing, broken, incompatible, or incorrectly configured, repair it.
+
+Preserve the existing project versions unless an actual technical requirement necessitates a change.
+
+Do not begin the manuscript translation while the environment is broken.
+
+1.3 Execute and verify the initial build
+
+Fetch and configure the required dependencies.
+
+Run:
+
+"lake build"
+
+Resolve every environment, configuration, dependency, and compilation error.
+
+A successful installation command is NOT sufficient evidence that the environment works. The actual project build MUST succeed.
+
+STAGE 1 IS COMPLETE ONLY WHEN THE ENTIRE EXISTING LEAN PROJECT PASSES "lake build".
+
+---
+
+STAGE 2 — ESTABLISH THE PROJECT ARCHITECTURE
+
+2.1 Create all files required by this workflow
+
+Create and maintain every file necessary for the complete execution of this protocol.
+
+This MUST include:
+
+- Lean source modules for the formalization.
+- A manuscript-to-Lean theorem correspondence record.
+- A separate external-axiom register.
+- A separate mathematical correction and audit file.
+- A continuously maintained progress-tracking file.
+- A README with accurate project and build instructions.
+- A separate replacement LaTeX manuscript.
+- The compiled PDF of that replacement manuscript.
+
+Create each file at the appropriate stage, with its actual content and intended functionality.
+
+Do not create empty placeholders and treat their existence as completion.
+
+Do not omit a required file.
+
+Do not merge separate required records into one file.
+
+Do not create unnecessary files, redundant documentation, or artificial project complexity.
+
+2.2 Establish the Lean module structure
+
+Determine the source-file architecture from the actual mathematical dependencies of the manuscript.
+
+Organize the development into appropriate modules for:
+
+- Foundational definitions.
+- Preliminary constructions.
+- Established mathematical dependencies.
+- Supporting lemmas.
+- Intermediate propositions.
+- Main theorems.
+- Corollaries.
+- Other necessary mathematical results.
+
+Use meaningful module and declaration names.
+
+Keep the formalization modular, readable, and maintainable.
+
+Do not place the entire manuscript in one enormous Lean file. Do not create arbitrary files without a genuine mathematical or technical purpose.
+
+2.3 Preserve existing repository work
+
+Do not delete or overwrite unrelated files.
+
+Do not discard existing uncommitted modifications.
+
+Do not destroy existing project configuration without justification.
+
+Inspect the Git state before making changes and preserve all unrelated user work.
+
+STAGE 2 IS COMPLETE ONLY WHEN THE PROJECT ARCHITECTURE IS ESTABLISHED AND ALL REQUIRED SUPPORTING FILES HAVE BEEN CREATED IN THEIR APPROPRIATE LOCATIONS.
+
+---
+
+STAGE 3 — TRANSLATE THE ENTIRE MANUSCRIPT INTO LEAN
+
+3.1 Read the complete manuscript before translating it
+
+Read the manuscript from beginning to end.
+
+Identify and account for EVERY substantive mathematical component, including:
+
+- Definitions.
+- Notation.
+- Assumptions.
+- Hypotheses.
+- Lemmas.
+- Propositions.
+- Theorems.
+- Corollaries.
+- Subtheorems.
+- Auxiliary results.
+- Intermediate claims.
+- Mathematical assertions inside remarks.
+- Proofs.
+- Dependencies.
+- Mathematical consequences.
+
+Do not selectively formalize only the principal theorem.
+
+Do not omit a result because it appears in an explanatory section, remark, appendix, or intermediate argument.
+
+Do not create artificial declarations for purely expository prose. However, every genuine mathematical assertion MUST be represented.
+
+3.2 Determine the complete mathematical dependency order BEFORE translating
+
+First construct the dependency structure of the manuscript.
+
+Identify precisely which definitions, established results, lemmas, and propositions are required to establish each subsequent result.
+
+The translation MUST follow the actual dependency order:
+
+1. Foundational definitions and constructions.
+2. Established external mathematical results.
+3. Preliminary results.
+4. Supporting lemmas.
+5. Intermediate propositions and subtheorems.
+6. Main theorems.
+7. Corollaries and downstream consequences.
+8. All remaining substantive mathematical assertions.
+
+Do not blindly follow page order.
+
+Do not formalize a theorem before identifying its dependencies.
+
+Do not use a later result as an unexplained foundation for an earlier result.
+
+Maintain the connection between the original manuscript and every corresponding Lean declaration.
+
+3.3 Translate EVERY substantive mathematical result
+
+Every mathematical result in the manuscript MUST receive a corresponding formal representation.
+
+This requirement applies equally to minor lemmas, auxiliary propositions, intermediate claims, corollaries, and major theorems.
+
+Do not omit results because they are elementary.
+
+Do not omit results because they appear to be immediately obvious.
+
+Do not omit results because they are used only once.
+
+Do not omit results because they are difficult to formalize.
+
+If a remark contains a mathematical claim, formalize that claim as well.
+
+No substantive mathematical result may disappear from the formalization without an explicit mathematical justification recorded in the correspondence record.
+
+3.4 Preserve the exact mathematical content
+
+The formalized statement MUST faithfully represent the original manuscript statement.
+
+Preserve:
+
+- Every hypothesis.
+- Every quantifier.
+- Every mathematical object.
+- Every domain and codomain.
+- Every condition.
+- Every definition.
+- Every logical implication.
+- Every equivalence.
+- Every conclusion.
+- The complete logical strength of the statement.
+
+The following are STRICTLY FORBIDDEN:
+
+- Weakening a theorem to make Lean accept it.
+- Strengthening hypotheses for convenience.
+- Removing difficult conditions.
+- Restricting the domain without mathematical justification.
+- Replacing a general result with a special case.
+- Replacing an equivalence with an implication.
+- Replacing a universal statement with a weaker existential statement.
+- Removing quantifiers.
+- Changing definitions to make the proof easier.
+- Replacing the actual conclusion with a nearby, easier conclusion.
+- Silently changing notation in a way that changes mathematical meaning.
+- Formalizing only the portion of a result that is convenient.
+
+Compilation MUST NEVER take priority over statement fidelity.
+
+3.5 Verify every translated statement individually
+
+For every manuscript result, perform an individual comparison.
+
+You MUST:
+
+1. Locate the original statement.
+2. Identify its Lean declaration.
+3. Compare the mathematical objects.
+4. Compare every hypothesis.
+5. Compare every quantifier.
+6. Compare every domain and condition.
+7. Compare the conclusion.
+8. Compare the logical strength.
+9. Check the relevant definitions.
+10. Confirm that nothing has been weakened, strengthened, omitted, or changed.
+
+Record the correspondence in the theorem correspondence file.
+
+Every entry MUST identify:
+
+- The manuscript result.
+- Its location in the manuscript.
+- Its Lean module.
+- Its Lean declaration.
+- Its dependencies.
+- Its statement-fidelity status.
+- Its proof status.
+
+Do not mark a result as faithfully translated without performing this comparison.
+
+3.6 Search Mathlib exhaustively for required established results
+
+For every established mathematical result needed by the manuscript, search Mathlib before considering an external axiom.
+
+You MUST:
+
+- Search relevant modules.
+- Search relevant namespaces.
+- Search equivalent mathematical formulations.
+- Inspect definitions.
+- Inspect theorem signatures.
+- Inspect hypotheses.
+- Read relevant source files.
+- Verify that the available theorem actually supplies the required result.
+
+Reuse suitable Mathlib results.
+
+Do not unnecessarily reproduce an existing formalization.
+
+Do not assume that a theorem is absent merely because its name is unfamiliar.
+
+Do not introduce an axiom simply because searching once did not find a result.
+
+3.7 Apply the strict external-axiom policy
+
+External axioms are permitted ONLY for established mathematical results external to the manuscript's own contribution, where a suitable Mathlib formalization is unavailable.
+
+Every external axiom MUST satisfy ALL of these conditions:
+
+1. The result is established in credible peer-reviewed mathematical literature.
+2. The exact published source is identifiable.
+3. The source supports the precise mathematical statement being introduced.
+4. The result is not a theorem or claim the manuscript is responsible for proving.
+5. The formalized axiom introduces no unnecessary strengthening.
+6. The axiom expresses only the established result actually required.
+7. Its use is recorded in the external-axiom register.
+
+For example, if the Prime Number Theorem is required and no suitable Mathlib formalization exists, its established mathematical content may be represented by an appropriately precise external axiom.
+
+Do not assume that this example automatically justifies any particular formulation. Verify the actual published statement and formalize only the required content.
+
+ABSOLUTE AXIOM PROHIBITIONS
+
+NEVER introduce an axiom for:
+
+- The manuscript's main theorem.
+- Any lemma the manuscript claims to prove.
+- Any proposition the manuscript claims to establish.
+- Any corollary whose proof belongs to the manuscript.
+- Any intermediate result required for the manuscript's contribution.
+- Any unresolved proof obligation.
+- Any mathematical statement merely because its proof is difficult.
+- Any statement merely because formalization is taking too long.
+
+NEVER place the desired conclusion inside an axiom.
+
+NEVER disguise a manuscript theorem as an external result.
+
+NEVER introduce an undocumented assumption.
+
+NEVER use a stronger external statement than the cited literature establishes.
+
+NEVER use an axiom to bypass a mathematical gap in the manuscript's own argument.
+
+Maintain a separate register specifying the complete statement, published source, justification, and dependent declarations for every external axiom.
+
+3.8 Insert temporary "sorry" placeholders
+
+After the complete dependency structure and all theorem statements have been translated, use "sorry" only for proofs that remain to be formalized.
+
+At this stage, "sorry" is a temporary translation device.
+
+It MUST NOT be used to avoid translating a theorem, definition, hypothesis, or mathematical dependency.
+
+It MUST NOT be used to conceal a weakened statement.
+
+It MUST NOT be used to hide missing mathematical content.
+
+The purpose is to obtain a complete first-pass Lean representation of the manuscript before undertaking the full proof formalization.
+
+3.9 Verify the complete first-pass translation
+
+Resolve all syntax, elaboration, import, type, namespace, and dependency errors.
+
+Run the complete project build.
+
+Verify that every substantive mathematical result is represented.
+
+Verify that every translated statement has passed the fidelity check.
+
+Verify that external axioms satisfy the prescribed restrictions.
+
+STAGE 3 IS COMPLETE ONLY WHEN THE ENTIRE MANUSCRIPT HAS BEEN TRANSLATED IN DEPENDENCY ORDER, EVERY STATEMENT HAS BEEN CHECKED, AND THE COMPLETE PROJECT BUILDS WITH TEMPORARY PROOF PLACEHOLDERS.
+
+---
+
+STAGE 4 — COMPLETE FORMAL PROOFS AND ELIMINATE ALL MANUSCRIPT-OWNED "SORRY"
+
+4.1 Start proof formalization immediately
+
+Immediately after Stage 3 succeeds, begin eliminating the temporary "sorry" placeholders.
+
+The objective is to prove EVERY mathematical result that the manuscript is responsible for establishing.
+
+Do not stop after the main theorem.
+
+Do not leave auxiliary lemmas unproved.
+
+Do not leave intermediate propositions unproved.
+
+Do not leave corollaries unproved.
+
+Do not leave any manuscript-owned result represented by "sorry".
+
+4.2 Formalize every proof from its mathematical foundations
+
+For every result:
+
+1. Inspect the original proof.
+2. Inspect the formal statement.
+3. Identify every dependency.
+4. Formalize the required definitions.
+5. Formalize the necessary intermediate claims.
+6. Formalize every mathematical inference.
+7. Introduce additional justified lemmas where required.
+8. Complete the Lean proof.
+9. Verify the declaration.
+10. Remove the corresponding "sorry".
+11. Update the correspondence record.
+
+Do not translate only the visible outline of a proof.
+
+Formalize the complete mathematical reasoning needed to establish the result.
+
+4.3 Repair incomplete proofs rather than abandoning them
+
+If an informal proof is incomplete, insufficiently explicit, ambiguous, or incorrect, investigate and repair it.
+
+Determine whether the obstruction is:
+
+- A Lean implementation problem.
+- A missing Mathlib result.
+- A missing intermediate lemma.
+- An omitted justification.
+- A genuine mathematical gap.
+- An invalid inference.
+- A false statement.
+- A fatal mathematical flaw.
+
+Do not confuse technical difficulties with mathematical failures.
+
+If the theorem is true but the proof is incomplete
+
+Develop the missing argument and formalize it completely.
+
+If the original proof is incorrect but the conclusion is true
+
+Construct a valid replacement proof and formalize it.
+
+If a definition or construction is inadequate
+
+Develop a mathematically valid correction that preserves the intended theorem and downstream conclusions.
+
+If the conclusion cannot be preserved
+
+Investigate alternative proofs and repairs before classifying the result as fatal.
+
+If the conclusion genuinely cannot be established, document the exact flaw and its consequences. Do not manufacture a proof or silently weaken the theorem.
+
+A failed formalization attempt is a reason to investigate further, NOT a reason to abandon the result.
+
+4.4 Use Lean and Mathlib systematically
+
+Use:
+
+- "#check".
+- "#print".
+- "#print axioms".
+- Goal inspection.
+- Lean LSP.
+- Mathlib source inspection.
+- Appropriate tactics.
+- Explicit term proofs.
+- Reusable intermediate lemmas.
+- Existing mathematical libraries.
+
+Use tactics such as "simp", "rw", "exact", "apply", "refine", "norm_num", "ring", "linarith", "omega", and "aesop" where appropriate.
+
+Inspect theorem signatures and hypotheses before using library results.
+
+Do not guess theorem names or signatures.
+
+Do not rely on opaque or unnecessarily complicated tactic scripts when a clear proof is available.
+
+Keep the formalization readable and maintainable.
+
+4.5 Eliminate every deceptive proof substitute
+
+For manuscript-owned results, the following are STRICTLY FORBIDDEN:
+
+- "sorry".
+- "admit".
+- Unjustified axioms.
+- Hidden assumptions.
+- Circular proofs.
+- Local assumptions containing the desired conclusion.
+- Artificially inconsistent hypotheses.
+- Weakened theorem statements.
+- Hidden proof obligations.
+- Unjustified imported declarations.
+- Helper declarations that conceal unresolved proofs.
+- Any mechanism that makes Lean accept code without establishing the intended result.
+
+Do not rename or relocate placeholders.
+
+Do not move a "sorry" into a helper lemma.
+
+Do not disguise an assumption as a definition, parameter, typeclass instance, or imported theorem.
+
+The proof MUST be established through its actual formal dependencies.
+
+---
+
+STAGE 5 — MAXIMUM-EFFICIENCY BATCHED FORMALIZATION AND CI
+
+5.1 Organize formalization into dependency-aware batches
+
+Divide the remaining work into logically coherent batches.
+
+Prioritize:
+
+1. Foundational definitions.
+2. Elementary results.
+3. Supporting lemmas.
+4. Intermediate propositions.
+5. Main theorems.
+6. Corollaries and consequences.
+
+Only work on a dependent result when its required foundations are available.
+
+5.2 Follow this exact continuous execution cycle
+
+For EVERY batch, execute the following sequence:
+
+1. Identify the next dependency-ready results.
+2. Formalize their complete mathematical proofs.
+3. Remove their corresponding "sorry" placeholders.
+4. Run local Lean checks.
+5. Correct local errors.
+6. Submit or execute the appropriate CI/build verification.
+7. While CI is running, continue formalizing another independent batch whenever resources permit.
+8. Retrieve the previous CI output.
+9. Identify and diagnose every reported error.
+10. Correct the affected source.
+11. Re-run verification.
+12. Integrate the verified results.
+13. Continue with the next dependency-ready batch.
+
+Do not wait for the entire manuscript to be formalized before beginning verification.
+
+Do not remain idle while CI is running if independent work can proceed.
+
+Do not treat unverified code as completed work.
+
+5.3 Optimize CI usage without overloading it
+
+Use local checks and incremental builds during development.
+
+Run full builds at meaningful integration points.
+
+Avoid:
+
+- Repeated full builds after trivial changes.
+- Excessive overlapping CI jobs.
+- Unnecessary resource contention.
+- Repeated submission of unchanged failing code.
+- Abandoning verification to save time.
+
+Reuse reliable incremental build artifacts.
+
+Perform a complete integrated build after all formalization changes have been incorporated.
+
+The objective is the maximum amount of correctly verified mathematical work within the available resources.
+
+5.4 Repair every reported CI failure
+
+For each CI failure:
+
+1. Retrieve the relevant output.
+2. Identify the exact failing file and declaration.
+3. Identify the underlying cause.
+4. Correct the source.
+5. Perform local verification.
+6. Re-run the appropriate build.
+7. Confirm that the correction succeeds.
+
+Do not merely document CI failures and proceed.
+
+Do not mark a batch verified until its verification succeeds.
+
+---
+
+STAGE 6 — SEPARATE MATHEMATICAL CORRECTION AND AUDIT RECORD
+
+6.1 Record every substantive mathematical correction
+
+Maintain a separate correction audit file.
+
+Every substantive mathematical change MUST be documented.
+
+For each correction, record:
+
+1. The affected manuscript result.
+2. The original statement or proof.
+3. The exact defect.
+4. Why the original reasoning fails or is insufficient.
+5. The classification of the defect.
+6. The investigation performed.
+7. The replacement argument or construction.
+8. Why the replacement is mathematically valid.
+9. Whether the original hypotheses remain unchanged.
+10. Whether the original conclusion remains unchanged.
+11. The corresponding Lean declarations.
+12. The affected dependency chain.
+13. The necessary replacement in the revised manuscript.
+
+Do not write vague entries such as "proof repaired."
+
+Explain the actual mathematical defect and the mathematical reason the replacement works.
+
+6.2 Classify every issue accurately
+
+Use these classifications:
+
+- Formalization issue: The mathematics is sound, but its Lean implementation needs correction.
+- Missing justification: A mathematical step was omitted.
+- Incomplete proof: The argument does not yet establish the conclusion.
+- Incorrect argument: An inference is mathematically invalid.
+- False statement: The conclusion is false under the stated hypotheses.
+- Fatal flaw: The required conclusion cannot be preserved and the argument cannot be repaired.
+
+Do not misrepresent mathematical errors as technical issues.
+
+Do not misrepresent technical issues as mathematical disproofs.
+
+6.3 Document fatal, unrepairable flaws
+
+If a result cannot be proved and its conclusion cannot be preserved:
+
+1. State the exact original theorem.
+2. Identify its hypotheses and conclusion.
+3. Identify the fatal mathematical flaw.
+4. Explain precisely why the proof fails.
+5. Record the alternative approaches investigated.
+6. Explain why those approaches cannot preserve the conclusion.
+7. Identify all dependent results.
+8. Identify which conclusions remain established.
+9. Identify which conclusions cannot be established as written.
+
+Do not conceal the problem.
+
+Do not weaken the theorem silently.
+
+Do not introduce an axiom to bypass it.
+
+Do not claim successful formalization of a conclusion that remains unproved.
+
+---
+
+STAGE 7 — FINAL MATHEMATICAL AND FORMAL VERIFICATION
+
+7.1 Search the entire project for unresolved placeholders
+
+Search every source file and supporting module for:
+
+- "sorry".
+- "admit".
+- Other placeholders.
+- Unjustified axioms.
+- Hidden assumptions.
+- Unresolved declarations.
+
+Every manuscript-owned proof placeholder MUST be eliminated.
+
+Do not limit this check to the main theorem file.
+
+7.2 Inspect actual axiom dependencies
+
+Use "#print axioms" and other appropriate Lean facilities.
+
+For every external axiom, verify:
+
+- Its exact statement.
+- Its peer-reviewed source.
+- Its documented justification.
+- Its external status relative to the manuscript's contribution.
+- Its actual use in the dependency graph.
+- The absence of unsupported strengthening.
+
+Investigate every unexpected axiom dependency.
+
+The absence of visible "sorry" is NOT sufficient evidence of complete verification.
+
+7.3 Audit the complete dependency chain
+
+Inspect every principal theorem and its dependencies.
+
+Verify that:
+
+- Required definitions are correctly established.
+- All supporting lemmas are proved.
+- All intermediate propositions are proved.
+- No circular reasoning exists.
+- No hidden assumption supplies the conclusion.
+- No external axiom assumes the manuscript's contribution.
+- No dependency weakens the intended theorem.
+
+7.4 Recheck every theorem statement against the manuscript
+
+Repeat the statement-fidelity audit against the final Lean declarations.
+
+Verify every result individually.
+
+Do not rely on the initial translation check alone.
+
+Confirm that all corrections have been documented and that no unintended mathematical changes have occurred.
+
+7.5 Run the final integrated build
+
+Run the complete project build after all changes have been integrated.
+
+Verify every module and dependency.
+
+Confirm successful elaboration and compilation.
+
+Confirm reproducibility from the repository configuration.
+
+STAGE 7 IS COMPLETE ONLY WHEN THE COMPLETE PROJECT BUILDS, ALL MANUSCRIPT-OWNED PLACEHOLDERS ARE ELIMINATED, EVERY MANUSCRIPT RESULT IS REPRESENTED, AND EVERY MANUSCRIPT-OWNED RESULT IS PROVED.
+
+If a fatal flaw prevents this condition, identify it explicitly and do not claim full completion.
+
+---
+
+STAGE 8 — CORRECTED LATEX MANUSCRIPT AND PDF
+
+8.1 Produce a separate replacement LaTeX manuscript
+
+Create a separate ".tex" file containing the corrected manuscript.
+
+Its mathematics MUST agree with the formalization and the correction audit.
+
+Make ONLY changes required to:
+
+- Correct mathematical errors.
+- Supply missing justifications.
+- Replace incomplete proofs.
+- Replace incorrect proofs.
+- Correct affected statements.
+- Maintain mathematical consistency.
+- Reflect unavoidable limitations accurately.
+
+Preserve all correct original content.
+
+Do not rewrite unrelated sections.
+
+Do not add unnecessary theorems.
+
+Do not inflate the manuscript with process descriptions or generic commentary.
+
+8.2 Preserve every conclusion that has been established
+
+Where the original conclusion has been proved, preserve it.
+
+Where the original proof was incorrect but the conclusion is true, include the valid replacement proof.
+
+Where a fatal flaw prevents preservation, report it transparently.
+
+Do not present an unproved result as established.
+
+Do not imply that formal verification succeeded when it did not.
+
+8.3 Compile and verify the replacement PDF
+
+Compile the replacement ".tex" file into a PDF inside the repository.
+
+Check:
+
+- LaTeX compilation.
+- Mathematical notation.
+- Theorem environments.
+- Proof formatting.
+- Equation numbering.
+- References.
+- Cross-references.
+- Consistency with the formalized mathematics.
+
+Keep the original manuscript intact unless replacement was explicitly requested.
+
+Store the corrected ".tex" and PDF as separate files.
+
+---
+
+STAGE 9 — PROFESSIONAL REPOSITORY STANDARDS
+
+9.1 Maintain professional Lean source code
+
+Use:
+
+- Meaningful declaration names.
+- Consistent formatting.
+- Appropriate namespaces.
+- Organized imports.
+- Readable theorem statements.
+- Modular proofs.
+- Reusable lemmas.
+- Necessary technical comments.
+- Conventional project organization.
+
+Do not leave debugging code in the final source.
+
+Do not add filler comments, artificial abstractions, unnecessary dependencies, or excessive documentation.
+
+9.2 Maintain a complete and accurate README
+
+The README MUST state:
+
+- The mathematical subject.
+- Lean and Mathlib versions.
+- Required dependencies.
+- Installation and build instructions.
+- The command to build the project.
+- The module organization.
+- The location of formalized results.
+- The external-axiom policy.
+- The correction audit location.
+- The progress record location.
+- The revised manuscript and PDF locations.
+- Any genuine remaining limitations.
+
+Do not claim that the formalization is complete unless the final acceptance conditions are satisfied.
+
+9.3 Maintain professional Git history
+
+Use meaningful commits describing actual changes.
+
+Organize commits around genuine milestones:
+
+- Environment setup.
+- Manuscript translation.
+- Foundational formalization.
+- Supporting results.
+- Main theorem proofs.
+- Mathematical corrections.
+- Final verification.
+- Manuscript and documentation updates.
+
+Inspect the Git state before committing.
+
+Preserve unrelated changes.
+
+Do not create misleading commit messages or claim unverified work as complete.
+
+---
+
+STAGE 10 — RESEARCH EXISTING FORMALIZATIONS WHEN NECESSARY
+
+10.1 Search for relevant formalized mathematics
+
+Whenever a required mathematical result or formalization technique is unfamiliar or difficult to implement, search for existing work.
+
+Investigate:
+
+- Mathlib source code.
+- Lean 4 formalization repositories.
+- Formalized mathematical papers.
+- Public mathematical formalization projects.
+- Lean documentation.
+- Relevant libraries.
+- Comparable formal proofs.
+
+10.2 Read the actual source files
+
+Do not rely only on descriptions, abstracts, or claims that a result has been formalized.
+
+Read the actual source files.
+
+Inspect the definitions, theorem statements, proof structures, dependencies, assumptions, axioms, and project configuration.
+
+Determine precisely how the mathematics is represented.
+
+Do not copy code without understanding its mathematical meaning.
+
+Do not assume an existing formalization proves the exact result required.
+
+10.3 Apply the research to the current formalization
+
+Use the techniques and mathematical structures discovered to resolve the current formalization problems.
+
+Do not use external references as a substitute for proving the manuscript's own contributions.
+
+Do not stop at reporting that a comparable formalization exists.
+
+Implement and verify the appropriate solution in the current repository.
+
+---
+
+STAGE 11 — CONTINUOUS PROGRESS TRACKING
+
+11.1 Maintain the progress file throughout execution
+
+Maintain a separate progress file containing:
+
+- Current stage.
+- Completed work.
+- Work in progress.
+- Formalized results.
+- Remaining "sorry" declarations.
+- External axioms.
+- Build status.
+- CI status.
+- Errors discovered.
+- Corrections completed.
+- Remaining tasks.
+- Next concrete tasks.
+- Timestamps.
+
+11.2 Update accurately at meaningful intervals
+
+Update the file as substantial work is completed.
+
+Do not update it after every trivial operation.
+
+Do not allow it to become outdated during substantial development.
+
+Use accurate status labels:
+
+- Attempted.
+- In progress.
+- Implemented.
+- Locally checked.
+- CI verified.
+- Fully verified.
+
+Never mark a theorem as proved merely because code has been written.
+
+Never report a successful build before receiving its successful result.
+
+---
+
+ABSOLUTE PROHIBITIONS
+
+These rules apply to the entire task without exception.
+
+1. NEVER weaken any manuscript theorem to obtain compilation.
+2. NEVER change a mathematical conclusion silently.
+3. NEVER omit a substantive mathematical result.
+4. NEVER leave a manuscript-owned "sorry" in the completed formalization.
+5. NEVER use "admit" or an equivalent placeholder.
+6. NEVER assume a result that the manuscript is responsible for proving.
+7. NEVER introduce an undocumented external axiom.
+8. NEVER introduce an axiom stronger than its published source.
+9. NEVER hide a mathematical gap inside a helper declaration.
+10. NEVER confuse compilation with mathematical verification.
+11. NEVER claim a failed build succeeded.
+12. NEVER claim an unproved result has been proved.
+13. NEVER conceal a fatal mathematical flaw.
+14. NEVER replace a manuscript-owned proof with a citation.
+15. NEVER make unrelated manuscript changes.
+16. NEVER discard existing repository work.
+17. NEVER leave the audit or progress record substantially outdated.
+18. NEVER stop after an intermediate stage.
+19. NEVER present partial completion as full completion.
+20. NEVER replace the requested formalization with a lesser result.
+
+---
+
+FINAL ACCEPTANCE GATE
+
+The task MUST NOT be declared complete until the following conditions have been checked.
+
+Requirement| Mandatory completion condition
+Environment| Lean, Elan, Lake, Mathlib, and dependencies work; complete build succeeds.
+Translation| Every substantive mathematical statement is represented in Lean.
+Dependency order| Formalization follows the actual mathematical dependency structure.
+Statement fidelity| Every translated statement has been compared with the original.
+Mathlib search| Required established results have been searched for and reused where available.
+External axioms| Every permitted external axiom is precise, sourced, justified, and documented.
+Proofs| Every manuscript-owned result has a complete Lean proof.
+Placeholders| No manuscript-owned "sorry", "admit", or concealed placeholder remains.
+Dependencies| Main theorem dependency chains have been inspected.
+Corrections| Every substantive mathematical correction is documented.
+Fatal flaws| Every unrepairable flaw and its consequences are explicitly identified.
+CI| Final integrated project build succeeds.
+Manuscript| Separate corrected ".tex" file exists and agrees with the formalization.
+PDF| Corrected PDF has been compiled and checked.
+Documentation| README, audit, correspondence, and progress records are accurate.
+Repository| Changes are organized, reproducible, and preserve unrelated user work.
+
+A requirement MUST NOT be marked complete without actual verification.
+
+If a fatal mathematical flaw prevents complete formalization, state precisely which result remains unresolved and why. Do not misrepresent the outcome.
+
+---
+
+FINAL EXECUTION COMMAND
+
+Execute the entire protocol.
+
+Begin by establishing and verifying the Lean environment. Establish the project architecture. Read the complete manuscript. Determine the dependency order. Translate every substantive mathematical statement faithfully. Search Mathlib thoroughly. Introduce only properly justified axioms for established external results. Build the complete first-pass translation with temporary proof placeholders.
+
+Immediately afterward, begin eliminating every manuscript-owned "sorry".
+
+Work in dependency-aware batches. Verify continuously. While CI runs, continue independent formalization whenever possible. Retrieve CI output, correct errors, and repeat this cycle until the entire formalization has been completed.
+
+When an informal proof is incomplete or incorrect, develop and formalize a valid replacement rather than abandoning the result. Preserve the original conclusion wherever mathematically possible. Record every substantive correction and every unrepairable flaw in the separate audit file.
+
+Maintain the progress record throughout execution.
+
+After formal verification, create the separate corrected LaTeX manuscript and compile its PDF. Complete the README and repository documentation. Run the final integrated build and verify every acceptance condition.
+
+DO NOT STOP AT TRANSLATION. DO NOT STOP AT A SUCCESSFUL BUILD CONTAINING "SORRY". DO NOT STOP AFTER IDENTIFYING AN OBSTRUCTION. DO NOT SUBSTITUTE ASSUMPTIONS FOR PROOFS. DO NOT WEAKEN THE RESULTS.
+
+COMPLETE THE ENTIRE FORMALIZATION. EVERY MATHEMATICAL RESULT THE MANUSCRIPT CLAIMS TO PROVE MUST BE GENUINELY PROVED IN LEAN, WITH ONLY THE STRICTLY PERMITTED AND DOCUMENTED EXTERNAL ESTABLISHED RESULTS TAKEN AS AXIOMS.
