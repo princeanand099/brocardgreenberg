@@ -1,7 +1,6 @@
-import Mathlib
 import Mathlib.NumberTheory.Harmonic.Bounds
 import BrocardFormalization.Basic
-import BrocardFormalization.ExternalAxioms
+import BrocardFormalization.ExternalAxiomsAnalytic
 import BrocardFormalization.ExpSumCore
 import BrocardFormalization.ExpSumMid
 
@@ -219,6 +218,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     have hB₀_le_2P : (B₀ : ℝ) ≤ 2 * P := le_trans (Nat.floor_le (by linarith)) hb2P
     let F : ℕ → ℝ := fun m => ∑ r ∈ A, (h r : ℝ) * n / (2 * (m : ℝ) ^ r)
     let g : ℕ → ℂ := fun m => (w m : ℂ) * ePhase (F m)
+    -- Step 1: Replace prime indicator * log with vonMangoldt
     have h_diff_vm : ‖∑ p ∈ (Finset.Icc A₀ B₀).filter Nat.Prime, (w p * Real.log p : ℂ) * ePhase (F p) -
         ∑ m ∈ Finset.Icc A₀ B₀, (ArithmeticFunction.vonMangoldt m : ℂ) * g m‖ ≤
         64 * W₀ * P * P ^ (-η'_δ) := by
@@ -323,10 +323,12 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           ≤ W₀ * (2 * Real.sqrt B₀ * (Real.log B₀) ^ 2) := hvm
         _ ≤ W₀ * (64 * P * P ^ (-η'_δ)) := mul_le_mul_of_nonneg_left hsqrt_bd hW₀
         _ = 64 * W₀ * P * P ^ (-η'_δ) := by ring
+    -- Step 2: Vaughan's identity
     have hvaugh := vaughan_identity U U hU_pos hU_pos hA₀_pos g
     have hS1_zero : ∑ m ∈ (Finset.Icc A₀ B₀).filter (· ≤ U), (ArithmeticFunction.vonMangoldt m : ℂ) * g m = 0 := by
       refine Finset.sum_eq_zero fun m hm => ?_
       rw [Finset.mem_filter, Finset.mem_Icc] at hm; omega
+    -- Step 3: Dominance for Type I (`d ≤ U * U`)
     have hdom_I : ∀ d : ℕ, 1 ≤ d → d ≤ U * U →
         M₀ ≤ P / (d : ℝ) ∧
         (∀ k ∈ Finset.Icc 1 K_max, ∀ r ∈ A, r ≠ r₀ →
@@ -367,7 +369,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             have h1 : Nat.descFactorial (r + k - 1) k ≤ (R + K_max).factorial := by
               rw [Nat.descFactorial_eq_factorial_div_factorial (r + k - 1) k]
               exact le_trans (Nat.div_le_self _ _) (Nat.factorial_le (by omega))
-            have h2 : 1 ≤ Nat.descFactorial (r₀ + k - 1) k := Nat.descFactorial_pos (by omega : k ≤ r₀ + k - 1)
+            have h2 : 1 ≤ Nat.descFactorial (r₀ + k - 1) k := Nat.descFactorial_pos.mpr (by omega : k ≤ r₀ + k - 1)
             have h1R : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact := by exact_mod_cast h1
             have h2R : (1 : ℝ) ≤ (Nat.descFactorial (r₀ + k - 1) k : ℝ) := by exact_mod_cast h2
             nlinarith
@@ -389,7 +391,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             ← mul_assoc _ ((2 * P / d) ^ (-(r₀ : ℤ))) _, h_cancel_rhs]
           have hP_sub : P ^ (-(r : ℤ)) ≤ P ^ (-1 : ℤ) * P ^ (-(r₀ : ℤ)) := by
             rw [← zpow_add₀ hP_pos.ne']
-            exact Real.zpow_le_zpow_right₀ hP_ge1 (by omega)
+            exact zpow_le_zpow_right₀ hP_ge1 (by omega)
           have h2_le : (2 : ℝ) ^ (r₀ : ℤ) ≤ (2 : ℝ) ^ R := by
             rw [zpow_natCast]; exact pow_le_pow_right₀ (by norm_num) hr₀_R
           have hA_le_R : max (A.card : ℝ) 1 ≤ (R : ℝ) := by
@@ -473,6 +475,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               nlinarith [sq_nonneg (R : ℝ)]
           _ ≤ ((n : ℝ) ^ (δ / 3) / 8) ^ (K_max - 1) := hT_n
           _ ≤ (P / d) ^ (K_max - 1) := hpow_le
+    -- Step 4: Bound Type I sums (`S2a` and `S2b`)
     have h_sum_inv_U : ∑ d ∈ Finset.Icc 1 U, (1 : ℝ) / d ≤ 2 * Real.log P := by
       have heq : ∑ d ∈ Finset.Icc 1 U, (1 : ℝ) / d = (harmonic U : ℝ) := by
         clear hdom_I h_diff_vm hvaugh hS1_zero
@@ -495,6 +498,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       have h2 : Real.log ((U * U : ℕ) : ℝ) ≤ Real.log P := Real.log_le_log (by exact_mod_cast (by nlinarith [hU_pos]))
         (by push_cast; simpa [sq] using hU_sq_lt_P.le)
       linarith
+    -- Now bound `S2a` using `type_I_single_d_bound` and `S2b` using `type_I_no_log_single_d_bound`!
     have h_err_sum : ∀ d : ℕ, 1 ≤ d → d ≤ U * U →
         (2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp) ≤
           2 * (2 : ℝ) ^ (R + 1) * (P / d) * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) := by
@@ -620,49 +624,68 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           (∑ u ∈ d.divisors.filter (fun u => u ≤ U ∧ d / u ≤ U),
             (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt (d / u) : ℂ)) *
           ∑ r ∈ Finset.Icc ((A₀ - 1) / d + 1) (B₀ / d), g (d * r) := by
-      let S_uk := Finset.Icc 1 U ×ˢ Finset.Icc 1 U
-      have hL : ∑ u ∈ Finset.Icc 1 U, (ArithmeticFunction.moebius u : ℂ) *
-            ∑ k ∈ Finset.Icc 1 U, (ArithmeticFunction.vonMangoldt k : ℂ) *
-              ∑ m ∈ Finset.Icc ((A₀ - 1) / (u * k) + 1) (B₀ / (u * k)), g (u * k * m) =
-          ∑ uk ∈ S_uk, (ArithmeticFunction.moebius uk.1 : ℂ) * (ArithmeticFunction.vonMangoldt uk.2 : ℂ) *
-            ∑ m ∈ Finset.Icc ((A₀ - 1) / (uk.1 * uk.2) + 1) (B₀ / (uk.1 * uk.2)), g (uk.1 * uk.2 * m) := by
-        rw [Finset.sum_product]
-        refine Finset.sum_congr rfl fun u _ => ?_
-        rw [Finset.mul_sum]
-        refine Finset.sum_congr rfl fun k _ => by ring
       have hR : ∑ d ∈ Finset.Icc 1 (U * U),
             (∑ u ∈ d.divisors.filter (fun u => u ≤ U ∧ d / u ≤ U),
               (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt (d / u) : ℂ)) *
             ∑ r ∈ Finset.Icc ((A₀ - 1) / d + 1) (B₀ / d), g (d * r) =
-          ∑ uk ∈ S_uk, (ArithmeticFunction.moebius uk.1 : ℂ) * (ArithmeticFunction.vonMangoldt uk.2 : ℂ) *
-            ∑ m ∈ Finset.Icc ((A₀ - 1) / (uk.1 * uk.2) + 1) (B₀ / (uk.1 * uk.2)), g (uk.1 * uk.2 * m) := by
-        simp_rw [Finset.sum_mul]
-        rw [← Finset.sum_sigma']
-        refine Finset.sum_nbij' (fun du => (du.2, du.1 / du.2)) (fun uk => ⟨uk.1 * uk.2, uk.1⟩) ?_ ?_ ?_ ?_ ?_
-        · intro ⟨d, u⟩ hdu
-          rw [Finset.mem_sigma, Finset.mem_Icc, Finset.mem_filter, Nat.mem_divisors] at hdu
-          rcases hdu with ⟨⟨hd1, _⟩, ⟨hu_dvd, _⟩, huU, hduU⟩
-          have hu_pos : 0 < u := Nat.pos_of_dvd_of_pos hu_dvd hd1
-          have hdu_pos : 0 < d / u := Nat.div_pos (Nat.le_of_dvd hd1 hu_dvd) hu_pos
-          rw [Finset.mem_coe, Finset.mem_product, Finset.mem_Icc, Finset.mem_Icc]
-          exact ⟨⟨hu_pos, huU⟩, ⟨hdu_pos, hduU⟩⟩
-        · intro ⟨u, k⟩ huk
-          rw [Finset.mem_coe, Finset.mem_product, Finset.mem_Icc, Finset.mem_Icc] at huk
-          rcases huk with ⟨⟨hu1, huU⟩, ⟨hk1, hkU⟩⟩
-          rw [Finset.mem_coe, Finset.mem_sigma, Finset.mem_Icc, Finset.mem_filter, Nat.mem_divisors]
-          have huk_pos : 1 ≤ u * k := Nat.mul_pos hu1 hk1
-          exact ⟨⟨huk_pos, Nat.mul_le_mul huU hkU⟩, ⟨dvd_mul_right u k, by omega⟩, huU,
-            by rw [Nat.mul_div_cancel_left k hu1]; exact hkU⟩
-        · intro ⟨d, u⟩ hdu
-          rw [Finset.mem_sigma, Finset.mem_filter, Nat.mem_divisors] at hdu
-          ext <;> simp [Nat.mul_div_cancel' hdu.2.1.1]
-        · intro ⟨u, k⟩ huk
-          rw [Finset.mem_coe, Finset.mem_product, Finset.mem_Icc] at huk
-          ext <;> simp [Nat.mul_div_cancel_left k (by omega : 0 < u)]
-        · intro ⟨d, u⟩ hdu
-          rw [Finset.mem_sigma, Finset.mem_filter, Nat.mem_divisors] at hdu
-          rw [Nat.mul_div_cancel' hdu.2.1.1]
-      rw [hL, hR]
+          ∑ u ∈ Finset.Icc 1 U, (ArithmeticFunction.moebius u : ℂ) *
+            ∑ k ∈ Finset.Icc 1 U, (ArithmeticFunction.vonMangoldt k : ℂ) *
+              ∑ m ∈ Finset.Icc ((A₀ - 1) / (u * k) + 1) (B₀ / (u * k)), g (u * k * m) := by
+        have hflt : ∀ d ∈ Finset.Icc 1 (U * U),
+            (∑ u ∈ d.divisors.filter (fun u => u ≤ U ∧ d / u ≤ U),
+              (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt (d / u) : ℂ)) *
+            ∑ r ∈ Finset.Icc ((A₀ - 1) / d + 1) (B₀ / d), g (d * r) =
+            ∑ u ∈ d.divisors.filter (fun u => 1 ≤ u ∧ u ≤ U),
+              (if d / u ≤ U then
+                (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt (d / u) : ℂ) *
+                  ∑ r ∈ Finset.Icc ((A₀ - 1) / (u * (d / u)) + 1) (B₀ / (u * (d / u))), g (u * (d / u) * r)
+              else 0) := by
+          intro d _
+          rw [Finset.sum_mul, ← Finset.sum_filter_add_sum_filter_not (d.divisors.filter (fun u => 1 ≤ u ∧ u ≤ U)) (fun u => d / u ≤ U)]
+          have h0 : ∑ u ∈ (d.divisors.filter (fun u => 1 ≤ u ∧ u ≤ U)).filter (fun u => ¬ d / u ≤ U),
+              (if d / u ≤ U then
+                (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt (d / u) : ℂ) *
+                  ∑ r ∈ Finset.Icc ((A₀ - 1) / (u * (d / u)) + 1) (B₀ / (u * (d / u))), g (u * (d / u) * r)
+              else 0) = 0 :=
+            Finset.sum_eq_zero fun u hu => by
+              have hnot : ¬ d / u ≤ U := (Finset.mem_filter.mp hu).2
+              simp [hnot]
+          rw [h0, add_zero, Finset.filter_filter]
+          have hset : d.divisors.filter (fun u => u ≤ U ∧ d / u ≤ U) =
+              d.divisors.filter (fun u => (1 ≤ u ∧ u ≤ U) ∧ d / u ≤ U) := by
+            ext u; simp only [Finset.mem_filter]
+            exact ⟨fun ⟨hu, h1, h2⟩ => ⟨hu, ⟨Nat.pos_of_mem_divisors hu, h1⟩, h2⟩,
+              fun ⟨hu, ⟨_, h1⟩, h2⟩ => ⟨hu, h1, h2⟩⟩
+          refine Finset.sum_congr hset fun u hu => ?_
+          have hu_dvd : u ∣ d := Nat.dvd_of_mem_divisors (Finset.mem_filter.mp hu).1
+          have hdu : d / u ≤ U := (Finset.mem_filter.mp hu).2.2
+          simp only [hdu, ↓reduceIte, Nat.mul_div_cancel' hu_dvd]
+        rw [Finset.sum_congr rfl hflt, sum_Icc_divisors_filter (by norm_num) (by norm_num)
+          (fun u k => if k ≤ U then
+            (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt k : ℂ) *
+              ∑ r ∈ Finset.Icc ((A₀ - 1) / (u * k) + 1) (B₀ / (u * k)), g (u * k * r)
+          else 0)]
+        refine Finset.sum_congr rfl fun u hu => ?_
+        have hu1 : 1 ≤ u := (Finset.mem_Icc.mp hu).1
+        have huU : u ≤ U := (Finset.mem_Icc.mp hu).2
+        rw [show (1 - 1) / u + 1 = 1 by simp, ← Finset.sum_filter_add_sum_filter_not (Finset.Icc 1 (U * U / u)) (· ≤ U)]
+        have h0 : ∑ k ∈ (Finset.Icc 1 (U * U / u)).filter (fun k => ¬ k ≤ U),
+            (if k ≤ U then
+              (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt k : ℂ) *
+                ∑ r ∈ Finset.Icc ((A₀ - 1) / (u * k) + 1) (B₀ / (u * k)), g (u * k * r)
+            else 0) = 0 :=
+          Finset.sum_eq_zero fun k hk => by
+            have hnot : ¬ k ≤ U := (Finset.mem_filter.mp hk).2
+            simp [hnot]
+        rw [h0, add_zero, Finset.mul_sum]
+        have hset_k : (Finset.Icc 1 (U * U / u)).filter (· ≤ U) = Finset.Icc 1 U := by
+          ext k; simp only [Finset.mem_filter, Finset.mem_Icc]
+          have hU_le : U ≤ U * U / u := (Nat.le_div_iff_mul_le hu1).mpr (Nat.mul_le_mul_left U huU)
+          omega
+        refine Finset.sum_congr hset_k fun k hk => ?_
+        have hkU : k ≤ U := (Finset.mem_Icc.mp hk).2
+        simp only [hkU, ↓reduceIte, mul_assoc]
+      exact hR.symm
     have hS2b_bd : ‖∑ d ∈ Finset.Icc 1 (U * U),
           (∑ u ∈ d.divisors.filter (fun u => u ≤ U ∧ d / u ≤ U),
             (ArithmeticFunction.moebius u : ℂ) * (ArithmeticFunction.vonMangoldt (d / u) : ℂ)) *
@@ -735,6 +758,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             have hnn : 0 ≤ max C_exp 3 * (2 : ℝ) ^ (R + 1) * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 2 := by positivity
             linarith [show 16 * max C_exp 3 * (2 : ℝ) ^ (R + 1) * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * Real.log P * (2 * Real.log P) =
               32 * max C_exp 3 * (2 : ℝ) ^ (R + 1) * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 2 by ring]
+    -- Step 5: Dominance for Type II
     have hdom_II : ∀ (X₁ Y₁ Y₂ : ℕ), 1 ≤ X₁ → P ^ (1 / 3 : ℝ) / 8 ≤ (X₁ : ℝ) → 1 ≤ Y₁ → Y₁ ≤ Y₂ → Y₂ ≤ 2 * Y₁ →
         P / 4 ≤ (X₁ : ℝ) * (Y₁ : ℝ) →
         ∀ y₁ ∈ Finset.Icc Y₁ Y₂, ∀ y₂ ∈ Finset.Icc Y₁ Y₂, y₁ ≠ y₂ →
@@ -776,7 +800,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             have h1 : Nat.descFactorial (r + k - 1) k ≤ (R + K_max).factorial := by
               rw [Nat.descFactorial_eq_factorial_div_factorial (r + k - 1) k]
               exact le_trans (Nat.div_le_self _ _) (Nat.factorial_le (by omega))
-            have h2 : 1 ≤ Nat.descFactorial (r₀ + k - 1) k := Nat.descFactorial_pos (by omega : k ≤ r₀ + k - 1)
+            have h2 : 1 ≤ Nat.descFactorial (r₀ + k - 1) k := Nat.descFactorial_pos.mpr (by omega : k ≤ r₀ + k - 1)
             have h1R : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact := by exact_mod_cast h1
             have h2R : (1 : ℝ) ≤ (Nat.descFactorial (r₀ + k - 1) k : ℝ) := by exact_mod_cast h2
             nlinarith
@@ -784,7 +808,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             have h1 : A.card ≤ R := le_trans (Finset.card_le_card hA_sub) (by rw [Nat.card_Icc]; omega)
             exact max_le (by exact_mod_cast h1) (by exact_mod_cast (by omega : 1 ≤ R))
           have hXY_sub : (X₁ : ℝ) ^ (-(r : ℤ)) * (Y₁ : ℝ) ^ (-(r + 1 : ℤ)) ≤
-               (4 / P) * ((X₁ : ℝ) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ))) := by
+              (4 / P) * ((X₁ : ℝ) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ))) := by
             have h1 : ((X₁ : ℝ) * (Y₁ : ℝ)) ^ (-(r - r₀ : ℤ)) ≤ (P / 4) ^ (-(r - r₀ : ℤ)) := by
               rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
               exact inv_anti₀ (pow_pos (by positivity) _) (pow_le_pow_left₀ (by positivity) hXY_lo _)
@@ -820,7 +844,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           have h2_prod : (2 : ℝ) ^ (r - 1) * (2 : ℝ) ^ (2 * r₀ : ℤ) * (2 : ℝ) ^ (r₀ : ℤ) ≤ (2 : ℝ) ^ (4 * R + 1) := by
             rw [← zpow_natCast (2 : ℝ) (r - 1), ← zpow_add₀ (by norm_num), ← zpow_add₀ (by norm_num),
               ← zpow_natCast (2 : ℝ) (4 * R + 1)]
-            exact Real.zpow_le_zpow_right₀ (by norm_num) (by omega)
+            exact zpow_le_zpow_right₀ (by norm_num) (by omega)
           have hr_le_R : (r : ℝ) ≤ R := by exact_mod_cast hr_R
           have hr0_ge1 : (1 : ℝ) ≤ r₀ := by exact_mod_cast hr₀_1
           calc |(h r : ℝ) * (n : ℝ) / 2 * ((y₁ : ℝ) ^ (-(r : ℤ)) - (y₂ : ℝ) ^ (-(r : ℤ)))| *
@@ -951,6 +975,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                   (pow_le_pow_right₀ (by norm_num) (by omega)) (by positivity)) (by norm_num))
           _ ≤ ((n : ℝ) ^ (δ / 3) / 8) ^ (K_max - 1) := by linarith [hT_n]
           _ ≤ (X₁ : ℝ) ^ (K_max - 1) := hpow_le
+    -- Step 6: Bound Type II sum (`S3`)
     have hS3_bd : ‖∑ k ∈ Finset.Icc (U + 1) (B₀ / U), (ArithmeticFunction.vonMangoldt k : ℂ) *
           ∑ r ∈ Finset.Icc (max ((A₀ - 1) / k + 1) (U + 1)) (B₀ / k),
             (-∑ d ∈ r.divisors.filter (· ≤ U), (ArithmeticFunction.moebius d : ℂ)) * g (k * r)‖ ≤
@@ -1084,6 +1109,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                         linarith [Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Y₂) : (1 : ℝ) ≤ Y₂)]) hlog_bd 3)
                         (by positivity) (by positivity)
                   _ = 16 * (Y₁ : ℝ) * (Real.log P) ^ 3 := by ring
+            -- Helper for a single `(X₁, X_top, Y₁, Y₂)` sub-block
             have hsub_block : ∀ (X₁ X_top Y₁ Y₂ : ℕ) (a_c b_c : ℕ → ℂ) (A_n B_n : ℝ),
                 1 ≤ X₁ → M₀ ≤ (X₁ : ℝ) → P ^ (1 / 3 : ℝ) / 8 ≤ (X₁ : ℝ) → X_top ≤ 2 * X₁ →
                 (X₁ : ℝ) ≤ 2 * Real.sqrt P →
@@ -1178,6 +1204,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                   _ = (Real.sqrt C_II_sq * W₀ * P * (Real.log P) ^ 2 * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ))) ^ 2 := by
                       rw [mul_pow, mul_pow, mul_pow, mul_pow, Real.sq_sqrt (by positivity)]; ring
               exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq_le
+            -- Now apply `hsub_block` by splitting `[Y_lo, Y_hi]` into at most 3 dyadic pieces!
             set Y_lo := max (U + 1) (A₀ / (2 * K₁))
             set Y_hi := B₀ / K₁
             have hY_lo_hi : ∀ k ∈ Finset.Icc K₁ K₂,
@@ -1206,6 +1233,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 have hr_A : (A₀ - 1) / k + 1 ≤ r :=
                   Nat.succ_le_of_lt (Nat.div_lt_of_lt_mul (by rw [mul_comm]; omega))
                 exact ⟨max_le hr_A hr_U, (Nat.le_div_iff_mul_le (by omega)).mpr (by linarith)⟩
+            -- Split `[Y_lo, Y_hi]` into at most 3 dyadic intervals `[Y_lo, 2*Y_lo]`, `[2*Y_lo+1, 4*Y_lo]`, `[4*Y_lo+1, Y_hi]`
+            -- First check `Y_hi ≤ 8 * Y_lo` (when `Y_lo ≤ Y_hi`):
             by_cases hY_empty : Y_hi < Y_lo
             · have h0 : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                   ∑ r ∈ Finset.Icc (max ((A₀ - 1) / k + 1) (U + 1)) (B₀ / k), c_r r * g (k * r) = 0 := by
@@ -1215,6 +1244,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             · push_neg at hY_empty
               have hY_lo_pos : 1 ≤ Y_lo := le_trans (by omega : 1 ≤ U + 1) (le_max_left _ _)
               have hY_hi_8 : Y_hi ≤ 8 * Y_lo := by
+                -- `Y_hi = B₀ / K₁ ≤ 2 * P / K₁`, and `Y_lo ≥ A₀ / (2 * K₁) ≥ (P - 2 K₁) / (2 K₁)`
                 have h1 : (Y_hi : ℝ) ≤ 2 * P / K₁ := by
                   rw [le_div_iff₀ (by exact_mod_cast hK₁_pos)]
                   exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
@@ -1225,6 +1255,23 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                     have hPA : P ≤ (A₀ : ℝ) := le_trans hPa (Nat.le_ceil a)
                     exact lt_of_le_of_lt hPA (by exact_mod_cast (by linarith : A₀ < (A₀ / (2 * K₁) + 1) * (2 * K₁)))
                   push_cast at hlt; linarith
+                have h3 : (2 * K₁ : ℝ) ≤ P / 2 := by
+                  have hK2_BU : (K₁ : ℝ) ≤ B₀ / U := by exact_mod_cast le_trans hK₁₂ (min_le_right _ _)
+                  have hBU : (B₀ : ℝ) / U ≤ 2 * P / (P ^ (1 / 3 : ℝ) / 2) := by
+                    refine div_le_div₀ (by positivity) hB₀_le_2P (by positivity) ?_
+                    linarith [hU_ge_M0, le_max_left (8 * M₀ + 8) (Real.exp 2),
+                      show (8 * M₀ + 8 : ℝ) ≤ P ^ (1 / 3 : ℝ) from le_trans (le_max_left _ _) hP13_ge]
+                  have hP23 : 4 * P ^ (2 / 3 : ℝ) ≤ P / 2 := by
+                    have h1 : 8 ≤ P ^ (1 / 3 : ℝ) := by linarith [le_trans (le_max_left _ _) hP13_ge, hM₀]
+                    calc 4 * P ^ (2 / 3 : ℝ) ≤ (P ^ (1 / 3 : ℝ) / 2) * P ^ (2 / 3 : ℝ) := by
+                          refine mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+                      _ = P / 2 := by rw [div_mul_eq_mul_div, ← Real.rpow_add hP_pos]; norm_num
+                  calc 2 * (K₁ : ℝ) ≤ 2 * (2 * P / (P ^ (1 / 3 : ℝ) / 2)) := by linarith
+                    _ = 8 * P ^ (2 / 3 : ℝ) := by
+                        rw [show P = P ^ (1 / 3 : ℝ) * P ^ (2 / 3 : ℝ) by rw [← Real.rpow_add hP_pos]; norm_num]
+                        field_simp [(Real.rpow_pos_of_pos hP_pos _).ne']; ring
+                    _ ≤ P := by linarith
+                    -- Wait: `8 * P^(2/3) ≤ P / 2` holds for `P^(1/3) ≥ 16`, which holds since `P^(1/3) ≥ 8*M₀+8 ≥ 136`!
                 have h2' : P / (4 * K₁) ≤ (Y_lo : ℝ) := by
                   have h1 : 2 * (K₁ : ℝ) ≤ P / 2 := by
                     have hK2_BU : (K₁ : ℝ) ≤ B₀ / U := by exact_mod_cast le_trans hK₁₂ (min_le_right _ _)
@@ -1285,6 +1332,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
               have hY_hi_B0 : Y_hi ≤ B₀ := Nat.div_le_self B₀ K₁
               have hK₂_B0 : K₂ ≤ B₀ := le_trans (min_le_right _ _) (Nat.div_le_self B₀ U)
+              -- Split `Finset.Icc Y_lo Y_hi` into `[Y_lo, min Y_hi (2 * Y_lo)]`, `[2 * Y_lo + 1, min Y_hi (4 * Y_lo)]`, `[4 * Y_lo + 1, Y_hi]`
               have hpart_Y : Finset.Icc Y_lo Y_hi =
                   Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo)) ∪
@@ -1296,6 +1344,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               have hd123 : Disjoint (Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo))) (Finset.Icc (4 * Y_lo + 1) Y_hi) := by
                 rw [Finset.disjoint_left]; intro r h1 h2; simp only [Finset.mem_union, Finset.mem_Icc] at h1 h2; omega
+              -- Helper for one `(Y_a, Y_b)` piece
               have hpiece : ∀ (Y_a Y_b : ℕ), Y_lo ≤ Y_a → Y_b ≤ Y_hi → Y_b ≤ 2 * Y_a →
                   ‖∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                       ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
@@ -1331,6 +1380,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                       hK₁_pos hK₁_M0 (by linarith) hK₂_2K₁ hK_sq hYa_pos hYab hYb2 hKY_lo hKY_hi
                       hAn hBn (by positivity) (by positivity) hAB
                   · push_neg at hK_sq
+                    -- Swap `k` and `r`!
                     have hswap : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                           ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
                             c_r r * g (k * r) =
@@ -1426,6 +1476,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               have hnn : 0 ≤ Real.sqrt C_II_sq * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3 := by positivity
               linarith [show (2 * Real.log P) * (6 * Real.sqrt C_II_sq * W₀ * P * (Real.log P) ^ 2 * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ))) =
                 12 * Real.sqrt C_II_sq * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3 by ring]
+    -- Combine Steps 1–6!
     have hS3_rew : ∑ k ∈ Finset.Icc (U + 1) (B₀ / U), (ArithmeticFunction.vonMangoldt k : ℂ) *
           ∑ r ∈ Finset.Icc (max (U + 1) ((A₀ - 1) / k + 1)) (B₀ / k),
             (-∑ d ∈ r.divisors.filter (· ≤ U), (ArithmeticFunction.moebius d : ℂ)) * g (k * r) =
@@ -1582,6 +1633,7 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     have hP1 : 1 ≤ P := le_trans (Real.one_le_rpow (by exact_mod_cast (by omega : 1 ≤ n)) hδ0.le) hP_lo
     exact Real.log_nonneg hP1
   have hlogP_cube : (Real.log P) ^ 3 ≤ (Real.log n) ^ 3 := pow_le_pow_left₀ hlogP_nn hlogP_le 3
+  -- Bound `T₀ ^ (-1 / 6) * (log P)^3`
   have hT₀_pow : T₀ ^ (-1 / 6 : ℝ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hT0_rpow : T₀ ^ (-1 / 6 : ℝ) ≤ ((2 : ℝ) ^ (-(R : ℤ)) * (Real.log n) ^ AR) ^ (-1 / 6 : ℝ) := by
       rw [show (-1 / 6 : ℝ) = -(1 / 6 : ℝ) by ring, Real.rpow_neg (by positivity), Real.rpow_neg (by positivity)]
@@ -1609,6 +1661,7 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       _ = (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
           rw [← zpow_add₀ hlog_pos.ne']
           congr 2; omega
+  -- Bound `P ^ (-η'_δ) * (log P)^3`
   have hP_pow : P ^ (-η'_δ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hP_rpow : P ^ (-η'_δ) ≤ (Real.log n) ^ (-(R + 5 : ℤ)) := by
       rw [Real.rpow_neg hP_pos.le, zpow_neg, zpow_natCast]
@@ -1623,7 +1676,7 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       _ ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) :=
           mul_le_mul_of_nonneg_right (one_le_pow₀ (by norm_num)) (by positivity)
   calc C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3
-      = C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) * (Real.log P) ^ 3 + P ^ (-η'_δ) * (Real.log P) ^ 3) := by ring
+       = C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) * (Real.log P) ^ 3 + P ^ (-η'_δ) * (Real.log P) ^ 3) := by ring
     _ ≤ C_δ * W₀ * P * ((2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) + (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ))) :=
         mul_le_mul_of_nonneg_left (add_le_add hT₀_pow hP_pow) (by positivity)
     _ = C'_δ * W₀ * P * (Real.log n) ^ (-(R + 2 : ℤ)) := by dsimp only [C'_δ]; ring
