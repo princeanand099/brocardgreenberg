@@ -211,9 +211,9 @@ lemma type_II_inner_sum_bound
             exact ⟨lt_of_le_of_lt (le_trans hPa (Nat.le_ceil a)) ((div_lt_iff₀ hy₂_pos).mp ht_lo2),
               lt_of_lt_of_le ((lt_div_iff₀ hy₂_pos).mp ht_hi2) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
           have hw1_da : DifferentiableAt ℝ w (t * y₁) :=
-            (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem1.1 hmem1.2)
+            (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem1.1 hmem1.2)
           have hw2_da : DifferentiableAt ℝ w (t * y₂) :=
-            (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem2.1 hmem2.2)
+            (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem2.1 hmem2.2)
           have h1 : HasDerivAt (fun u => w (u * y₁)) (deriv w (t * y₁) * y₁) t :=
             hw1_da.hasDerivAt.comp t ((hasDerivAt_id t).mul_const (y₁ : ℝ))
           have h2 : HasDerivAt (fun u => w (u * y₂)) (deriv w (t * y₂) * y₂) t :=
@@ -221,12 +221,12 @@ lemma type_II_inner_sum_bound
           rw [(h1.mul h2).deriv]
           congr 1; ring
         have hw'_int : IntervalIntegrable (fun u => |deriv w u|) MeasureTheory.volume P (2 * P) :=
-          (hw_diff.continuousOn_deriv (uniqueDiffOn_Icc (by linarith : P < 2 * P)) le_rfl).abs.intervalIntegrable
+          contDiffOn_Icc_abs_deriv_intervalIntegrable (by linarith : P < 2 * P) hw_diff
         have hint1 : IntervalIntegrable (fun t => W₀ * ((y₁ : ℝ) * |deriv w (t * y₁)|))
             MeasureTheory.volume a₁₂ b₁₂ := by
           have h1 : IntervalIntegrable (fun u => |deriv w u|) MeasureTheory.volume (a₁₂ * y₁) (b₁₂ * y₁) :=
             hw'_int.mono_set (by
-              rw [Set.uIcc_of_le (by positivity : a₁₂ * y₁ ≤ b₁₂ * y₁),
+              rw [Set.uIcc_of_le (mul_le_mul_of_nonneg_right h_empty hy₁_pos.le),
                 Set.uIcc_of_le (by linarith : P ≤ 2 * P)]
               intro u hu
               exact ⟨le_trans (hmem_P2P a₁₂ ⟨le_rfl, h_empty⟩).1.1 hu.1,
@@ -236,18 +236,22 @@ lemma type_II_inner_sum_bound
             MeasureTheory.volume a₁₂ b₁₂ := by
           have h1 : IntervalIntegrable (fun u => |deriv w u|) MeasureTheory.volume (a₁₂ * y₂) (b₁₂ * y₂) :=
             hw'_int.mono_set (by
-              rw [Set.uIcc_of_le (by positivity : a₁₂ * y₂ ≤ b₁₂ * y₂),
+              rw [Set.uIcc_of_le (mul_le_mul_of_nonneg_right h_empty hy₂_pos.le),
                 Set.uIcc_of_le (by linarith : P ≤ 2 * P)]
               intro u hu
               exact ⟨le_trans (hmem_P2P a₁₂ ⟨le_rfl, h_empty⟩).2.1 hu.1,
                 le_trans hu.2 (hmem_P2P b₁₂ ⟨h_empty, le_rfl⟩).2.2⟩)
           exact ((h1.comp_mul_right (y₂ : ℝ)).const_mul (y₂ : ℝ)).const_mul W₀
         have hint_w : IntervalIntegrable (fun t => |deriv w₁₂ t|) MeasureTheory.volume a₁₂ b₁₂ :=
-          (hw₁₂_diff.continuousOn_deriv (uniqueDiffOn_Icc hab_lt) le_rfl).abs.intervalIntegrable
+          contDiffOn_Icc_abs_deriv_intervalIntegrable hab_lt hw₁₂_diff
         have hmono : ∫ t in a₁₂..b₁₂, |deriv w₁₂ t| ≤
             ∫ t in a₁₂..b₁₂, (W₀ * ((y₁ : ℝ) * |deriv w (t * y₁)|) + W₀ * ((y₂ : ℝ) * |deriv w (t * y₂)|)) := by
           refine intervalIntegral.integral_mono_ae_restrict h_empty hint_w (hint1.add hint2) ?_
-          filter_upwards [MeasureTheory.ae_iff.mpr (MeasureTheory.measure_singleton b₁₂)] with t ht hmem
+          refine (MeasureTheory.ae_restrict_iff' measurableSet_Ioc).mpr ?_
+          have hne_pt : ∀ᵐ t ∂MeasureTheory.volume, t ≠ b₁₂ := by
+            rw [MeasureTheory.ae_iff]
+            simp only [Classical.not_not, Set.setOf_eq_eq_singleton, MeasureTheory.measure_singleton]
+          filter_upwards [hne_pt] with t ht hmem
           have ht_oo : t ∈ Set.Ioo a₁₂ b₁₂ := ⟨(Set.Ioc_subset_Icc_self hmem).1, lt_of_le_of_ne hmem.2 ht⟩
           have ht_cc : t ∈ Set.Icc a₁₂ b₁₂ := Set.Ioo_subset_Icc_self ht_oo
           rw [hderiv_eq t ht_oo]
@@ -269,7 +273,8 @@ lemma type_II_inner_sum_bound
             ← mul_assoc (y₁ : ℝ), mul_inv_cancel₀ hy₁_pos.ne', one_mul]
           have hsub : ∫ u in (a₁₂ * y₁)..(b₁₂ * y₁), |deriv w u| ≤ ∫ u in P..(2 * P), |deriv w u| :=
             intervalIntegral.integral_mono_interval (hmem_P2P a₁₂ ⟨le_rfl, h_empty⟩).1.1
-              (by positivity) (hmem_P2P b₁₂ ⟨h_empty, le_rfl⟩).1.2 (fun _ => abs_nonneg _) hw'_int
+              (mul_le_mul_of_nonneg_right h_empty hy₁_pos.le) (hmem_P2P b₁₂ ⟨h_empty, le_rfl⟩).1.2
+              (Filter.Eventually.of_forall fun _ => abs_nonneg _) hw'_int
           calc W₀ * ∫ u in (a₁₂ * y₁)..(b₁₂ * y₁), |deriv w u|
               ≤ W₀ * ∫ u in P..(2 * P), |deriv w u| := mul_le_mul_of_nonneg_left hsub hW₀
             _ ≤ W₀ * W₀ := mul_le_mul_of_nonneg_left hw_tv hW₀
@@ -280,7 +285,8 @@ lemma type_II_inner_sum_bound
             ← mul_assoc (y₂ : ℝ), mul_inv_cancel₀ hy₂_pos.ne', one_mul]
           have hsub : ∫ u in (a₁₂ * y₂)..(b₁₂ * y₂), |deriv w u| ≤ ∫ u in P..(2 * P), |deriv w u| :=
             intervalIntegral.integral_mono_interval (hmem_P2P a₁₂ ⟨le_rfl, h_empty⟩).2.1
-              (by positivity) (hmem_P2P b₁₂ ⟨h_empty, le_rfl⟩).2.2 (fun _ => abs_nonneg _) hw'_int
+              (mul_le_mul_of_nonneg_right h_empty hy₂_pos.le) (hmem_P2P b₁₂ ⟨h_empty, le_rfl⟩).2.2
+              (Filter.Eventually.of_forall fun _ => abs_nonneg _) hw'_int
           calc W₀ * ∫ u in (a₁₂ * y₂)..(b₁₂ * y₂), |deriv w u|
               ≤ W₀ * ∫ u in P..(2 * P), |deriv w u| := mul_le_mul_of_nonneg_left hsub hW₀
             _ ≤ W₀ * W₀ := mul_le_mul_of_nonneg_left hw_tv hW₀
@@ -394,7 +400,7 @@ lemma type_II_inner_sum_bound
         have h2_le : (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * (2 : ℝ) ^ (3 * R) ≤ (1 / 2 : ℝ) * (2 : ℝ) ^ (-(2 * r₀ : ℤ)) := by
           rw [show (1 / 2 : ℝ) = (2 : ℝ) ^ (-1 : ℤ) by norm_num, ← zpow_natCast (2 : ℝ) (3 * R),
             ← zpow_add₀ (by norm_num), ← zpow_add₀ (by norm_num)]
-          exact Real.zpow_le_zpow_right₀ (by norm_num) (by have := (hA r₀ hr₀).2; omega)
+          exact zpow_le_zpow_right₀ (by norm_num) (by have := (hA r₀ hr₀).2; omega)
         dsimp only [T_y, T₀, cy]
         rw [abs_mul, abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n), abs_of_pos (by norm_num : (0 : ℝ) < 2)]
         calc (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * (|(h r₀ : ℝ)| * n / P ^ r₀) * (|(y₁ : ℝ) - y₂| / Y₁)
@@ -593,7 +599,7 @@ lemma type_II_block_bound
             (w (x * p.1) * w (x * p.2) : ℂ) * ePhase (F (x * p.1) - F (x * p.2))‖ := by
     rw [hexp_sq]
     refine le_trans (Complex.re_le_norm _) ?_
-    rw [← Finset.sum_product']
+    rw [← Finset.sum_product (s := Finset.Icc Y₁ Y₂) (t := Finset.Icc Y₁ Y₂) (f := fun p => b_coeff p.1 * star (b_coeff p.2) * ∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊), (w (x * p.1) * w (x * p.2) : ℂ) * ePhase (F (x * p.1) - F (x * p.2)))]
     refine le_trans (norm_sum_le _ _) (Finset.sum_le_sum fun p _ => ?_)
     rw [norm_mul, norm_mul, norm_star]
   set D : ℝ := (Y₁ : ℝ) * T₀ ^ (-1 / 3 : ℝ)
@@ -803,7 +809,7 @@ lemma type_II_block_bound
     have hfar_sum : ∑ p ∈ Far, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ ≤ 2 * (Y₁ : ℝ) * B_norm := by
       have hsub : Far ⊆ Finset.Icc Y₁ Y₂ ×ˢ Finset.Icc Y₁ Y₂ := Finset.filter_subset _ _
       refine le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => by positivity)) ?_
-      rw [Finset.sum_product', Finset.sum_mul_sum]
+      rw [Finset.sum_product, ← Finset.sum_mul_sum]
       have h1 : (∑ y ∈ Finset.Icc Y₁ Y₂, ‖b_coeff y‖) ^ 2 ≤ ((Finset.Icc Y₁ Y₂).card : ℝ) * B_norm := by
         have hcs := Finset.sum_mul_sq_le_sq_mul_sq (Finset.Icc Y₁ Y₂) (fun _ => (1 : ℝ)) (fun y => ‖b_coeff y‖)
         simp only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one] at hcs
@@ -939,14 +945,17 @@ lemma type_I_no_log_single_d_bound
           by calc d * t < d * (2 * (P / d)) := mul_lt_mul_of_pos_left ht.2 hd_pos
             _ = 2 * P := by field_simp [hd_pos.ne']⟩
         have hw_da : DifferentiableAt ℝ w (d * t) :=
-          (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
+          (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
         have hcomp_da : HasDerivAt (fun u => w (d * u)) (deriv w (d * t) * d) t :=
           hw_da.hasDerivAt.comp t ((hasDerivAt_id t).const_mul (d : ℝ))
         rw [hcomp_da.deriv, abs_mul, abs_of_pos hd_pos, mul_comm]
       have hint_eq : ∫ t in (P / d)..(2 * (P / d)), |deriv wd t| =
           ∫ t in (P / d)..(2 * (P / d)), (d : ℝ) * |deriv w (d * t)| := by
         refine intervalIntegral.integral_congr_ae ?_
-        filter_upwards [MeasureTheory.ae_iff.mpr (MeasureTheory.measure_singleton (2 * (P / d)))] with t ht hmem
+        have hne_pt : ∀ᵐ t ∂MeasureTheory.volume, t ≠ 2 * (P / d) := by
+          rw [MeasureTheory.ae_iff]
+          simp only [Classical.not_not, Set.setOf_eq_eq_singleton, MeasureTheory.measure_singleton]
+        filter_upwards [hne_pt] with t ht hmem
         rw [Set.uIoc_of_le (by linarith : P / d ≤ 2 * (P / d))] at hmem
         exact hderiv_eq ⟨hmem.1, lt_of_le_of_ne hmem.2 ht⟩
       rw [hint_eq, intervalIntegral.integral_const_mul]

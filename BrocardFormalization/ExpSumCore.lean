@@ -29,6 +29,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
     have : (1 : ℝ) ≤ (2 : ℝ) ^ (R + 2) := one_le_pow₀ (by norm_num)
     linarith)
   obtain ⟨C2, hC2, hvd2_bd⟩ := hvd2
+  -- Get uniform constants for `3 ≤ j ≤ K_max`
   have hex_j : ∀ j ∈ Finset.Icc 3 K_max, ∃ Cj > 0, ∀ (M₁ M₂ lam : ℝ) (G : ℝ → ℝ),
       0 ≤ M₁ → 1 ≤ M₂ - M₁ →
       (M₂ - M₁) ^ (-(5 / 2 : ℝ)) ≤ lam → lam ≤ (M₂ - M₁) ^ (-(1 / 2 : ℝ)) →
@@ -66,6 +67,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
   have hr₀_1 : 1 ≤ r₀ := (hA r₀ hr₀).1
   have hr₀_R : r₀ ≤ R := (hA r₀ hr₀).2
   set G : ℝ → ℝ := fun u => ∑ r ∈ A, c r * u ^ (-(r : ℤ))
+  -- Trivial bound if `M₂ - M₁ < M₂ ^ (3 / 4 : ℝ)`
   by_cases hL_small : M₂ - M₁ < M₂ ^ (3 / 4 : ℝ)
   · have htriv : ‖∑ m ∈ Finset.Icc ⌈M₁⌉₊ ⌊M₂⌋₊, ePhase (G m)‖ ≤
         ((Finset.Icc ⌈M₁⌉₊ ⌊M₂⌋₊).card : ℝ) := by
@@ -104,6 +106,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
       linarith
     have hL_le_M2 : L ≤ M₂ := by linarith
     have hT_pos : 0 < T := by dsimp only [T]; positivity
+    -- Case 1: `T ≤ M₂ / (6 * 2 ^ R)` (Kusmin–Landau)
     by_cases hT_small : T ≤ M₂ / (6 * (2 : ℝ) ^ R)
     · have h1 := laurent_sum_dom_bounds A R 1 hA r₀ hr₀ c hc₀ (by omega) M₁ M₂ hM₁_pos hM₁₂ hM₂
         (hdom 1 (Finset.mem_Icc.mpr ⟨le_rfl, by omega⟩))
@@ -166,6 +169,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
               have hnn2 : 0 ≤ M₂ ^ (1 - η_exp) := by positivity
               nlinarith
     · push_neg at hT_small
+      -- Case 2: `M₂ / (6 * 2^R) < T ≤ M₂ ^ (3 / 2 : ℝ)` (van der Corput `k = 2`)
       by_cases hT_vd2 : T ≤ M₂ ^ (3 / 2 : ℝ)
       · have h2 := laurent_sum_dom_bounds A R 2 hA r₀ hr₀ c hc₀ (by omega) M₁ M₂ hM₁_pos hM₁₂ hM₂
           (hdom 2 (Finset.mem_Icc.mpr ⟨by omega, by omega⟩))
@@ -245,6 +249,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
           _ ≤ C_exp * (M₂ / max T 1 + M₂ ^ (1 - η_exp)) :=
               mul_le_mul_of_nonneg_left (le_add_of_nonneg_left (by positivity)) hC_exp_pos.le
       · push_neg at hT_vd2
+        -- Case 3: `M₂ ^ (3 / 2 : ℝ) < T ≤ M₂ ^ (K_max - 1)`
         let lam_fn : ℕ → ℝ := fun j =>
           (1 / 2 : ℝ) * |c r₀| * (Nat.descFactorial (r₀ + j - 1) j : ℝ) * M₂ ^ (-(r₀ + j : ℤ))
         have hlam_K : lam_fn K_max ≤ L ^ (-(1 / 2 : ℝ)) := by
@@ -519,7 +524,7 @@ lemma sum_divisors_card_sq_le (X : ℕ) (hX : 1 ≤ X) :
       have hdvd1 : Nat.gcd d₁ d₂ ∣ d₁ := Nat.gcd_dvd_left d₁ d₂
       have hdvd2 : Nat.gcd d₁ d₂ ∣ d₂ := Nat.gcd_dvd_right d₁ d₂
       nlinarith [Nat.mul_div_cancel' hdvd1, Nat.mul_div_cancel' hdvd2]
-    rw [← Finset.sum_product']
+    rw [← Finset.sum_product (s := Finset.Icc 1 X) (t := Finset.Icc 1 X) (f := fun p => (X : ℝ) / (Nat.lcm p.1 p.2 : ℝ))]
     have hrew : ∑ p ∈ Finset.Icc 1 X ×ˢ Finset.Icc 1 X, (X : ℝ) / (Nat.lcm p.1 p.2 : ℝ) =
         ∑ p ∈ Finset.Icc 1 X ×ˢ Finset.Icc 1 X,
           (X : ℝ) / (((f p).1 : ℝ) * ((f p).2.1 : ℝ) * ((f p).2.2 : ℝ)) := by
@@ -683,25 +688,19 @@ lemma type_I_single_d_bound
             by
             calc d * t < d * (2 * (P / d)) := mul_lt_mul_of_pos_left ht.2 hd_pos
               _ = 2 * P := by field_simp [hd_pos.ne']⟩
-          exact (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
+          exact (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
         have hcomp_da : HasDerivAt (fun u => w (d * u)) (deriv w (d * t) * d) t :=
           hw_da.hasDerivAt.comp t ((hasDerivAt_id t).const_mul (d : ℝ))
         have hmul_da := hlog_da.mul hcomp_da
         rw [hmul_da.deriv]
         congr 1; ring
-      have hint_eq : ∫ t in (P / d)..(2 * (P / d)), |deriv wd t| =
-          ∫ t in (P / d)..(2 * (P / d)), |t⁻¹ * w (d * t) + Real.log t * (d * deriv w (d * t))| := by
-        refine intervalIntegral.integral_congr_ae ?_
-        filter_upwards [MeasureTheory.ae_iff.mpr (MeasureTheory.measure_singleton (2 * (P / d)))] with t ht hmem
-        rw [Set.uIoc_of_le (by linarith : P / d ≤ 2 * (P / d))] at hmem
-        exact hderiv_eq ⟨hmem.1, lt_of_le_of_ne hmem.2 ht⟩
       have hint_abs1 : IntervalIntegrable (fun t => W₀ * t⁻¹) MeasureTheory.volume (P / d) (2 * (P / d)) := by
         refine ContinuousOn.intervalIntegrable fun t ht => ?_
         rw [Set.uIcc_of_le (by linarith : P / d ≤ 2 * (P / d))] at ht
         exact (continuousOn_const.mul (continuousOn_inv₀.mono fun u hu => by
-          intro h0; subst h0; linarith [ht.1])).continuousWithinAt
+          intro h0; subst h0; linarith [hu.1])).continuousWithinAt
       have hw'_int : IntervalIntegrable (fun u => |deriv w u|) MeasureTheory.volume P (2 * P) :=
-        (hw_diff.continuousOn_deriv (uniqueDiffOn_Icc (by linarith : P < 2 * P)) le_rfl).abs.intervalIntegrable
+        contDiffOn_Icc_abs_deriv_intervalIntegrable (by linarith : P < 2 * P) hw_diff
       have hw'_mul_int : IntervalIntegrable (fun t => |deriv w ((d : ℝ) * t)|)
           MeasureTheory.volume (P / d) (2 * (P / d)) := by
         have h1 := hw'_int
@@ -712,11 +711,15 @@ lemma type_I_single_d_bound
           MeasureTheory.volume (P / d) (2 * (P / d)) :=
         (hw'_mul_int.const_mul (d : ℝ)).const_mul (Real.log (2 * P))
       have hint_wd : IntervalIntegrable (fun t => |deriv wd t|) MeasureTheory.volume (P / d) (2 * (P / d)) :=
-        (hwd_diff.continuousOn_deriv (uniqueDiffOn_Icc (by linarith : P / d < 2 * (P / d))) le_rfl).abs.intervalIntegrable
+        contDiffOn_Icc_abs_deriv_intervalIntegrable (by linarith : P / d < 2 * (P / d)) hwd_diff
       have hmono : ∫ t in (P / d)..(2 * (P / d)), |deriv wd t| ≤
           ∫ t in (P / d)..(2 * (P / d)), (W₀ * t⁻¹ + Real.log (2 * P) * ((d : ℝ) * |deriv w (d * t)|)) := by
         refine intervalIntegral.integral_mono_ae_restrict (by linarith) hint_wd (hint_abs1.add hint_abs2) ?_
-        filter_upwards [MeasureTheory.ae_iff.mpr (MeasureTheory.measure_singleton (2 * (P / d)))] with t ht hmem
+        refine (MeasureTheory.ae_restrict_iff' measurableSet_Ioc).mpr ?_
+        have hne_pt : ∀ᵐ t ∂MeasureTheory.volume, t ≠ 2 * (P / d) := by
+          rw [MeasureTheory.ae_iff]
+          simp only [Classical.not_not, Set.setOf_eq_eq_singleton, MeasureTheory.measure_singleton]
+        filter_upwards [hne_pt] with t ht hmem
         have ht_oo : t ∈ Set.Ioo (P / d) (2 * (P / d)) :=
           ⟨(Set.Ioc_subset_Icc_self hmem).1, lt_of_le_of_ne hmem.2 ht⟩
         rw [hderiv_eq t ht_oo]
@@ -870,7 +873,8 @@ lemma type_I_single_d_bound
       refine le_trans hhexp ?_
       refine mul_le_mul (le_max_left _ _) ?_ (by positivity) (by positivity)
       refine add_le_add ?_ ?_
-      · exact div_le_div₀ (by positivity) (by linarith [hu_le]) (by positivity) (max_le_max hT_ge le_rfl)
+      · exact div_le_div₀ (by positivity) (by linarith [hu_le]) (by positivity) (le_max_of_le_left hT_ge |>.trans (le_rfl) |> fun _ =>
+          max_le_max hT_ge le_rfl)
       · refine Real.rpow_le_rpow (by positivity) (by linarith [hu_le]) (by linarith)
     have hps := partial_summation_Icc (P := P / d) (a := a') (b := b') (W₀ := W₀') (E := E)
       hPd_pos hPa' ha'b' hb'2P hW₀' hE_nn hwd_bd hwd_diff hwd_tv hsum_bd
@@ -953,5 +957,7 @@ lemma sum_vonMangoldt_le (X : ℕ) (hX : 1 ≤ X) :
         _ = 4 * ((X : ℝ) ^ (1 / 2 : ℝ) * (X : ℝ) ^ (1 / 2 : ℝ)) := by ring
         _ = 4 * (X : ℝ) := by rw [← Real.rpow_add hX_pos]; norm_num
     linarith
+
+
 
 end BrocardFormalization
