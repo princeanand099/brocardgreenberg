@@ -7,6 +7,7 @@ import BrocardFormalization.ExternalAxioms
 import BrocardFormalization.ValuationParityLayer
 import BrocardFormalization.ValuationParityDensity
 import BrocardFormalization.ValuationParityDigits
+import BrocardFormalization.ValuationParityMoments
 
 noncomputable section
 
@@ -35,6 +36,7 @@ theorem lemma_2_4_i (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         (hnonzero : ∃ r ∈ A, h r ≠ 0) →
         (∀ r ∈ A, |h r| ≤ 2 * ⌊(Real.log n) ^ (R + 2)⌋₊ + 1) →
         0 ≤ W₀ → (∀ t ∈ Set.Icc P (2 * P), |w t| ≤ W₀) →
+        ContDiffOn ℝ 1 w (Set.Icc P (2 * P)) →
         (∫ t in P..(2 * P), |deriv w t|) ≤ W₀ →
         let r₀ : ℕ := (A.filter (fun r => h r ≠ 0)).min' (let ⟨r, hr, hhr⟩ := hnonzero; ⟨r, Finset.mem_filter.mpr ⟨hr, hhr⟩⟩)
         let T₀ : ℝ := (|(h r₀ : ℝ)| * n) / P ^ r₀
@@ -57,6 +59,7 @@ theorem lemma_2_4_ii (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         (hnonzero : ∃ r ∈ A, h r ≠ 0) →
         (∀ r ∈ A, |h r| ≤ 2 * ⌊(Real.log n) ^ (R + 2)⌋₊ + 1) →
         0 ≤ W₀ → (∀ t ∈ Set.Icc P (2 * P), |w t| ≤ W₀) →
+        ContDiffOn ℝ 1 w (Set.Icc P (2 * P)) →
         (∫ t in P..(2 * P), |deriv w t|) ≤ W₀ →
         let r₀ : ℕ := (A.filter (fun r => h r ≠ 0)).min' (let ⟨r, hr, hhr⟩ := hnonzero; ⟨r, Finset.mem_filter.mpr ⟨hr, hhr⟩⟩)
         let T₀ : ℝ := (|(h r₀ : ℝ)| * n) / P ^ r₀
@@ -96,28 +99,6 @@ theorem theorem_2_5_iii (h : ℕ) (hh : 2 ≤ h) (c : ZMod h) (a b : ℝ)
           (padicValNat p n.factorial : ℝ) * Real.log p) -
         ((b - a) / (h : ℝ)) * (n : ℝ) * Real.log n)
       (fun n => (n : ℝ) * Real.log n) := by
-  sorry
-
-/-- `r`-digit truncated base-`p` parity sign `ξ_p^{(r)}(n)` (Proposition 2.6). -/
-def truncParitySign (p r n : ℕ) : ℝ :=
-  - ∏ m ∈ Finset.range r, (-1 : ℝ) ^ ((n / p ^ (2 * m + 1)) % p)
-
-/-- Truncated base-`p` parity series `Σ_parity^{(r)}(n; B)`. -/
-def SigmaParityTrunc (r n B : ℕ) : ℝ :=
-  ∑ p ∈ (Finset.Icc 3 B).filter Nat.Prime,
-    truncParitySign p r n * (Real.log p / ((p : ℝ) - 1))
-
-theorem prop_2_6 :
-    ∃ (Φ ρ : ℝ → ℝ),
-      (∀ τ : ℝ, Tendsto (fun B : ℕ => ∏ p ∈ (Finset.Icc 3 B).filter Nat.Prime,
-        Real.cos (τ * Real.log p / ((p : ℝ) - 1))) atTop (𝓝 (Φ τ))) ∧
-      (∀ x : ℝ, 0 < ρ x ∧ ρ (-x) = ρ x) ∧
-      ContDiff ℝ ⊤ ρ ∧
-      (∫ x : ℝ, ρ x) = 1 ∧
-      (∀ (m : ℕ) (ε : ℝ), 0 < ε →
-        ∃ B₀ : ℕ, ∀ B ≥ B₀, ∃ r₀ : ℕ, ∀ r ≥ r₀, ∃ N₀ : ℕ, ∀ N ≥ N₀,
-          |((1 / (N : ℝ)) * ∑ n ∈ Finset.Icc 1 N, (SigmaParityTrunc r n B) ^ (2 * m)) -
-            ∫ x : ℝ, x ^ (2 * m) * ρ x| ≤ ε) := by
   sorry
 
 end BrocardFormalization

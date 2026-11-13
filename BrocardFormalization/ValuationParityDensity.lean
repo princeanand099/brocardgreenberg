@@ -67,6 +67,173 @@ private lemma h_li_bd_aux (x lx ln l2n l2 : ℝ)
         add_le_add (add_le_add h1 h2) h3
     _ = 36 * (x / ln) * l2n / ln := by ring
 
+private lemma h_err_zero_aux : Tendsto (fun n : ℕ =>
+    (Real.log (2 * Real.log n + 1) + 1) ^ 2 / Real.log n) atTop (𝓝 0) := by
+  have h1 : Tendsto (fun u : ℝ => (Real.log (2 * u + 1) + 1) ^ 2 / u) atTop (𝓝 0) := by
+    have hlo : Tendsto (fun x : ℝ => Real.log x / x ^ (1 / 4 : ℝ)) atTop (𝓝 0) := by
+      refine squeeze_zero' (by filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx; exact div_nonneg (Real.log_nonneg hx) (by positivity)) ?_
+        (by simpa using (tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 8)).const_mul 8)
+      filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+      have hr8 : 0 < x ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hx _
+      have hlog8 : Real.log (x ^ (1 / 8 : ℝ)) ≤ x ^ (1 / 8 : ℝ) := by linarith [Real.log_le_sub_one_of_pos hr8]
+      rw [Real.log_rpow hx] at hlog8
+      calc Real.log x / x ^ (1 / 4 : ℝ)
+          ≤ (8 * x ^ (1 / 8 : ℝ)) / x ^ (1 / 4 : ℝ) := div_le_div_of_nonneg_right (by linarith) (by positivity)
+        _ = 8 * x ^ (-(1 / 8 : ℝ)) := by
+            rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx]; norm_num
+    have hcomp : Tendsto (fun u : ℝ => Real.log (2 * u + 1) / (2 * u + 1) ^ (1 / 4 : ℝ)) atTop (𝓝 0) :=
+      hlo.comp (tendsto_atTop_add_const_right _ 1 (tendsto_id.const_mul_atTop (by norm_num)))
+    have hsq : Tendsto (fun u : ℝ =>
+        (Real.log (2 * u + 1) / (2 * u + 1) ^ (1 / 4 : ℝ) + 1 / (2 * u + 1) ^ (1 / 4 : ℝ)) ^ 2 *
+          ((2 * u + 1) ^ (1 / 2 : ℝ) / u)) atTop (𝓝 0) := by
+      have hinv : Tendsto (fun u : ℝ => 1 / (2 * u + 1) ^ (1 / 4 : ℝ)) atTop (𝓝 0) :=
+        tendsto_const_nhds.div_atTop
+          ((tendsto_rpow_atTop (by norm_num)).comp (tendsto_atTop_add_const_right _ 1 (tendsto_id.const_mul_atTop (by norm_num))))
+      have hsum := (hcomp.add hinv).pow 2
+      simp only [add_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow] at hsum
+      have hrat : Tendsto (fun u : ℝ => (2 * u + 1) ^ (1 / 2 : ℝ) / u) atTop (𝓝 0) := by
+        have h0 : Tendsto (fun u : ℝ => (2 + 1 / u) ^ (1 / 2 : ℝ) * u ^ (-(1 / 2 : ℝ))) atTop (𝓝 0) := by
+          have hA : Tendsto (fun u : ℝ => (2 + 1 / u) ^ (1 / 2 : ℝ)) atTop (𝓝 ((2 + 0 : ℝ) ^ (1 / 2 : ℝ))) :=
+            ((tendsto_const_nhds.add (tendsto_const_nhds.div_atTop tendsto_id)).rpow_const (by left; norm_num))
+          have hB : Tendsto (fun u : ℝ => u ^ (-(1 / 2 : ℝ))) atTop (𝓝 0) :=
+            tendsto_rpow_neg_atTop (by norm_num)
+          simpa using hA.mul hB
+        refine h0.congr' ?_
+        filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
+        have h2u : 2 * u + 1 = u * (2 + 1 / u) := by field_simp [hu.ne']; ring
+        rw [h2u, Real.mul_rpow hu.le (by positivity)]
+        have hu1 : u ^ (1 / 2 : ℝ) / u = u ^ (-(1 / 2 : ℝ)) := by
+          rw [div_eq_mul_inv, ← Real.rpow_neg_one, ← Real.rpow_add hu]; norm_num
+        rw [mul_div_assoc, mul_comm (u ^ (1 / 2 : ℝ)), ← mul_div_assoc, mul_div_right_comm, hu1, mul_comm]
+      simpa using hsum.mul hrat
+    refine hsq.congr' ?_
+    filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
+    have h2u : 0 < 2 * u + 1 := by linarith
+    have hr : ((2 * u + 1) ^ (1 / 4 : ℝ)) ^ 2 = (2 * u + 1) ^ (1 / 2 : ℝ) := by
+      rw [← Real.rpow_natCast, ← Real.rpow_mul h2u.le]; norm_num
+    field_simp [h2u.ne', hu.ne']
+    rw [div_pow, hr, div_mul_cancel₀ _ (Real.rpow_pos_of_pos h2u _).ne']
+  exact h1.comp (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop)
+
+private lemma h_li_est_aux : ∀ x : ℝ, 16 ≤ x → (Real.log x) ^ 2 ≤ Real.sqrt x →
+    |(∫ t in (2 : ℝ)..x, (Real.log t)⁻¹) - x / Real.log x| ≤
+      (x / (Real.log x) ^ 2) / Real.log 2 +
+      (x / (Real.log x) ^ 2) / Real.log x +
+      x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
+  intro x hx16 hlog_sq_le
+  have hlogx_pos : 0 < Real.log x := Real.log_pos (by linarith)
+  have hsqrt_ge4 : 4 ≤ Real.sqrt x := Real.le_sqrt_of_sq_le (by linarith)
+  set a : ℝ := x / (Real.log x) ^ 2
+  have ha_le_x : a ≤ x := by
+    have hlog1 : 1 ≤ Real.log x := by
+      have h3 : (Real.exp 1 : ℝ) ≤ x := by linarith [Real.exp_one_lt_d9]
+      simpa using Real.log_le_log (Real.exp_pos 1) h3
+    exact div_le_self (by linarith) (one_le_pow₀ hlog1)
+  have h2_le_a : 2 ≤ a := by
+    have hsqrt_le_a : Real.sqrt x ≤ a := by
+      rw [le_div_iff₀ (pow_pos hlogx_pos 2)]
+      nlinarith [Real.mul_self_sqrt (by linarith : 0 ≤ x)]
+    linarith
+  have hint1 : IntervalIntegrable (fun t : ℝ => (Real.log t)⁻¹) MeasureTheory.volume 2 a := by
+    refine ContinuousOn.intervalIntegrable fun t ht => ?_
+    rw [Set.uIcc_of_le h2_le_a] at ht
+    have hlt : 1 < t := by linarith [ht.1]
+    exact (Real.continuousAt_log (by linarith : t ≠ 0)).inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
+  have hint2 : IntervalIntegrable (fun t : ℝ => (Real.log t)⁻¹) MeasureTheory.volume a x := by
+    refine ContinuousOn.intervalIntegrable fun t ht => ?_
+    rw [Set.uIcc_of_le ha_le_x] at ht
+    have hlt : 1 < t := by linarith [ht.1, h2_le_a]
+    exact (Real.continuousAt_log (by linarith : t ≠ 0)).inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
+  have hsplit_int : ∫ t in (2 : ℝ)..x, (Real.log t)⁻¹ =
+      (∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) + (∫ t in a..x, (Real.log t)⁻¹) :=
+    (intervalIntegral.integral_add_adjacent_intervals hint1 hint2).symm
+  have h1_nn : 0 ≤ ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹ := by
+    refine intervalIntegral.integral_nonneg h2_le_a fun t ht => ?_
+    exact inv_nonneg.mpr (Real.log_nonneg (by linarith [ht.1]))
+  have h1_ub : ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹ ≤ a / Real.log 2 := by
+    have hbd : ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹ ≤ ∫ _t in (2 : ℝ)..a, (Real.log 2)⁻¹ := by
+      refine intervalIntegral.integral_mono_on h2_le_a hint1 (continuous_const.intervalIntegrable _ _) fun t ht => ?_
+      exact inv_anti₀ (Real.log_pos (by norm_num)) (Real.log_le_log (by norm_num) ht.1)
+    rw [intervalIntegral.integral_const, smul_eq_mul] at hbd
+    have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+    calc ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹
+        ≤ (a - 2) * (Real.log 2)⁻¹ := hbd
+      _ ≤ a * (Real.log 2)⁻¹ := mul_le_mul_of_nonneg_right (by linarith) (inv_nonneg.mpr hlog2.le)
+      _ = a / Real.log 2 := (div_eq_mul_inv _ _).symm
+  have h2_bd : |(∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x| ≤
+      x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
+    have hconst : (x - a) / Real.log x = ∫ _t in a..x, (Real.log x)⁻¹ := by
+      rw [intervalIntegral.integral_const, smul_eq_mul, div_eq_mul_inv]
+    rw [hconst, ← intervalIntegral.integral_sub hint2 (continuous_const.intervalIntegrable _ _)]
+    have hle_int : |∫ t in a..x, ((Real.log t)⁻¹ - (Real.log x)⁻¹)| ≤
+        ∫ t in a..x, |(Real.log t)⁻¹ - (Real.log x)⁻¹| := by
+      simpa only [Real.norm_eq_abs] using
+        intervalIntegral.norm_integral_le_integral_norm (f := fun t : ℝ => (Real.log t)⁻¹ - (Real.log x)⁻¹) ha_le_x
+    have hpt : ∀ t ∈ Set.Icc a x,
+        |(Real.log t)⁻¹ - (Real.log x)⁻¹| ≤
+          (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
+      intro t ht
+      have ht_pos : 0 < t := by linarith [ht.1, h2_le_a]
+      have hlogt_ge_a : Real.log a ≤ Real.log t := Real.log_le_log (by linarith [h2_le_a]) ht.1
+      have hloga_eq : Real.log a = Real.log x - 2 * Real.log (Real.log x) := by
+        rw [Real.log_div (by linarith) (pow_pos hlogx_pos 2).ne', Real.log_pow]; ring
+      have hlogt_ge : 1 / 2 * Real.log x ≤ Real.log t := by
+        have hsqrt_le_a : Real.sqrt x ≤ a := by
+          rw [le_div_iff₀ (pow_pos hlogx_pos 2)]
+          nlinarith [Real.mul_self_sqrt (by linarith : 0 ≤ x)]
+        have h1 := Real.log_le_log (by positivity) (le_trans hsqrt_le_a ht.1)
+        rw [Real.log_sqrt (by positivity)] at h1
+        linarith
+      have hlogt_pos : 0 < Real.log t := by linarith
+      have hlogt_le : Real.log t ≤ Real.log x := Real.log_le_log ht_pos ht.2
+      have hdiff : |(Real.log t)⁻¹ - (Real.log x)⁻¹| =
+          (Real.log x - Real.log t) / (Real.log t * Real.log x) := by
+        rw [abs_of_nonneg (sub_nonneg.mpr (inv_anti₀ hlogt_pos hlogt_le)),
+          inv_sub_inv hlogt_pos.ne' hlogx_pos.ne']
+      rw [hdiff]
+      have hlogx1 : 1 ≤ Real.log x := by
+        have h3 : Real.exp 1 ≤ x := by linarith [Real.exp_one_lt_d9]
+        simpa using Real.log_le_log (Real.exp_pos 1) h3
+      have hnum : Real.log x - Real.log t ≤ 2 * Real.log (Real.log x) := by linarith
+      have hden : (1 / 2 * Real.log x) * Real.log x ≤ Real.log t * Real.log x :=
+        mul_le_mul_of_nonneg_right hlogt_ge hlogx_pos.le
+      exact div_le_div₀ (mul_nonneg (by norm_num) (Real.log_nonneg hlogx1)) hnum (by positivity) hden
+    have hint_abs : IntervalIntegrable (fun t : ℝ => |(Real.log t)⁻¹ - (Real.log x)⁻¹|)
+        MeasureTheory.volume a x :=
+      (hint2.sub (continuous_const.intervalIntegrable _ _)).abs
+    have hmono := intervalIntegral.integral_mono_on ha_le_x hint_abs
+      (continuous_const.intervalIntegrable a x) hpt
+    rw [intervalIntegral.integral_const, smul_eq_mul] at hmono
+    have hlen : x - a ≤ x := by linarith [h2_le_a]
+    have hnn_rhs : 0 ≤ (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
+      have : 1 ≤ Real.log x := by
+        have h3 : Real.exp 1 ≤ x := by linarith [Real.exp_one_lt_d9]
+        simpa using Real.log_le_log (Real.exp_pos 1) h3
+      exact div_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg this)) (by positivity)
+    calc |∫ t in a..x, ((Real.log t)⁻¹ - (Real.log x)⁻¹)|
+        ≤ (x - a) * ((2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x)) :=
+          le_trans hle_int hmono
+      _ ≤ x * ((2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x)) :=
+          mul_le_mul_of_nonneg_right hlen hnn_rhs
+      _ = x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by ring
+  rw [hsplit_int]
+  have hdecomp : (∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) + (∫ t in a..x, (Real.log t)⁻¹) - x / Real.log x =
+      (∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) - a / Real.log x +
+      ((∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x) := by ring
+  rw [hdecomp]
+  have ha_nn : 0 ≤ a / Real.log x := div_nonneg (by linarith) hlogx_pos.le
+  calc |(∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) - a / Real.log x +
+          ((∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x)|
+      ≤ |(∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) - a / Real.log x| +
+        |(∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x| := abs_add_le _ _
+    _ ≤ (|∫ t in (2 : ℝ)..a, (Real.log t)⁻¹| + |a / Real.log x|) +
+        x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) :=
+        add_le_add (abs_sub _ _) h2_bd
+    _ ≤ (a / Real.log 2 + a / Real.log x) +
+        x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
+        rw [abs_of_nonneg h1_nn, abs_of_nonneg ha_nn]
+        linarith [h1_ub]
+
 theorem lemma_2_1_ii_part2 :
     Tendsto (fun n : ℕ => ((Podd n).card : ℝ) / (Nat.primeCounting n : ℝ))
       atTop (𝓝 (Real.log 2)) := by
@@ -143,124 +310,7 @@ theorem lemma_2_1_ii_part2 :
         (Nat.sqrt m : ℝ) + (((Finset.Icc (Nat.sqrt m + 1) m).filter Nat.Prime).card : ℝ) := by
       exact_mod_cast hcard_le
     linarith
-  have hli_est : ∀ x : ℝ, 16 ≤ x → (Real.log x) ^ 2 ≤ Real.sqrt x →
-      |(∫ t in (2 : ℝ)..x, (Real.log t)⁻¹) - x / Real.log x| ≤
-        (x / (Real.log x) ^ 2) / Real.log 2 +
-        (x / (Real.log x) ^ 2) / Real.log x +
-        x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
-    intro x hx16 hlog_sq_le
-    have hlogx_pos : 0 < Real.log x := Real.log_pos (by linarith)
-    have hsqrt_ge4 : 4 ≤ Real.sqrt x := Real.le_sqrt_of_sq_le (by linarith)
-    set a : ℝ := x / (Real.log x) ^ 2
-    have ha_le_x : a ≤ x := by
-      have hlog1 : 1 ≤ Real.log x := by
-        have h3 : (Real.exp 1 : ℝ) ≤ x := by linarith [Real.exp_one_lt_d9]
-        simpa using Real.log_le_log (Real.exp_pos 1) h3
-      exact div_le_self (by linarith) (one_le_pow₀ hlog1)
-    have h2_le_a : 2 ≤ a := by
-      have hsqrt_le_a : Real.sqrt x ≤ a := by
-        rw [le_div_iff₀ (pow_pos hlogx_pos 2)]
-        nlinarith [Real.mul_self_sqrt (by linarith : 0 ≤ x)]
-      linarith
-    have hint1 : IntervalIntegrable (fun t : ℝ => (Real.log t)⁻¹) MeasureTheory.volume 2 a := by
-      refine ContinuousOn.intervalIntegrable fun t ht => ?_
-      rw [Set.uIcc_of_le h2_le_a] at ht
-      have hlt : 1 < t := by linarith [ht.1]
-      exact (Real.continuousAt_log (by linarith : t ≠ 0)).inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
-    have hint2 : IntervalIntegrable (fun t : ℝ => (Real.log t)⁻¹) MeasureTheory.volume a x := by
-      refine ContinuousOn.intervalIntegrable fun t ht => ?_
-      rw [Set.uIcc_of_le ha_le_x] at ht
-      have hlt : 1 < t := by linarith [ht.1, h2_le_a]
-      exact (Real.continuousAt_log (by linarith : t ≠ 0)).inv₀ (Real.log_pos hlt).ne' |>.continuousWithinAt
-    have hsplit_int : ∫ t in (2 : ℝ)..x, (Real.log t)⁻¹ =
-        (∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) + (∫ t in a..x, (Real.log t)⁻¹) :=
-      (intervalIntegral.integral_add_adjacent_intervals hint1 hint2).symm
-    have h1_nn : 0 ≤ ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹ := by
-      refine intervalIntegral.integral_nonneg h2_le_a fun t ht => ?_
-      exact inv_nonneg.mpr (Real.log_nonneg (by linarith [ht.1]))
-    have h1_ub : ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹ ≤ a / Real.log 2 := by
-      have hbd : ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹ ≤ ∫ _t in (2 : ℝ)..a, (Real.log 2)⁻¹ := by
-        refine intervalIntegral.integral_mono_on h2_le_a hint1 (continuous_const.intervalIntegrable _ _) fun t ht => ?_
-        exact inv_anti₀ (Real.log_pos (by norm_num)) (Real.log_le_log (by norm_num) ht.1)
-      rw [intervalIntegral.integral_const, smul_eq_mul] at hbd
-      have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-      calc ∫ t in (2 : ℝ)..a, (Real.log t)⁻¹
-          ≤ (a - 2) * (Real.log 2)⁻¹ := hbd
-        _ ≤ a * (Real.log 2)⁻¹ := mul_le_mul_of_nonneg_right (by linarith) (inv_nonneg.mpr hlog2.le)
-        _ = a / Real.log 2 := (div_eq_mul_inv _ _).symm
-    have h2_bd : |(∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x| ≤
-        x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
-      have hconst : (x - a) / Real.log x = ∫ _t in a..x, (Real.log x)⁻¹ := by
-        rw [intervalIntegral.integral_const, smul_eq_mul, div_eq_mul_inv]
-      rw [hconst, ← intervalIntegral.integral_sub hint2 (continuous_const.intervalIntegrable _ _)]
-      have hle_int : |∫ t in a..x, ((Real.log t)⁻¹ - (Real.log x)⁻¹)| ≤
-          ∫ t in a..x, |(Real.log t)⁻¹ - (Real.log x)⁻¹| := by
-        simpa only [Real.norm_eq_abs] using
-          intervalIntegral.norm_integral_le_integral_norm (f := fun t : ℝ => (Real.log t)⁻¹ - (Real.log x)⁻¹) ha_le_x
-      have hpt : ∀ t ∈ Set.Icc a x,
-          |(Real.log t)⁻¹ - (Real.log x)⁻¹| ≤
-            (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
-        intro t ht
-        have ht_pos : 0 < t := by linarith [ht.1, h2_le_a]
-        have hlogt_ge_a : Real.log a ≤ Real.log t := Real.log_le_log (by linarith [h2_le_a]) ht.1
-        have hloga_eq : Real.log a = Real.log x - 2 * Real.log (Real.log x) := by
-          rw [Real.log_div (by linarith) (pow_pos hlogx_pos 2).ne', Real.log_pow]; ring
-        have hlogt_ge : 1 / 2 * Real.log x ≤ Real.log t := by
-          have hsqrt_le_a : Real.sqrt x ≤ a := by
-            rw [le_div_iff₀ (pow_pos hlogx_pos 2)]
-            nlinarith [Real.mul_self_sqrt (by linarith : 0 ≤ x)]
-          have h1 := Real.log_le_log (by positivity) (le_trans hsqrt_le_a ht.1)
-          rw [Real.log_sqrt (by positivity)] at h1
-          linarith
-        have hlogt_pos : 0 < Real.log t := by linarith
-        have hlogt_le : Real.log t ≤ Real.log x := Real.log_le_log ht_pos ht.2
-        have hdiff : |(Real.log t)⁻¹ - (Real.log x)⁻¹| =
-            (Real.log x - Real.log t) / (Real.log t * Real.log x) := by
-          rw [abs_of_nonneg (sub_nonneg.mpr (inv_anti₀ hlogt_pos hlogt_le)),
-            inv_sub_inv hlogt_pos.ne' hlogx_pos.ne']
-        rw [hdiff]
-        have hlogx1 : 1 ≤ Real.log x := by
-          have h3 : Real.exp 1 ≤ x := by linarith [Real.exp_one_lt_d9]
-          simpa using Real.log_le_log (Real.exp_pos 1) h3
-        have hnum : Real.log x - Real.log t ≤ 2 * Real.log (Real.log x) := by linarith
-        have hden : (1 / 2 * Real.log x) * Real.log x ≤ Real.log t * Real.log x :=
-          mul_le_mul_of_nonneg_right hlogt_ge hlogx_pos.le
-        exact div_le_div₀ (mul_nonneg (by norm_num) (Real.log_nonneg hlogx1)) hnum (by positivity) hden
-      have hint_abs : IntervalIntegrable (fun t : ℝ => |(Real.log t)⁻¹ - (Real.log x)⁻¹|)
-          MeasureTheory.volume a x :=
-        (hint2.sub (continuous_const.intervalIntegrable _ _)).abs
-      have hmono := intervalIntegral.integral_mono_on ha_le_x hint_abs
-        (continuous_const.intervalIntegrable a x) hpt
-      rw [intervalIntegral.integral_const, smul_eq_mul] at hmono
-      have hlen : x - a ≤ x := by linarith [h2_le_a]
-      have hnn_rhs : 0 ≤ (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
-        have : 1 ≤ Real.log x := by
-          have h3 : Real.exp 1 ≤ x := by linarith [Real.exp_one_lt_d9]
-          simpa using Real.log_le_log (Real.exp_pos 1) h3
-        exact div_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg this)) (by positivity)
-      calc |∫ t in a..x, ((Real.log t)⁻¹ - (Real.log x)⁻¹)|
-          ≤ (x - a) * ((2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x)) :=
-            le_trans hle_int hmono
-        _ ≤ x * ((2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x)) :=
-            mul_le_mul_of_nonneg_right hlen hnn_rhs
-        _ = x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by ring
-    rw [hsplit_int]
-    have hdecomp : (∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) + (∫ t in a..x, (Real.log t)⁻¹) - x / Real.log x =
-        (∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) - a / Real.log x +
-        ((∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x) := by ring
-    rw [hdecomp]
-    have ha_nn : 0 ≤ a / Real.log x := div_nonneg (by linarith) hlogx_pos.le
-    calc |(∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) - a / Real.log x +
-            ((∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x)|
-        ≤ |(∫ t in (2 : ℝ)..a, (Real.log t)⁻¹) - a / Real.log x| +
-          |(∫ t in a..x, (Real.log t)⁻¹) - (x - a) / Real.log x| := abs_add_le _ _
-      _ ≤ (|∫ t in (2 : ℝ)..a, (Real.log t)⁻¹| + |a / Real.log x|) +
-          x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) :=
-          add_le_add (abs_sub _ _) h2_bd
-      _ ≤ (a / Real.log 2 + a / Real.log x) +
-          x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) := by
-          rw [abs_of_nonneg h1_nn, abs_of_nonneg ha_nn]
-          linarith [h1_ub]
+  have hli_est := h_li_est_aux
   -- Now prove `(Podd n).card / π(n) → log 2` using `K₀ = ⌊Real.log n⌋₊`
   have h_ev2 : ∀ᶠ n : ℕ in atTop,
       64 ≤ n ∧ 2 * ⌊Real.log n⌋₊ + 1 ≤ Nat.sqrt n ∧
@@ -676,53 +726,7 @@ theorem lemma_2_1_ii_part2 :
            36 * D * (Real.log (2 * Real.log n + 1) + 1) / Real.log n) +
            4 * D * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := add_le_add (add_le_add hAB hBC) hCD
       _ = (C₁ + 40) * D * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by ring
-  have h_err_zero : Tendsto (fun n : ℕ =>
-      (Real.log (2 * Real.log n + 1) + 1) ^ 2 / Real.log n) atTop (𝓝 0) := by
-    have h1 : Tendsto (fun u : ℝ => (Real.log (2 * u + 1) + 1) ^ 2 / u) atTop (𝓝 0) := by
-      have hlo : Tendsto (fun x : ℝ => Real.log x / x ^ (1 / 4 : ℝ)) atTop (𝓝 0) := by
-        refine squeeze_zero' (by filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx; exact div_nonneg (Real.log_nonneg hx) (by positivity)) ?_
-          (by simpa using (tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 1 / 8)).const_mul 8)
-        filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
-        have hr8 : 0 < x ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hx _
-        have hlog8 : Real.log (x ^ (1 / 8 : ℝ)) ≤ x ^ (1 / 8 : ℝ) := by linarith [Real.log_le_sub_one_of_pos hr8]
-        rw [Real.log_rpow hx] at hlog8
-        calc Real.log x / x ^ (1 / 4 : ℝ)
-            ≤ (8 * x ^ (1 / 8 : ℝ)) / x ^ (1 / 4 : ℝ) := div_le_div_of_nonneg_right (by linarith) (by positivity)
-          _ = 8 * x ^ (-(1 / 8 : ℝ)) := by
-              rw [mul_div_assoc, div_eq_mul_inv, ← Real.rpow_neg hx.le, ← Real.rpow_add hx]; norm_num
-      have hcomp : Tendsto (fun u : ℝ => Real.log (2 * u + 1) / (2 * u + 1) ^ (1 / 4 : ℝ)) atTop (𝓝 0) :=
-        hlo.comp (tendsto_atTop_add_const_right _ 1 (tendsto_id.const_mul_atTop (by norm_num)))
-      have hsq : Tendsto (fun u : ℝ =>
-          (Real.log (2 * u + 1) / (2 * u + 1) ^ (1 / 4 : ℝ) + 1 / (2 * u + 1) ^ (1 / 4 : ℝ)) ^ 2 *
-            ((2 * u + 1) ^ (1 / 2 : ℝ) / u)) atTop (𝓝 0) := by
-        have hinv : Tendsto (fun u : ℝ => 1 / (2 * u + 1) ^ (1 / 4 : ℝ)) atTop (𝓝 0) :=
-          tendsto_const_nhds.div_atTop
-            ((tendsto_rpow_atTop (by norm_num)).comp (tendsto_atTop_add_const_right _ 1 (tendsto_id.const_mul_atTop (by norm_num))))
-        have hsum := (hcomp.add hinv).pow 2
-        simp only [add_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow] at hsum
-        have hrat : Tendsto (fun u : ℝ => (2 * u + 1) ^ (1 / 2 : ℝ) / u) atTop (𝓝 0) := by
-          have h0 : Tendsto (fun u : ℝ => (2 + 1 / u) ^ (1 / 2 : ℝ) * u ^ (-(1 / 2 : ℝ))) atTop (𝓝 0) := by
-            have hA : Tendsto (fun u : ℝ => (2 + 1 / u) ^ (1 / 2 : ℝ)) atTop (𝓝 ((2 + 0 : ℝ) ^ (1 / 2 : ℝ))) :=
-              ((tendsto_const_nhds.add (tendsto_const_nhds.div_atTop tendsto_id)).rpow_const (by left; norm_num))
-            have hB : Tendsto (fun u : ℝ => u ^ (-(1 / 2 : ℝ))) atTop (𝓝 0) :=
-              tendsto_rpow_neg_atTop (by norm_num)
-            simpa using hA.mul hB
-          refine h0.congr' ?_
-          filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
-          have h2u : 2 * u + 1 = u * (2 + 1 / u) := by field_simp [hu.ne']; ring
-          rw [h2u, Real.mul_rpow hu.le (by positivity)]
-          have hu1 : u ^ (1 / 2 : ℝ) / u = u ^ (-(1 / 2 : ℝ)) := by
-            rw [div_eq_mul_inv, ← Real.rpow_neg_one, ← Real.rpow_add hu]; norm_num
-          rw [mul_div_assoc, mul_comm (u ^ (1 / 2 : ℝ)), ← mul_div_assoc, mul_div_right_comm, hu1, mul_comm]
-        simpa using hsum.mul hrat
-      refine hsq.congr' ?_
-      filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
-      have h2u : 0 < 2 * u + 1 := by linarith
-      have hr : ((2 * u + 1) ^ (1 / 4 : ℝ)) ^ 2 = (2 * u + 1) ^ (1 / 2 : ℝ) := by
-        rw [← Real.rpow_natCast, ← Real.rpow_mul h2u.le]; norm_num
-      field_simp [h2u.ne', hu.ne']
-      rw [div_pow, hr, div_mul_cancel₀ _ (Real.rpow_pos_of_pos h2u _).ne']
-    exact h1.comp (Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop)
+  have h_err_zero := h_err_zero_aux
   have h_pi_lim : Tendsto (fun n : ℕ => (Nat.primeCounting n : ℝ) / ((n : ℝ) / Real.log n)) atTop (𝓝 1) := by
     rw [Metric.tendsto_atTop]
     intro ε hε
