@@ -8,6 +8,7 @@ import BrocardFormalization.ValuationParityLayer
 import BrocardFormalization.ValuationParityDensity
 import BrocardFormalization.ValuationParityDigits
 import BrocardFormalization.ValuationParityMoments
+import BrocardFormalization.ExpSumBounds
 
 noncomputable section
 
@@ -46,8 +47,8 @@ theorem lemma_2_4_i (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               ePhase (∑ r ∈ A, (h r : ℝ) * n / (2 * (p : ℝ) ^ r))‖ ≤
           C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3 ∧
         C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3 ≤
-          C'_δ * W₀ * P * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-  sorry
+          C'_δ * W₀ * P * (Real.log n) ^ (-(R + 2 : ℤ)) :=
+  lemma_2_4_i_impl δ hδ0 hδ1
 
 theorem lemma_2_4_ii (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     let R : ℕ := ⌊1 / δ⌋₊
@@ -67,8 +68,8 @@ theorem lemma_2_4_ii (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         ‖∑ p ∈ (Finset.Icc ⌈a⌉₊ ⌊b⌋₊).filter Nat.Prime,
             (w p * Real.log p : ℂ) *
               ePhase (∑ r ∈ A, (h r : ℝ) * n / (2 * (p : ℝ) ^ r))‖ ≤
-          C_δ * W₀ * P * (n : ℝ) ^ (-η_δ) := by
-  sorry
+          C_δ * W₀ * P * (n : ℝ) ^ (-η_δ) :=
+  lemma_2_4_ii_impl δ hδ0 hδ1
 
 theorem theorem_2_5_i :
     IsBigOAtTop
