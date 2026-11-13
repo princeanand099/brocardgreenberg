@@ -151,3 +151,63 @@ This file documents every substantive mathematical correction discovered during 
 5. **Replacement argument**: Retain the valid Gauss-genus consequences of $\log_2 |\mathcal{A}_2(q_n)| \ge (\frac{\log 2}{4} - \frac{\varepsilon}{2} - o(1)) n$ and $\operatorname{rank}_2(\mathcal{A}_2(q_n)) = \omega(D_n) - 1$: namely $|\mathcal{A}_2(q_n)| \ge 2^{(\frac{\log 2}{4} - \varepsilon) n}$ AND $\exp(\mathcal{A}_2(q_n)) \ge |\mathcal{A}_2(q_n)|^{1/\operatorname{rank}_2(\mathcal{A}_2(q_n))} \ge n^{\frac{1}{4 \log 2} - \varepsilon}$. (Optionally also the pigeonhole sum $\sum_{j \ge 1} \operatorname{rank}_{2^j}(\mathcal{A}_2) = \log_2 |\mathcal{A}_2| \ge (\frac{\log 2}{4} - \frac{\varepsilon}{2} - o(1)) n$, which gives a trade-off between high $2^J$-rank and high exponent without falsely forcing BOTH to be large simultaneously for all $J \le \frac{\log n}{8 \log 2}$.)
 6. **Lean declarations**: `theorem_9_2_i` (`BrocardFormalization/FreyCurvesAndThresholds.lean`).
 7. **Manuscript edit**: Update the second dichotomy branch in Theorem 9.2(i) and its 2-line proof on pp. 44–45.
+
+---
+
+### Audit Item 11: Lemma 2.4(i) — `AR` Exponent in `(log n)^{-(R+2)}` Bound (Section 2.3, p. 9)
+1. **Affected manuscript result**: Section 2.3, Lemma 2.4(i), p. 9.
+2. **Original statement and proof**: Uses `AR := 6R + 16` with `(log n)^{-AR/6} log^3 P`.
+3. **Exact defect**: `-(6R+16)/6 + 3 = -R + 1/3 > -(R + 2)` due to the `log^3 P` factor.
+4. **Classification**: **Incorrect intermediate constant**.
+5. **Replacement argument**: Strengthen to `AR := 6R + 30`, giving `-(6R+30)/6 + 3 = -(R + 2)`.
+6. **Lean declarations**: `lemma_2_4_i` (`BrocardFormalization/ValuationParity.lean`).
+
+---
+
+### Audit Item 12: Lemma 3.1(i) — Finite Exceptions to `log q_n > 0.4 n` (Section 3.1, p. 12)
+1. **Affected manuscript result**: Section 3.1, Lemma 3.1(i), p. 12.
+2. **Original statement and proof**: Claims `log q_n > 0.4 n` for `8 ≤ n ≤ 115` with `n ≠ 10`.
+3. **Exact defect**: Fails at `n = 10` (`q_10 = 7`), `n = 11` (`q_11 = 77`), and `n = 28` (`q_28 = 44574`). Holds for all other `8 ≤ n ≤ 115` and all `n ≥ 116`.
+4. **Classification**: **False statement** (omits `n = 11, 28` from the finite exception list).
+5. **Replacement argument**: Exclude `{10, 11, 28}` in the `8 ≤ n ≤ 115` clause (already verified by `decide` in `PellAndIwasawa.lean`).
+6. **Lean declarations**: `lemma_3_1_i` (`BrocardFormalization/PellAndIwasawa.lean`).
+
+---
+
+### Audit Item 13: Lemma 3.2(i) — `p = 3` Lifting-the-Exponent Exception (Section 3.1, p. 13)
+1. **Affected manuscript result**: Section 3.1, Lemma 3.2(i), Eq. (3.2)–(3.3), p. 13.
+2. **Original statement and proof**: Claims `v_p(U_{k-1}(X_1(q_n))) = v_p(k)` for every prime `p ∣ q_n Y_1(q_n)`, arguing `j > v_p(2j+1)` for `j ≥ 1`.
+3. **Exact defect**: At `p = 3, j = 1`, `v_3(2·1 + 1) = 1 = j`, so `j - v_3(2j+1) = 0`! Counterexample: `n = 4, q_4 = 6, X_1 = 5, Y_1 = 2, k = 3, p = 3` gives `3 ∣ q_4 Y_1 = 12`, yet `v_3(U_2(5)) = v_3(99) = 2 ≠ 1 = v_3(3)`.
+4. **Classification**: **False statement** (missing `p ≠ 3 ∨ 3 ∤ k ∨ 3 ∣ Y_1` condition).
+5. **Replacement argument**: State and prove `v_p(U_{k-1}(X_1)) = v_p(k)` for `p ≠ 3 ∨ ¬ 3 ∣ k ∨ 3 ∣ Y_1` (for `p = 3, 3 ∣ Y_1`, `v_3(M) ≥ 2` restores `2j > v_3(2j+1)`).
+6. **Lean declarations**: `lemma_3_2_i` (`BrocardFormalization/PellAndIwasawa.lean`).
+
+---
+
+### Audit Item 14: Lemma 2.4(i)–(ii) — Smoothness/Differentiability of Weight `w` (Section 2.3, pp. 9–10)
+1. **Affected manuscript result**: Section 2.3, Lemma 2.4(i)–(ii), pp. 9–10.
+2. **Original statement and proof**: Formalizes total variation `∫_P^{2P} |deriv w t| dt ≤ W_0` without requiring `w` to be `C^1` / differentiable on `[P, 2P]`.
+3. **Exact defect**: In Lean/Mathlib, `deriv w t = 0` at points where `w` is not differentiable, so non-differentiable step functions trivially satisfy `∫ |deriv w t| = 0 ≤ W_0` and violate partial summation.
+4. **Classification**: **Formalization issue / Missing hypothesis**.
+5. **Replacement argument**: Add `ContDiffOn ℝ 1 w (Set.Icc P (2 * P))` to `lemma_2_4_i` and `lemma_2_4_ii` in `ValuationParity.lean`.
+6. **Lean declarations**: `lemma_2_4_i`, `lemma_2_4_ii` (`BrocardFormalization/ValuationParity.lean`).
+
+---
+
+### Audit Item 15: Theorem 3.6 — Hypothesis `k ∈ {1, 2}` for `10^9 < n < N_0` (Section 3.3, p. 15)
+1. **Affected manuscript result**: Section 3.3, Theorem 3.6.
+2. **Original statement and proof**: Assumes `4 ≤ n` without `k ∈ {1, 2}`.
+3. **Exact defect**: In `10^9 < n < N_0` (where `N_0` from `deLaValleePoussin_pnt` is non-effective), `k = 4` would satisfy `m = u^2 + q_n v^2` and `s_n = 2|uv|` with `u + v√q_n = ε_n^2`, contradicting `k = 2 ↔ ...` unless `k ∈ {1, 2}` is assumed (as in `prop_3_4`).
+4. **Classification**: **Missing hypothesis**.
+5. **Replacement argument**: Add `(hk : pellIndex hn hsol = 1 ∨ pellIndex hn hsol = 2)` to `theorem_3_6`.
+6. **Lean declarations**: `theorem_3_6` (`BrocardFormalization/PellAndIwasawa.lean`).
+
+---
+
+### Audit Item 16: Theorem 1.1 — Distinctness `q_{n_1} ≠ q_{n_2}` for `n_1 > e^{6306}` (Section 3.2, p. 13)
+1. **Affected manuscript result**: Section 3.2, Theorem 1.1, p. 13.
+2. **Original statement and proof**: Claims `0.38 n_1 / log(2 n_1) > n_1 / 16597` for all `n_1 > 10^9`.
+3. **Exact defect**: `0.38 / log(2 n_1) > 1 / 16597` fails once `log(2 n_1) ≥ 6306.86` (i.e. `n_1 > e^{6306}`).
+4. **Classification**: **Incorrect argument**.
+5. **Replacement argument**: For `n_1 ≥ N_0`, `k_{n_1} ∈ {1, 2}` gives `n_2 - n_1 > 0.24 n_1 > n_1 / 16597` unconditionally; for `n_1 ≤ 10^9`, Berndt–Galway gives `n_1 ∈ {4, 5, 7}` (`q_4=6, q_5=30, q_7=35`). (Full coverage of `10^9 < n_1 < N_0` requires either an effective `N_0 < e^{6306}` or Erdős–Selfridge (1975) for `n_2 - n_1 ≥ 2`.)
+6. **Lean declarations**: `theorem_1_1` (`BrocardFormalization/PellAndIwasawa.lean`).
