@@ -332,15 +332,32 @@ theorem lemma_2_2_ii :
       exact_mod_cast hcard_le
     linarith
   have hlog_ev : ∀ᶠ n : ℕ in atTop, 16 ≤ n ∧ 4 * (n : ℝ) ^ (1 / 4 : ℝ) * Real.log n ≤ Real.sqrt n := by
-    have hlo := (Real.isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 4)).bound (by norm_num : (0 : ℝ) < 1 / 4)
-    filter_upwards [eventually_ge_atTop 16, tendsto_natCast_atTop_atTop.eventually hlo] with n hn16 hn
-    refine ⟨hn16, ?_⟩
-    have hlog_nn : 0 ≤ Real.log n := Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n))
-    have h1 : Real.log n ≤ (1 / 4 : ℝ) * (n : ℝ) ^ (1 / 4 : ℝ) := by
-      simpa [Real.norm_of_nonneg hlog_nn, Real.norm_of_nonneg (by positivity : 0 ≤ (n : ℝ) ^ (1 / 4 : ℝ))] using hn
-    have h2 : (n : ℝ) ^ (1 / 4 : ℝ) * (n : ℝ) ^ (1 / 4 : ℝ) = Real.sqrt n := by
-      rw [← Real.rpow_add (by positivity), Real.sqrt_eq_rpow]; norm_num
-    nlinarith [show 0 ≤ (n : ℝ) ^ (1 / 4 : ℝ) by positivity]
+    -- Elementary bound: log n = 8 * log(n^(1/8)) ≤ 8 * n^(1/8), so 4 * n^(1/4) * log n ≤ 32 * n^(3/8) ≤ n^(1/2) for n ≥ 32^8
+    filter_upwards [eventually_ge_atTop (32 ^ 8)] with n hn
+    refine ⟨by omega, ?_⟩
+    have hn_pos : (0 : ℝ) < n := by positivity
+    have hr8_pos : (0 : ℝ) < (n : ℝ) ^ (1 / 8 : ℝ) := Real.rpow_pos_of_pos hn_pos _
+    have hlog8 : Real.log ((n : ℝ) ^ (1 / 8 : ℝ)) ≤ (n : ℝ) ^ (1 / 8 : ℝ) := by
+      linarith [Real.log_le_sub_one_of_pos hr8_pos]
+    rw [Real.log_rpow hn_pos] at hlog8
+    have hlog_le : Real.log n ≤ 8 * (n : ℝ) ^ (1 / 8 : ℝ) := by linarith
+    have h32 : (32 : ℝ) ≤ (n : ℝ) ^ (1 / 8 : ℝ) := by
+      have h32_8 : ((32 : ℝ) ^ (8 : ℕ)) ≤ (n : ℝ) := by exact_mod_cast hn
+      rw [← Real.rpow_natCast (32 : ℝ) 8] at h32_8
+      exact (Real.le_rpow_inv_iff_of_pos (by positivity) hn_pos.le (by norm_num : (0 : ℝ) < 8)).mpr (by simpa using h32_8)
+    have hmul : 4 * (n : ℝ) ^ (1 / 4 : ℝ) * Real.log n ≤ 32 * (n : ℝ) ^ (3 / 8 : ℝ) := by
+      calc 4 * (n : ℝ) ^ (1 / 4 : ℝ) * Real.log n
+          ≤ 4 * (n : ℝ) ^ (1 / 4 : ℝ) * (8 * (n : ℝ) ^ (1 / 8 : ℝ)) :=
+            mul_le_mul_of_nonneg_left hlog_le (by positivity)
+        _ = 32 * ((n : ℝ) ^ (1 / 4 : ℝ) * (n : ℝ) ^ (1 / 8 : ℝ)) := by ring
+        _ = 32 * (n : ℝ) ^ (3 / 8 : ℝ) := by rw [← Real.rpow_add hn_pos]; norm_num
+    have hmul2 : 32 * (n : ℝ) ^ (3 / 8 : ℝ) ≤ Real.sqrt n := by
+      calc 32 * (n : ℝ) ^ (3 / 8 : ℝ)
+          ≤ (n : ℝ) ^ (1 / 8 : ℝ) * (n : ℝ) ^ (3 / 8 : ℝ) :=
+            mul_le_mul_of_nonneg_right h32 (by positivity)
+        _ = (n : ℝ) ^ (1 / 2 : ℝ) := by rw [← Real.rpow_add hn_pos]; norm_num
+        _ = Real.sqrt n := (Real.sqrt_eq_rpow n).symm
+    exact le_trans hmul hmul2
   obtain ⟨N₀, hN₀⟩ := eventually_atTop.mp hlog_ev
   refine ⟨1 + 16 * Real.log 4, by positivity, N₀, fun n hnN => ?_⟩
   obtain ⟨hn16, hlog_le_sq⟩ := hN₀ n hnN
