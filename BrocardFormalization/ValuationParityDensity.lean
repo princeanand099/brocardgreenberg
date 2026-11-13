@@ -146,7 +146,7 @@ theorem lemma_2_1_ii_part2 :
         rw [intervalIntegral.integral_const, smul_eq_mul, div_eq_mul_inv]
       rw [hconst, ← intervalIntegral.integral_sub hint2 (continuous_const.intervalIntegrable _ _)]
       have hle_int : |∫ t in a..x, ((Real.log t)⁻¹ - (Real.log x)⁻¹)| ≤
-          ∫ t in a..x, |(Real.log t)⁻¹ - (Real.log x)⁻¹| :=
+          ∫ t in a..x, |(Real.log t)⁻¹ - (Real.log x)⁻¹| := by
         simpa only [Real.norm_eq_abs] using intervalIntegral.norm_integral_le_integral_norm ha_le_x
       have hpt : ∀ t ∈ Set.Icc a x,
           |(Real.log t)⁻¹ - (Real.log x)⁻¹| ≤

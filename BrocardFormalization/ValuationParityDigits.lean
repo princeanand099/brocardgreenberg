@@ -547,7 +547,7 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh1
       have hnot : ¬ (|h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h) := fun ⟨hab, hn, ho⟩ =>
         hh2 (Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr (abs_le.mp hab), hn, ho⟩)
-      dsimp only [cTilde]; rw [if_neg hnot]
+      dsimp only [cTilde]; rw [if_neg hnot, zero_mul]
     · intro h hh
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh
       have hok : |h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h := ⟨abs_le.mpr hh.1, hh.2⟩
@@ -665,7 +665,7 @@ theorem lemma_2_3 (H : ℕ) (hH : 1 ≤ H) :
       rw [hz, zero_add]
       refine Finset.sum_le_sum fun h hh => ?_
       simp only [Finset.mem_filter, Finset.mem_Icc] at hh
-      have hok : |h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h := ⟨abs_le.mp hh.1, hh.2⟩
+      have hok : |h| ≤ (H : ℤ) ∧ h ≠ 0 ∧ ¬ 2 ∣ h := ⟨abs_le.mpr hh.1, hh.2⟩
       simp only [cTilde, if_pos hok, norm_mul, norm_neg, Complex.norm_ofNat]
       calc 4 * ‖c h‖ ≤ 4 * (1 / (2 * Real.pi * |(h : ℝ)|)) := mul_le_mul_of_nonneg_left (hc_bd h hh.2.1) (by norm_num)
         _ = 2 / (Real.pi * |(h : ℝ)|) := by ring
