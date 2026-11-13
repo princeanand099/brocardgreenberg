@@ -2,20 +2,50 @@ name: Lean Action CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read # Read access to repository contents
-  pages: write # Write access to GitHub Pages
-  id-token: write # Write access to ID tokens
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v7
-      - uses: leanprover/lean-action@v1
-      - uses: leanprover-community/docgen-action@v1
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Cache and build
+        id: build
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          {
+            echo "COMMIT=${{ github.sha }}"
+            echo "TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            lake exe cache get 2>&1
+            lake build 2>&1
+          } | tee /tmp/last_build.log
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Publish full build log to ci-logs branch
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan ci-logs
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/last_build.log last_build.log
+          git add -f last_build.log
+          git commit -m "CI log for ${{ github.sha }} (exit ${{ steps.build.outputs.exit_code }})"
+          git push -f origin ci-logs
+
+      - name: Fail job if lake build failed
+        if: steps.build.outputs.exit_code != '0'
+        run: exit 1
