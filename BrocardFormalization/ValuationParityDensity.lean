@@ -19,6 +19,50 @@ open Filter Topology BrocardFormalization.External
 
 namespace BrocardFormalization
 
+private lemma h_li_bd_aux (x lx ln l2n l2 : ℝ)
+    (hx_nn : 0 ≤ x) (hln_pos : 0 < ln) (hlx_ge1 : 1 ≤ lx)
+    (hlx_sq : (1 / 4 : ℝ) * ln ^ 2 ≤ lx ^ 2)
+    (hl2_ge : (1 / 2 : ℝ) ≤ l2)
+    (hll_nn : 0 ≤ Real.log lx)
+    (hll_le : Real.log lx ≤ l2n)
+    (h1_le : (1 : ℝ) ≤ l2n) :
+    (x / lx ^ 2) / l2 + (x / lx ^ 2) / lx +
+      x * (2 * Real.log lx) / ((1 / 2 * lx) * lx) ≤
+      36 * (x / ln) * l2n / ln := by
+  have h1 : (x / lx ^ 2) / l2 ≤ 8 * (x / ln) * l2n / ln := by
+    have ha : (x / lx ^ 2) / l2 ≤ (x / ((1 / 4 : ℝ) * ln ^ 2)) / (1 / 2) :=
+      div_le_div₀ (by positivity) (div_le_div_of_nonneg_left hx_nn (by positivity) hlx_sq)
+        (by positivity) hl2_ge
+    have hb : (x / ((1 / 4 : ℝ) * ln ^ 2)) / (1 / 2) = 8 * ((x / ln) / ln) * 1 := by ring
+    have hc : 8 * ((x / ln) / ln) * 1 ≤ 8 * ((x / ln) / ln) * l2n :=
+      mul_le_mul_of_nonneg_left h1_le (by positivity)
+    have hd : 8 * ((x / ln) / ln) * l2n = 8 * (x / ln) * l2n / ln := by ring
+    linarith
+  have h2 : (x / lx ^ 2) / lx ≤ 8 * (x / ln) * l2n / ln := by
+    have ha : (x / lx ^ 2) / lx ≤ (x / ((1 / 4 : ℝ) * ln ^ 2)) / 1 :=
+      div_le_div₀ (by positivity) (div_le_div_of_nonneg_left hx_nn (by positivity) hlx_sq)
+        (by positivity) hlx_ge1
+    have hb : (x / ((1 / 4 : ℝ) * ln ^ 2)) / 1 = 4 * ((x / ln) / ln) := by ring
+    have hnn : 0 ≤ (x / ln) / ln := by positivity
+    have hc : 4 * ((x / ln) / ln) ≤ 8 * ((x / ln) / ln) * 1 := by linarith
+    have hd : 8 * ((x / ln) / ln) * 1 ≤ 8 * ((x / ln) / ln) * l2n :=
+      mul_le_mul_of_nonneg_left h1_le (by positivity)
+    have he : 8 * ((x / ln) / ln) * l2n = 8 * (x / ln) * l2n / ln := by ring
+    linarith
+  have h3 : x * (2 * Real.log lx) / ((1 / 2 * lx) * lx) ≤ 20 * (x / ln) * l2n / ln := by
+    have hden : (1 / 8 : ℝ) * ln ^ 2 ≤ (1 / 2 * lx) * lx := by nlinarith
+    have ha : x * (2 * Real.log lx) / ((1 / 2 * lx) * lx) ≤
+        x * (2 * l2n) / ((1 / 8 : ℝ) * ln ^ 2) :=
+      div_le_div₀ (mul_nonneg hx_nn (by linarith)) (mul_le_mul_of_nonneg_left (by linarith) hx_nn)
+        (by positivity) hden
+    have hb : x * (2 * l2n) / ((1 / 8 : ℝ) * ln ^ 2) = 16 * ((x / ln) * l2n / ln) := by ring
+    have hnn : 0 ≤ (x / ln) * l2n / ln := by positivity
+    have hc : 16 * ((x / ln) * l2n / ln) ≤ 20 * (x / ln) * l2n / ln := by
+      have h16_20 := mul_le_mul_of_nonneg_right (by norm_num : (16 : ℝ) ≤ 20) hnn
+      linarith [show 20 * ((x / ln) * l2n / ln) = 20 * (x / ln) * l2n / ln by ring]
+    linarith
+  linarith
+
 theorem lemma_2_1_ii_part2 :
     Tendsto (fun n : ℕ => ((Podd n).card : ℝ) / (Nat.primeCounting n : ℝ))
       atTop (𝓝 (Real.log 2)) := by
@@ -216,7 +260,7 @@ theorem lemma_2_1_ii_part2 :
   -- Now prove `(Podd n).card / π(n) → log 2` using `K₀ = ⌊Real.log n⌋₊`
   have h_ev2 : ∀ᶠ n : ℕ in atTop,
       64 ≤ n ∧ 2 * ⌊Real.log n⌋₊ + 1 ≤ Nat.sqrt n ∧
-      (Real.log (n : ℝ) / (2 * ⌊Real.log n⌋₊ + 1)) ≥ 16 ∧
+      ((n : ℝ) / (2 * ⌊Real.log n⌋₊ + 1)) ≥ 16 ∧
       ∀ x : ℝ, (n : ℝ) / (2 * (⌊Real.log n⌋₊ : ℝ) + 1) ≤ x → x ≤ (n : ℝ) →
         16 ≤ x ∧ (Real.log x) ^ 2 ≤ Real.sqrt x := by
     -- For large `n`, `√x ≥ (n / (3 log n))^{1/2} ≥ (log n)^2`
@@ -317,13 +361,19 @@ theorem lemma_2_1_ii_part2 :
           have := Real.log_nonneg hn1; linarith
         rw [le_div_iff₀ hpos_den]
         have hM_max : M ≤ max (max M 16) 1 := le_trans (le_max_left M 16) (le_max_left _ _)
-        exact le_trans (mul_le_mul_of_nonneg_right hM_max hpos_den.le) h1
+        calc M * (2 * Real.log n + 1) ≤ max (max M 16) 1 * (2 * Real.log n + 1) :=
+              mul_le_mul_of_nonneg_right hM_max hpos_den.le
+          _ = (2 * Real.log n + 1) * max (max M 16) 1 := mul_comm _ _
+          _ ≤ (n : ℝ) := h1
       · have hpos_den : 0 < 2 * Real.log n + 1 := by
           have hn1 : (1 : ℝ) ≤ (n : ℝ) := Nat.one_le_cast.mpr (by omega)
           have := Real.log_nonneg hn1; linarith
         rw [le_div_iff₀ hpos_den]
         have h16_max : (16 : ℝ) ≤ max (max M 16) 1 := le_trans (le_max_right M 16) (le_max_left _ _)
-        exact le_trans (mul_le_mul_of_nonneg_right h16_max hpos_den.le) h1
+        calc (16 : ℝ) * (2 * Real.log n + 1) ≤ max (max M 16) 1 * (2 * Real.log n + 1) :=
+              mul_le_mul_of_nonneg_right h16_max hpos_den.le
+          _ = (2 * Real.log n + 1) * max (max M 16) 1 := mul_comm _ _
+          _ ≤ (n : ℝ) := h1
     filter_upwards [h_n_ev] with n ⟨hn64, hsqrt, hM_le, h16_le⟩
     have hfl_le : (⌊Real.log n⌋₊ : ℝ) ≤ Real.log n := Nat.floor_le (Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ n)))
     refine ⟨hn64, ?_, ?_, ?_⟩
@@ -406,7 +456,7 @@ theorem lemma_2_1_ii_part2 :
           have hj_lt : j < 2 * K + 1 := by
             rw [Nat.div_lt_iff_lt_mul hp_prime.pos]
             have h1 : n < (2 * K + 1) * (n / (2 * K + 1) + 1) := by
-              rw [mul_comm]; exact Nat.lt_mul_div_succ n (by omega)
+              rw [mul_comm]; exact Nat.lt_mul_div_succ n (Nat.succ_pos (2 * K))
             have h2 : n / (2 * K + 1) + 1 ≤ p := hle
             calc n < (2 * K + 1) * (n / (2 * K + 1) + 1) := h1
               _ ≤ (2 * K + 1) * p := Nat.mul_le_mul_left _ h2
@@ -600,66 +650,11 @@ theorem lemma_2_1_ii_part2 :
     have hlog2_ge : (1 / 2 : ℝ) ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]
     have h_li_bd : (x / (Real.log x) ^ 2) / Real.log 2 + (x / (Real.log x) ^ 2) / Real.log x +
         x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) ≤
-        36 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by
-      have hlogx_sq : (1 / 4 : ℝ) * (Real.log n) ^ 2 ≤ (Real.log x) ^ 2 := by nlinarith
-      have h1 : (x / (Real.log x) ^ 2) / Real.log 2 ≤ 8 * (x / Real.log n) * 1 / Real.log n := by
-        have : (x / (Real.log x) ^ 2) / Real.log 2 ≤ (x / ((1 / 4 : ℝ) * (Real.log n) ^ 2)) / (1 / 2) :=
-          div_le_div₀ (by positivity) (div_le_div_of_nonneg_left (by linarith) (by positivity) hlogx_sq)
-            (by positivity) hlog2_ge
-        linarith [show (x / ((1 / 4 : ℝ) * (Real.log n) ^ 2)) / (1 / 2) = 8 * (x / Real.log n) * 1 / Real.log n by ring]
-      have h2 : (x / (Real.log x) ^ 2) / Real.log x ≤ 8 * (x / Real.log n) * 1 / Real.log n := by
-        have hlogx_ge1 : (1 : ℝ) ≤ Real.log x := by linarith
-        have hx_nn : 0 ≤ x := by linarith [hx16]
-        have hbd2 : (x / (Real.log x) ^ 2) / Real.log x ≤ (x / ((1 / 4 : ℝ) * (Real.log n) ^ 2)) / 1 :=
-          div_le_div₀ (by positivity) (div_le_div_of_nonneg_left hx_nn (by positivity) hlogx_sq)
-            (by positivity) hlogx_ge1
-        have heq2 : (x / ((1 / 4 : ℝ) * (Real.log n) ^ 2)) / 1 = 4 * ((x / Real.log n) * 1 / Real.log n) := by ring
-        have hnn2 : 0 ≤ (x / Real.log n) * 1 / Real.log n := by positivity
-        exact le_trans hbd2 (le_trans (le_of_eq heq2) (mul_le_mul_of_nonneg_right (by norm_num) hnn2))
-      have h3 : x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) ≤
-          20 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by
-        have hden : (1 / 8 : ℝ) * (Real.log n) ^ 2 ≤ (1 / 2 * Real.log x) * Real.log x := by nlinarith
-        have hx_nn : 0 ≤ x := by linarith [hx16]
-        have hlogx_ge1 : 1 ≤ Real.log x := by linarith
-        have hll_nn : 0 ≤ 2 * Real.log (Real.log x) := mul_nonneg (by norm_num) (Real.log_nonneg hlogx_ge1)
-        have hbd3 : x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) ≤
-            x * (2 * (Real.log (2 * Real.log n + 1) + 1)) / ((1 / 8 : ℝ) * (Real.log n) ^ 2) :=
-          div_le_div₀ (mul_nonneg hx_nn hll_nn) (mul_le_mul_of_nonneg_left (by linarith) hx_nn)
-            (by positivity) hden
-        have heq3 : x * (2 * (Real.log (2 * Real.log n + 1) + 1)) / ((1 / 8 : ℝ) * (Real.log n) ^ 2) =
-            16 * ((x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n) := by ring
-        have hnn3 : 0 ≤ (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n :=
-          div_nonneg (mul_nonneg (div_nonneg hx_nn hlogn_pos.le)
-            (by linarith [Real.log_nonneg (by linarith : 1 ≤ 2 * Real.log n + 1)])) hlogn_pos.le
-        have h3_16 : x * (2 * Real.log (Real.log x)) / ((1 / 2 * Real.log x) * Real.log x) ≤
-            16 * ((x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n) :=
-          le_trans hbd3 (le_of_eq heq3)
-        have h3_20 : 16 * ((x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n) ≤
-            20 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by
-          have := mul_le_mul_of_nonneg_right (by norm_num : (16 : ℝ) ≤ 20) hnn3
-          linarith [show 20 * ((x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n) =
-              20 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n by ring]
-        exact le_trans h3_16 h3_20
-      have h1_le : (1 : ℝ) ≤ Real.log (2 * Real.log n + 1) + 1 := by
-        linarith [Real.log_nonneg (by linarith : 1 ≤ 2 * Real.log n + 1)]
-      have hnn_f : 0 ≤ (x / Real.log n) / Real.log n := by positivity
-      have h1' : (x / (Real.log x) ^ 2) / Real.log 2 ≤ 8 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by
-        refine le_trans h1 ?_
-        have hmul := mul_le_mul_of_nonneg_left h1_le (mul_nonneg (by norm_num) hnn_f)
-        linarith [show 8 * (x / Real.log n) * 1 / Real.log n = 8 * ((x / Real.log n) / Real.log n) * 1 by ring,
-                  show 8 * ((x / Real.log n) / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) =
-                    8 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n by ring]
-      have h2' : (x / (Real.log x) ^ 2) / Real.log x ≤ 8 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n := by
-        refine le_trans h2 ?_
-        have hmul := mul_le_mul_of_nonneg_left h1_le (mul_nonneg (by norm_num) hnn_f)
-        linarith [show 8 * (x / Real.log n) * 1 / Real.log n = 8 * ((x / Real.log n) / Real.log n) * 1 by ring,
-                  show 8 * ((x / Real.log n) / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) =
-                    8 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n by ring]
-      have hsum := add_le_add (add_le_add h1' h2') h3
-      linarith [show 8 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n +
-          8 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n +
-          20 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n =
-          36 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n by ring]
+        36 * (x / Real.log n) * (Real.log (2 * Real.log n + 1) + 1) / Real.log n :=
+      h_li_bd_aux x (Real.log x) (Real.log n) (Real.log (2 * Real.log n + 1) + 1) (Real.log 2)
+        (by linarith [hx16]) hlogn_pos (by linarith) (by nlinarith) hlog2_ge
+        (Real.log_nonneg (by linarith)) hlog_log_x
+        (by linarith [Real.log_nonneg (by linarith : 1 ≤ 2 * Real.log n + 1)])
     set A : ℝ := (Nat.primeCounting ⌊x⌋₊ : ℝ)
     set B : ℝ := ∫ t in (2 : ℝ)..x, (Real.log t)⁻¹
     set C : ℝ := x / Real.log x
