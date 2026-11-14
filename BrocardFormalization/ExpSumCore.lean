@@ -688,7 +688,7 @@ lemma type_I_single_d_bound
             by
             calc d * t < d * (2 * (P / d)) := mul_lt_mul_of_pos_left ht.2 hd_pos
               _ = 2 * P := by field_simp [hd_pos.ne']⟩
-          exact (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
+          exact (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
         have hcomp_da : HasDerivAt (fun u => w (d * u)) (deriv w (d * t) * d) t :=
           hw_da.hasDerivAt.comp t ((hasDerivAt_id t).const_mul (d : ℝ))
         have hmul_da := hlog_da.mul hcomp_da
@@ -851,8 +851,10 @@ lemma type_I_single_d_bound
           rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
           exact inv_anti₀ (pow_pos (by linarith) r₀) (pow_le_pow_left₀ (by linarith) (by linarith [hu_le]) r₀)
         have h2pow : (2 : ℝ) ^ (-(R : ℤ) - 1) * P ^ (-(r₀ : ℤ)) ≤ (2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ)) := by
-          rw [show (2 * P / d) = (2 * P) / d by ring, zpow_neg, zpow_natCast, div_pow, inv_div]
-          rw [zpow_neg, zpow_natCast, zpow_sub₀ (by norm_num), zpow_neg, zpow_natCast, zpow_one]
+          rw [show (2 * P / d) = (2 * P) / d by ring, zpow_sub₀ (by norm_num),
+            zpow_neg (2 : ℝ) (R : ℤ), zpow_natCast (2 : ℝ) R, zpow_one,
+            zpow_neg P (r₀ : ℤ), zpow_natCast P r₀,
+            zpow_neg ((2 * P) / d) (r₀ : ℤ), zpow_natCast ((2 * P) / d) r₀, div_pow, inv_div]
           rw [mul_pow, ← div_eq_mul_inv]
           field_simp [hd_pos.ne', hP_pos.ne']
           have h2r : (2 : ℝ) ^ r₀ ≤ (2 : ℝ) ^ R := pow_le_pow_right₀ (by norm_num) (hA r₀ hr₀).2
@@ -863,8 +865,8 @@ lemma type_I_single_d_bound
           _ ≤ |(h r₀ : ℝ)| * n * ((2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ))) :=
                 mul_le_mul_of_nonneg_left h2pow (by positivity)
           _ ≤ |(h r₀ : ℝ) * n / (2 * (d : ℝ) ^ r₀)| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) := by
-                rw [abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-                  abs_of_pos (by positivity : (0 : ℝ) < 2 * (d : ℝ) ^ r₀)]
+                rw [abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+                  abs_of_pos (a := 2 * (d : ℝ) ^ r₀) (by positivity)]
                 have hle1 : |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * 1 * (2 * P / d) ^ (-(r₀ : ℤ)) ≤
                     |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) := by
                   refine mul_le_mul (mul_le_mul_of_nonneg_left hr0_1 (by positivity)) hupow (by positivity) (by positivity)
@@ -892,72 +894,149 @@ lemma type_I_single_d_bound
               ((2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp)) := by positivity
           linarith
 
-lemma sum_vonMangoldt_le (X : ℕ) (hX : 1 ≤ X) :
-    ∑ k ∈ Finset.Icc 1 X, (ArithmeticFunction.vonMangoldt k : ℝ) ≤ (Real.log 4 + 4) * (X : ℝ) := by
-  by_cases hX4 : X < 4
-  · have hsub : Finset.Icc 1 X ⊆ Finset.Icc 1 3 := fun k hk =>
-      Finset.mem_Icc.mpr ⟨(Finset.mem_Icc.mp hk).1, by have := (Finset.mem_Icc.mp hk).2; omega⟩
-    have hterm : ∀ k ∈ Finset.Icc 1 3, (ArithmeticFunction.vonMangoldt k : ℝ) ≤ Real.log 3 := by
-      intro k hk
-      have hk1 : 1 ≤ k := (Finset.mem_Icc.mp hk).1
-      have hk3 : k ≤ 3 := (Finset.mem_Icc.mp hk).2
-      exact le_trans ArithmeticFunction.vonMangoldt_le_log
-        (Real.log_le_log (by exact_mod_cast hk1) (by exact_mod_cast hk3))
-    have hsum3 : ∑ k ∈ Finset.Icc 1 X, (ArithmeticFunction.vonMangoldt k : ℝ) ≤ 3 * Real.log 3 := by
-      calc ∑ k ∈ Finset.Icc 1 X, (ArithmeticFunction.vonMangoldt k : ℝ)
-          ≤ ∑ k ∈ Finset.Icc 1 3, (ArithmeticFunction.vonMangoldt k : ℝ) :=
-            Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => ArithmeticFunction.vonMangoldt_nonneg)
-        _ ≤ ∑ _k ∈ Finset.Icc 1 3, Real.log 3 := Finset.sum_le_sum hterm
-        _ = 3 * Real.log 3 := by simp
-    have hlog3 : Real.log 3 ≤ 4 / 3 := by
-      have h2 : Real.log (3 / 2 : ℝ) ≤ 3 / 2 - 1 := Real.log_le_sub_one_of_pos (by norm_num)
-      rw [Real.log_div (by norm_num) (by norm_num)] at h2
-      linarith [Real.log_two_lt_d9]
-    have hX1 : (1 : ℝ) ≤ X := by exact_mod_cast hX
-    have hlog4 : 0 ≤ Real.log 4 := Real.log_nonneg (by norm_num)
-    nlinarith
-  · push_neg at hX4
-    have hdiff := sum_vonMangoldt_sub_prime_log_le (A₀ := 1) (B₀ := X) le_rfl hX4 (g := fun _ => 1) (fun _ => by simp)
-    simp only [mul_one, ← Complex.ofReal_sum, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at hdiff
-    have h1 : ∑ k ∈ Finset.Icc 1 X, (ArithmeticFunction.vonMangoldt k : ℝ) -
-        ∑ p ∈ (Finset.Icc 1 X).filter Nat.Prime, Real.log p ≤
-        2 * Real.sqrt X * (Real.log X) ^ 2 := le_trans (le_abs_self _) hdiff
-    have htheta : ∑ p ∈ (Finset.Icc 1 X).filter Nat.Prime, Real.log p ≤ Real.log 4 * (X : ℝ) := by
-      have heq : ∑ p ∈ (Finset.Icc 1 X).filter Nat.Prime, Real.log p = Chebyshev.theta (X : ℝ) := by
-        unfold Chebyshev.theta
-        rw [Nat.floor_natCast]
-        congr 1; ext p; simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_Ioc]
-        exact ⟨fun ⟨⟨hp1, hpX⟩, hp⟩ => ⟨⟨hp.pos, hpX⟩, hp⟩, fun ⟨⟨hp0, hpX⟩, hp⟩ => ⟨⟨hp.pos, hpX⟩, hp⟩⟩
-      rw [heq]
-      exact Chebyshev.theta_le_log4_mul_x (Nat.cast_nonneg X)
-    have hsqrt : 2 * Real.sqrt X * (Real.log X) ^ 2 ≤ 4 * (X : ℝ) := by
-      have hX_pos : (0 : ℝ) < X := by exact_mod_cast hX
-      have hr4 : 0 < (X : ℝ) ^ (1 / 4 : ℝ) := Real.rpow_pos_of_pos hX_pos _
-      have hlog4 : Real.log ((X : ℝ) ^ (1 / 4 : ℝ)) ≤ (X : ℝ) ^ (1 / 4 : ℝ) / Real.exp 1 := by
-        have h_u := Real.log_le_sub_one_of_pos (div_pos hr4 (Real.exp_pos 1))
-        rw [Real.log_div hr4.ne' (Real.exp_pos 1).ne', Real.log_exp] at h_u
-        linarith
-      rw [Real.log_rpow hX_pos] at hlog4
-      have hlog_le : Real.log X ≤ (4 / Real.exp 1) * (X : ℝ) ^ (1 / 4 : ℝ) := by linarith
-      have hlog_nn : 0 ≤ Real.log X := Real.log_nonneg (by exact_mod_cast hX)
-      have hsq : (Real.log X) ^ 2 ≤ (4 / Real.exp 1) ^ 2 * (X : ℝ) ^ (1 / 2 : ℝ) := by
-        calc (Real.log X) ^ 2 ≤ ((4 / Real.exp 1) * (X : ℝ) ^ (1 / 4 : ℝ)) ^ 2 :=
-              pow_le_pow_left₀ hlog_nn hlog_le 2
-          _ = (4 / Real.exp 1) ^ 2 * ((X : ℝ) ^ (1 / 4 : ℝ)) ^ 2 := mul_pow _ _ 2
-          _ = (4 / Real.exp 1) ^ 2 * (X : ℝ) ^ (1 / 2 : ℝ) := by
-              rw [← Real.rpow_natCast ((X : ℝ) ^ _), ← Real.rpow_mul hX_pos.le]; norm_num
-      have he_sq : (4 / Real.exp 1) ^ 2 ≤ 2 := by
-        rw [div_pow, div_le_iff₀ (by positivity)]
-        have : (2.71 : ℝ) ≤ Real.exp 1 := by linarith [Real.exp_one_gt_d9]
-        nlinarith
-      rw [Real.sqrt_eq_rpow]
-      calc 2 * (X : ℝ) ^ (1 / 2 : ℝ) * (Real.log X) ^ 2
-          ≤ 2 * (X : ℝ) ^ (1 / 2 : ℝ) * (2 * (X : ℝ) ^ (1 / 2 : ℝ)) := by
-            refine mul_le_mul_of_nonneg_left (le_trans hsq (mul_le_mul_of_nonneg_right he_sq (by positivity))) (by positivity)
-        _ = 4 * ((X : ℝ) ^ (1 / 2 : ℝ) * (X : ℝ) ^ (1 / 2 : ℝ)) := by ring
-        _ = 4 * (X : ℝ) := by rw [← Real.rpow_add hX_pos]; norm_num
+lemma factorial_two_mul_le (m : ℕ) :
+    (2 * m).factorial ≤ 4 ^ m * (m.factorial) ^ 2 := by
+  induction m with
+  | zero => simp
+  | succ m ih =>
+    have h1 : 2 * (m + 1) = 2 * m + 2 := by omega
+    rw [h1, Nat.factorial_succ (2 * m + 1), Nat.factorial_succ (2 * m),
+      Nat.factorial_succ m, pow_succ 4 m]
+    have h2 : (2 * m + 1 + 1) * (2 * m + 1) ≤ 4 * (m + 1) ^ 2 := by nlinarith
+    calc (2 * m + 1 + 1) * ((2 * m + 1) * (2 * m).factorial)
+        = ((2 * m + 1 + 1) * (2 * m + 1)) * (2 * m).factorial := by ring
+      _ ≤ (4 * (m + 1) ^ 2) * (4 ^ m * (m.factorial) ^ 2) :=
+          Nat.mul_le_mul h2 ih
+      _ = 4 ^ m * 4 * ((m + 1) * m.factorial) ^ 2 := by ring
+
+lemma log_factorial_eq_sum_vonMangoldt (n : ℕ) :
+    Real.log (n.factorial : ℝ) =
+      ∑ k ∈ Finset.Icc 1 n, ((n / k : ℕ) : ℝ) * (ArithmeticFunction.vonMangoldt k : ℝ) := by
+  have hlog : Real.log (n.factorial : ℝ) = ∑ m ∈ Finset.Icc 1 n, Real.log (m : ℝ) := by
+    induction n with
+    | zero => simp
+    | succ m ih =>
+      rw [Finset.sum_Icc_succ_top (by omega), ← ih, Nat.factorial_succ, Nat.cast_mul,
+        Real.log_mul (by positivity) (by positivity), add_comm]
+  rw [hlog]
+  by_cases hn : n = 0
+  · subst hn; simp
+  · have hn1 : 1 ≤ n := by omega
+    have hvm : ∀ m ∈ Finset.Icc 1 n,
+        Real.log (m : ℝ) =
+          ∑ k ∈ m.divisors.filter (fun k => 1 ≤ k ∧ k ≤ n), (ArithmeticFunction.vonMangoldt k : ℝ) := by
+      intro m hm
+      rw [← ArithmeticFunction.vonMangoldt_sum]
+      refine Finset.sum_congr ?_ fun _ _ => rfl
+      ext k
+      simp only [Finset.mem_filter]
+      refine ⟨fun hk => ⟨hk, Nat.pos_of_mem_divisors hk,
+        le_trans (Nat.le_of_dvd (Finset.mem_Icc.mp hm).1 (Nat.dvd_of_mem_divisors hk)) (Finset.mem_Icc.mp hm).2⟩,
+        fun ⟨hk, _⟩ => hk⟩
+    have h_c := sum_Icc_divisors_filter (A₀ := 1) (B₀ := n) (L := 1) (U := n) le_rfl le_rfl
+      (fun k _ => (ArithmeticFunction.vonMangoldt k : ℂ))
+    have h_re := congr_arg Complex.re h_c
+    simp only [Complex.re_sum, Complex.ofReal_re] at h_re
+    rw [Finset.sum_congr rfl hvm, h_re]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [show (1 - 1) / k + 1 = 1 by simp, Finset.sum_const, Nat.card_Icc,
+      Nat.add_sub_cancel, nsmul_eq_mul]
+
+lemma sum_vonMangoldt_dyadic_le (m : ℕ) (hm : 1 ≤ m) :
+    ∑ k ∈ Finset.Icc (m + 1) (2 * m), (ArithmeticFunction.vonMangoldt k : ℝ) ≤
+      (m : ℝ) * Real.log 4 := by
+  have h1 := log_factorial_eq_sum_vonMangoldt (2 * m)
+  have h2 := log_factorial_eq_sum_vonMangoldt m
+  have hsub : Finset.Icc 1 m ⊆ Finset.Icc 1 (2 * m) := fun k hk =>
+    Finset.mem_Icc.mpr ⟨(Finset.mem_Icc.mp hk).1, by have := (Finset.mem_Icc.mp hk).2; omega⟩
+  have h2_ext : ∑ k ∈ Finset.Icc 1 m, ((m / k : ℕ) : ℝ) * (ArithmeticFunction.vonMangoldt k : ℝ) =
+      ∑ k ∈ Finset.Icc 1 (2 * m), ((m / k : ℕ) : ℝ) * (ArithmeticFunction.vonMangoldt k : ℝ) := by
+    refine Finset.sum_subset hsub fun k hk hnot => ?_
+    rw [Finset.mem_Icc] at hk hnot
+    have hgt : m < k := by omega
+    rw [Nat.div_eq_of_lt hgt]; simp
+  rw [h2_ext] at h2
+  have hdiff : Real.log ((2 * m).factorial : ℝ) - 2 * Real.log (m.factorial : ℝ) =
+      ∑ k ∈ Finset.Icc 1 (2 * m),
+        (((2 * m / k : ℕ) : ℝ) - 2 * ((m / k : ℕ) : ℝ)) * (ArithmeticFunction.vonMangoldt k : ℝ) := by
+    rw [h1, h2, Finset.mul_sum, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun k _ => by ring
+  have h_coeff_nn : ∀ k ∈ Finset.Icc 1 (2 * m),
+      0 ≤ (((2 * m / k : ℕ) : ℝ) - 2 * ((m / k : ℕ) : ℝ)) * (ArithmeticFunction.vonMangoldt k : ℝ) := by
+    intro k hk
+    refine mul_nonneg ?_ ArithmeticFunction.vonMangoldt_nonneg
+    have hk_pos : 0 < k := (Finset.mem_Icc.mp hk).1
+    have hle : 2 * (m / k) ≤ 2 * m / k :=
+      (Nat.le_div_iff_mul_le hk_pos).mpr (by nlinarith [Nat.div_mul_le_self m k])
+    have hleR : (2 * (m / k : ℕ) : ℝ) ≤ (2 * m / k : ℕ) := by exact_mod_cast hle
+    linarith
+  have h_upper_sub : Finset.Icc (m + 1) (2 * m) ⊆ Finset.Icc 1 (2 * m) := fun k hk =>
+    Finset.mem_Icc.mpr ⟨by have := (Finset.mem_Icc.mp hk).1; omega, (Finset.mem_Icc.mp hk).2⟩
+  have h_upper_le : ∑ k ∈ Finset.Icc (m + 1) (2 * m), (ArithmeticFunction.vonMangoldt k : ℝ) ≤
+      Real.log ((2 * m).factorial : ℝ) - 2 * Real.log (m.factorial : ℝ) := by
+    rw [hdiff]
+    calc ∑ k ∈ Finset.Icc (m + 1) (2 * m), (ArithmeticFunction.vonMangoldt k : ℝ)
+        ≤ ∑ k ∈ Finset.Icc (m + 1) (2 * m),
+            (((2 * m / k : ℕ) : ℝ) - 2 * ((m / k : ℕ) : ℝ)) * (ArithmeticFunction.vonMangoldt k : ℝ) := by
+          refine Finset.sum_le_sum fun k hk => ?_
+          rw [Finset.mem_Icc] at hk
+          have hm_div : m / k = 0 := Nat.div_eq_of_lt hk.1
+          have h2m_div : 1 ≤ 2 * m / k := Nat.div_pos hk.2 (by omega)
+          have h2m_R : (1 : ℝ) ≤ (2 * m / k : ℕ) := by exact_mod_cast h2m_div
+          rw [hm_div, Nat.cast_zero, mul_zero, sub_zero]
+          exact le_mul_of_one_le_left ArithmeticFunction.vonMangoldt_nonneg h2m_R
+      _ ≤ ∑ k ∈ Finset.Icc 1 (2 * m),
+            (((2 * m / k : ℕ) : ℝ) - 2 * ((m / k : ℕ) : ℝ)) * (ArithmeticFunction.vonMangoldt k : ℝ) :=
+          Finset.sum_le_sum_of_subset_of_nonneg h_upper_sub h_coeff_nn
+  have h_fact_le : Real.log ((2 * m).factorial : ℝ) - 2 * Real.log (m.factorial : ℝ) ≤
+      (m : ℝ) * Real.log 4 := by
+    have hle : ((2 * m).factorial : ℝ) ≤ (4 : ℝ) ^ m * ((m.factorial : ℝ) ^ 2) := by
+      exact_mod_cast factorial_two_mul_le m
+    have hlog_le := Real.log_le_log (by positivity) hle
+    rw [Real.log_mul (by positivity) (by positivity), Real.log_pow, Real.log_pow] at hlog_le
+    linarith
+  exact le_trans h_upper_le h_fact_le
+
+lemma sum_vonMangoldt_two_pow_le (K : ℕ) :
+    ∑ k ∈ Finset.Icc 1 (2 ^ K), (ArithmeticFunction.vonMangoldt k : ℝ) ≤
+      (2 ^ K : ℝ) * Real.log 4 := by
+  induction K with
+  | zero =>
+    simp [ArithmeticFunction.vonMangoldt_apply_one]
+    exact Real.log_nonneg (by norm_num)
+  | succ K ih =>
+    have hsplit : Finset.Icc 1 (2 ^ (K + 1)) =
+        Finset.Icc 1 (2 ^ K) ∪ Finset.Icc (2 ^ K + 1) (2 * 2 ^ K) := by
+      ext k; simp only [Finset.mem_Icc, Finset.mem_union, pow_succ']; omega
+    have hdisj : Disjoint (Finset.Icc 1 (2 ^ K)) (Finset.Icc (2 ^ K + 1) (2 * 2 ^ K)) := by
+      rw [Finset.disjoint_left]
+      intro k hk1 hk2; rw [Finset.mem_Icc] at hk1 hk2; omega
+    rw [hsplit, Finset.sum_union hdisj]
+    have hdy := sum_vonMangoldt_dyadic_le (2 ^ K) (by positivity)
+    push_cast at hdy ⊢
     linarith
 
-
+lemma sum_vonMangoldt_le (X : ℕ) (hX : 1 ≤ X) :
+    ∑ k ∈ Finset.Icc 1 X, (ArithmeticFunction.vonMangoldt k : ℝ) ≤ (Real.log 4 + 4) * (X : ℝ) := by
+  let K := Nat.log 2 X + 1
+  have hX_lt : X < 2 ^ K := Nat.lt_pow_succ_log_self (by norm_num) X
+  have h2K_le : 2 ^ K ≤ 2 * X := by
+    dsimp only [K]
+    rw [pow_succ']
+    exact Nat.mul_le_mul_left 2 (Nat.pow_log_le_self 2 (by omega))
+  have hsub : Finset.Icc 1 X ⊆ Finset.Icc 1 (2 ^ K) := fun k hk =>
+    Finset.mem_Icc.mpr ⟨(Finset.mem_Icc.mp hk).1, le_trans (Finset.mem_Icc.mp hk).2 hX_lt.le⟩
+  have h1 : ∑ k ∈ Finset.Icc 1 X, (ArithmeticFunction.vonMangoldt k : ℝ) ≤
+      (2 ^ K : ℝ) * Real.log 4 :=
+    le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => ArithmeticFunction.vonMangoldt_nonneg))
+      (sum_vonMangoldt_two_pow_le K)
+  have h2K_R : (2 ^ K : ℝ) ≤ 2 * (X : ℝ) := by exact_mod_cast h2K_le
+  have hlog4_le : Real.log 4 ≤ 2 := by
+    have : (4 : ℝ) = 2 ^ 2 := by norm_num
+    rw [this, Real.log_pow]
+    linarith [Real.log_two_lt_d9]
+  have hlog4_nn : 0 ≤ Real.log 4 := Real.log_nonneg (by norm_num)
+  have hX_nn : 0 ≤ (X : ℝ) := Nat.cast_nonneg X
+  nlinarith
 
 end BrocardFormalization
