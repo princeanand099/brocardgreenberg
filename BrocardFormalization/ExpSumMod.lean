@@ -837,6 +837,7 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
           ∑ p ∈ Near, (‖b_coeff p.1‖ ^ 2 + ‖b_coeff p.2‖ ^ 2) / 2 :=
         Finset.sum_le_sum fun p _ => by nlinarith [sq_nonneg (‖b_coeff p.1‖ - ‖b_coeff p.2‖)]
       have h2 : ∑ p ∈ Near, ‖b_coeff p.1‖ ^ 2 ≤ (2 * D + 1) * B_norm := by
+        classical
         dsimp only [Near]
         rw [Finset.sum_filter, Finset.sum_product]
         have hrow : ∀ y₁ ∈ Finset.Icc Y₁ Y₂,
@@ -875,6 +876,7 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
           _ = (2 * D + 1) * ∑ y₁ ∈ Finset.Icc Y₁ Y₂, ‖b_coeff y₁‖ ^ 2 := by rw [Finset.mul_sum]
           _ ≤ (2 * D + 1) * B_norm := mul_le_mul_of_nonneg_left hB_norm (by positivity)
       have h3 : ∑ p ∈ Near, ‖b_coeff p.2‖ ^ 2 ≤ (2 * D + 1) * B_norm := by
+        classical
         dsimp only [Near]
         rw [Finset.sum_filter, Finset.sum_product, Finset.sum_comm]
         have hrow : ∀ y₂ ∈ Finset.Icc Y₁ Y₂,
@@ -927,43 +929,54 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
           mul_le_mul_of_nonneg_right hnear_sum (by positivity)
       _ = B_norm * W₀ ^ 2 * (4 * ((X₁ : ℝ) * (Y₁ : ℝ)) * T₀ ^ (-1 / 3 : ℝ) + 2 * (X₁ : ℝ)) := by
           dsimp only [D]; ring
+      _ ≤ B_norm * W₀ ^ 2 * (4 * (4 * P) * T₀ ^ (-1 / 3 : ℝ) + 2 * (2 * P ^ (1 / 2 : ℝ))) := by
+          refine mul_le_mul_of_nonneg_left (add_le_add
+            (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hX1_Y1 (by norm_num)) (by positivity))
+            (mul_le_mul_of_nonneg_left hX_sqrt' (by norm_num))) (by positivity)
       _ ≤ B_norm * W₀ ^ 2 * (32 * P * T₀ ^ (-1 / 3 : ℝ) + 8 * P ^ (1 / 2 : ℝ)) := by
-          refine mul_le_mul_of_nonneg_left (add_le_add ?_ (by linarith)) (by positivity)
-          exact mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+          have h1 : 0 ≤ B_norm * W₀ ^ 2 * (P * T₀ ^ (-1 / 3 : ℝ)) := by positivity
+          have h2 : 0 ≤ B_norm * W₀ ^ 2 * P ^ (1 / 2 : ℝ) := by positivity
+          linarith
   have hFar_bd : ∑ p ∈ Far,
         ‖b_coeff p.1‖ * ‖b_coeff p.2‖ *
           ‖∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊),
             (w (x * p.1) * w (x * p.2) : ℂ) * ePhase (F (x * p.1) - F (x * p.2))‖ ≤
-      B_norm * W₀ ^ 2 * (128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
-        128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by
+      B_norm * W₀ ^ 2 *
+        (128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
+          128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by
     have hinner : ∀ p ∈ Far,
         ‖∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊),
           (w (x * p.1) * w (x * p.2) : ℂ) * ePhase (F (x * p.1) - F (x * p.2))‖ ≤
         8 * W₀ ^ 2 * C_exp * (2 * (X₁ : ℝ)) *
           (((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * T₀ ^ (-2 / 3 : ℝ) + (2 * (X₁ : ℝ)) ^ (-η_exp)) := by
-      intro ⟨y₁, y₂⟩ hp
-      simp only [Far, Finset.mem_filter, Finset.mem_product, not_le] at hp
-      have hy_ne : y₁ ≠ y₂ := by
-        intro heq; subst heq; rw [sub_self, abs_zero] at hp; exact not_le_of_gt hp.2 hD_nn
-      have hy₁_mem := (Finset.mem_Icc.mp hp.1.1)
-      have hy₂_mem := (Finset.mem_Icc.mp hp.1.2)
-      have hdom_pair := hdom_all y₁ hp.1.1 y₂ hp.1.2 hy_ne
+      intro p hp
+      have hp' := Finset.mem_filter.mp hp
+      have hp_mem := Finset.mem_product.mp hp'.1
+      have hp1 := Finset.mem_Icc.mp hp_mem.1
+      have hp2 := Finset.mem_Icc.mp hp_mem.2
+      have hp_ne : p.1 ≠ p.2 := by
+        intro heq
+        apply hp'.2
+        rw [heq, sub_self, abs_zero]; exact hD_nn
       have h_in := type_II_inner_sum_bound_mod q_den hq_den R K_max hK_max C_exp η_exp M₀ hC_exp hη_exp hη_le hM₀ hexp
         n P a b hP1 hPa hab hb2P A hA r₀ hr₀ h hh₀ w W₀ hW₀ hw_bd hw_diff hw_tv
-        X₁ X_top Y₁ hX₁ hM₀_X₁ hX_top hY₁ hXY_hi y₁ y₂ hy₁_mem.1 (le_trans hy₁_mem.2 hY₂_2) hy₂_mem.1 (le_trans hy₂_mem.2 hY₂_2) hy_ne
-        hdom_pair.1 hdom_pair.2 hT₀_ge1
+        X₁ X_top Y₁ hX₁ hM₀_X₁ hX_top hY₁ hXY_hi p.1 p.2
+        hp1.1 (le_trans hp1.2 hY₂_2) hp2.1 (le_trans hp2.2 hY₂_2) hp_ne
+        (hdom_all p.1 hp_mem.1 p.2 hp_mem.2 hp_ne).1
+        (hdom_all p.1 hp_mem.1 p.2 hp_mem.2 hp_ne).2
+        hT₀_ge1
       dsimp only at h_in
-      set T_y := ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ * (|(y₁ : ℝ) - y₂| / Y₁)
+      set T_y := ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ * (|(p.1 : ℝ) - p.2| / Y₁)
       have hTy_gt : ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ ^ (2 / 3 : ℝ) ≤ T_y := by
         dsimp only [T_y]
-        have hdiff_gt : T₀ ^ (-1 / 3 : ℝ) < |(y₁ : ℝ) - y₂| / Y₁ := by
-          rw [lt_div_iff₀ hY₁_pos, mul_comm]; exact hp.2
+        have hdiff_gt : T₀ ^ (-1 / 3 : ℝ) < |(p.1 : ℝ) - p.2| / Y₁ := by
+          rw [lt_div_iff₀ hY₁_pos, mul_comm]; exact lt_of_not_ge hp'.2
         have hT_eq : T₀ * T₀ ^ (-1 / 3 : ℝ) = T₀ ^ (2 / 3 : ℝ) := by
           rw [show (2 / 3 : ℝ) = 1 + (-1 / 3 : ℝ) by norm_num,
             Real.rpow_add (by linarith only [hT₀_ge1]), Real.rpow_one]
         calc ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ ^ (2 / 3 : ℝ)
             = ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ * T₀ ^ (-1 / 3 : ℝ) := by rw [← hT_eq]; ring
-          _ ≤ ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ * (|(y₁ : ℝ) - y₂| / Y₁) :=
+          _ ≤ ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ * (|(p.1 : ℝ) - p.2| / Y₁) :=
               mul_le_mul_of_nonneg_left hdiff_gt.le (by positivity)
       have hdiv_le : (2 * (X₁ : ℝ)) / max T_y 1 ≤
           (2 * (X₁ : ℝ)) * (((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * T₀ ^ (-2 / 3 : ℝ)) := by
@@ -989,7 +1002,7 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     have hfar_sum : ∑ p ∈ Far, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ ≤ 2 * (Y₁ : ℝ) * B_norm := by
       have hsub : Far ⊆ Finset.Icc Y₁ Y₂ ×ˢ Finset.Icc Y₁ Y₂ := Finset.filter_subset _ _
       refine le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => by positivity)) ?_
-      rw [Finset.sum_product]; dsimp only; rw [← Finset.sum_mul_sum]
+      rw [Finset.sum_product]; dsimp only; simp_rw [← Finset.mul_sum, ← Finset.sum_mul]
       have h1 : (∑ y ∈ Finset.Icc Y₁ Y₂, ‖b_coeff y‖) ^ 2 ≤ ((Finset.Icc Y₁ Y₂).card : ℝ) * B_norm := by
         have hcs := Finset.sum_mul_sq_le_sq_mul_sq (Finset.Icc Y₁ Y₂) (fun _ => (1 : ℝ)) (fun y => ‖b_coeff y‖)
         simp only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one] at hcs
@@ -1032,8 +1045,26 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
           128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by
     refine le_trans hre_le ?_
     rw [hsplit]
-    linarith [hNear_bd, hFar_bd]
-  exact le_trans hCS (le_trans (mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn) (by ring_nf; rfl))
+    linarith only [hNear_bd, hFar_bd]
+  calc ‖∑ x ∈ Finset.Icc X₁ X_top,
+        a_coeff x *
+          ∑ y ∈ (Finset.Icc Y₁ Y₂).filter (fun y => ⌈a⌉₊ ≤ x * y ∧ x * y ≤ ⌊b⌋₊),
+            b_coeff y * (w (x * y) : ℂ) *
+              ePhase (∑ r ∈ A, (h r : ℝ) * n / ((q_den : ℝ) * ((x * y : ℕ) : ℝ) ^ r))‖ ^ 2
+      ≤ (∑ x ∈ Finset.Icc X₁ X_top, ‖a_coeff x‖ ^ 2) *
+          ∑ x ∈ Finset.Icc X₁ X_top,
+            ‖∑ y ∈ (Finset.Icc Y₁ Y₂).filter (fun y => ⌈a⌉₊ ≤ x * y ∧ x * y ≤ ⌊b⌋₊),
+              b_coeff y * (w (x * y) : ℂ) *
+                ePhase (∑ r ∈ A, (h r : ℝ) * n / ((q_den : ℝ) * ((x * y : ℕ) : ℝ) ^ r))‖ ^ 2 := hCS
+    _ ≤ A_norm * (B_norm * W₀ ^ 2 *
+          (32 * P * T₀ ^ (-1 / 3 : ℝ) + 8 * P ^ (1 / 2 : ℝ) +
+            128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
+            128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp))) :=
+        mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn
+    _ = A_norm * B_norm * W₀ ^ 2 *
+          (32 * P * T₀ ^ (-1 / 3 : ℝ) + 8 * P ^ (1 / 2 : ℝ) +
+            128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
+            128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by ring
 
 lemma type_I_no_log_single_d_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     (R K_max : ℕ) (hK_max : 3 ≤ K_max)
@@ -1600,7 +1631,7 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
         _ ≤ W₀ * (64 * P * P ^ (-η'_δ)) := mul_le_mul_of_nonneg_left hsqrt_bd hW₀
         _ = 64 * W₀ * P * P ^ (-η'_δ) := by ring
     -- Step 2: Vaughan's identity
-    have hvaugh := vaughan_identity U U hU_pos hU_pos (B₀ := B₀) hA₀_pos g
+    have hvaugh := @vaughan_identity U U hU_pos hU_pos A₀ B₀ hA₀_pos g
     have hS1_zero : ∑ m ∈ (Finset.Icc A₀ B₀).filter (· ≤ U), (ArithmeticFunction.vonMangoldt m : ℂ) * g m = 0 := by
       refine Finset.sum_eq_zero fun m hm => ?_
       rw [Finset.mem_filter, Finset.mem_Icc] at hm; omega
@@ -2944,7 +2975,8 @@ theorem lemma_2_4_i_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 
           rw [h_rhs_eq]
           exact mul_le_mul_of_nonneg_right h2_le (by positivity)
       _ = (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [mul_assoc, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne', show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
+          rw [mul_assoc, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
+            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
   -- Bound `P ^ (-η'_δ) * (log P)^3`
   have hP_pow : P ^ (-η'_δ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hP_rpow : P ^ (-η'_δ) ≤ (Real.log n) ^ (-(R + 5 : ℤ)) := by
@@ -2956,8 +2988,8 @@ theorem lemma_2_4_i_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 
         ≤ (Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ 3 :=
           mul_le_mul hP_rpow hlogP_cube (by positivity) (by positivity)
       _ = 1 * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [one_mul, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne',
-            show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
+          rw [one_mul, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
+            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
       _ ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) :=
           mul_le_mul_of_nonneg_right (one_le_pow₀ (by norm_num)) (by positivity)
   calc C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3
