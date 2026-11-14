@@ -106,7 +106,8 @@ lemma type_II_inner_sum_bound
           (|(h r₀ : ℝ) * (n : ℝ) / 2 * ((y₁ : ℝ) ^ (-(r₀ : ℤ)) - (y₂ : ℝ) ^ (-(r₀ : ℤ)))| *
             (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (2 * (X₁ : ℝ)) ^ (-(r₀ : ℤ))))
     (hT_ub : |(h r₀ : ℝ) * (n : ℝ) / 2 * ((y₁ : ℝ) ^ (-(r₀ : ℤ)) - (y₂ : ℝ) ^ (-(r₀ : ℤ)))| *
-        (r₀ : ℝ) * (X₁ : ℝ) ^ (-(r₀ : ℤ)) ≤ (X₁ : ℝ) ^ (K_max - 1)) :
+        (r₀ : ℝ) * (X₁ : ℝ) ^ (-(r₀ : ℤ)) ≤ (X₁ : ℝ) ^ (K_max - 1))
+    (hT₀_ge1 : 1 ≤ |(h r₀ : ℝ)| * (n : ℝ) / P ^ r₀) :
     let T₀ := |(h r₀ : ℝ)| * (n : ℝ) / P ^ r₀
     let T_y := (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * T₀ * (|(y₁ : ℝ) - y₂| / Y₁)
     ‖∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * y₁ ∧ x * y₁ ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * y₂ ∧ x * y₂ ≤ ⌊b⌋₊),
@@ -147,6 +148,8 @@ lemma type_II_inner_sum_bound
         exact ⟨by exact_mod_cast h1, by exact_mod_cast h2, by exact_mod_cast h3⟩
     rw [hceil_iff, hfloor_iff]; tauto
   rw [hflt_eq]
+  have hTy_rhs_nn : 0 ≤ (2 * (X₁ : ℝ)) / max T_y 1 + (2 * (X₁ : ℝ)) ^ (1 - η_exp) :=
+    add_nonneg (div_nonneg (by positivity) (lt_of_lt_of_le zero_lt_one (le_max_right _ _)).le) (by positivity)
   by_cases h_empty : b₁₂ < a₁₂
   · have h_empty_nat : ⌊b₁₂⌋₊ < ⌈a₁₂⌉₊ := by
       by_contra hle
@@ -159,7 +162,7 @@ lemma type_II_inner_sum_bound
       have h3 : (⌈a₁₂⌉₊ : ℝ) ≤ (⌊b₁₂⌋₊ : ℝ) := by exact_mod_cast hle
       linarith
     rw [Finset.Icc_eq_empty (not_le.mpr h_empty_nat), Finset.sum_empty, norm_zero]
-    positivity
+    exact mul_nonneg (mul_nonneg (by positivity) hC_exp.le) hTy_rhs_nn
   · push_neg at h_empty
     have ha₁₂_pos : 0 < a₁₂ := lt_of_lt_of_le hX₁_pos (le_max_left _ _)
     have hb₁₂_2a : b₁₂ ≤ 2 * a₁₂ := by
@@ -205,7 +208,7 @@ lemma type_II_inner_sum_bound
             have ht_lo1 : (⌈a⌉₊ : ℝ) / y₁ < t := lt_of_le_of_lt (le_trans (le_max_left _ _) (le_max_right _ _)) ht1
             have ht_hi1 : t < (⌊b⌋₊ : ℝ) / y₁ := lt_of_lt_of_le ht2 (le_trans (min_le_left _ _) (min_le_right _ _))
             exact ⟨lt_of_le_of_lt (le_trans hPa (Nat.le_ceil a)) ((div_lt_iff₀ hy₁_pos).mp ht_lo1),
-              lt_of_lt_of_le ((lt_div_iff₀ hy₂_pos |> fun _ => (lt_div_iff₀ hy₁_pos)).mp ht_hi1) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
+              lt_of_lt_of_le ((lt_div_iff₀ hy₁_pos).mp ht_hi1) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
           have hmem2 : t * y₂ ∈ Set.Ioo P (2 * P) := by
             have ht1 : a₁₂ < t := ht.1
             have ht2 : t < b₁₂ := ht.2
@@ -217,11 +220,14 @@ lemma type_II_inner_sum_bound
             (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem1.1 hmem1.2)
           have hw2_da : DifferentiableAt ℝ w (t * y₂) :=
             (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem2.1 hmem2.2)
-          have h1 : HasDerivAt (fun u => w (u * y₁)) (deriv w (t * y₁) * y₁) t :=
-            hw1_da.hasDerivAt.comp t ((hasDerivAt_id t).mul_const (y₁ : ℝ))
-          have h2 : HasDerivAt (fun u => w (u * y₂)) (deriv w (t * y₂) * y₂) t :=
-            hw2_da.hasDerivAt.comp t ((hasDerivAt_id t).mul_const (y₂ : ℝ))
-          rw [(h1.mul h2).deriv]
+          have h1 : HasDerivAt (fun u => w (u * (y₁ : ℝ))) (deriv w (t * (y₁ : ℝ)) * (y₁ : ℝ)) t := by
+            simpa using HasDerivAt.comp t hw1_da.hasDerivAt ((hasDerivAt_id t).mul_const (y₁ : ℝ))
+          have h2 : HasDerivAt (fun u => w (u * (y₂ : ℝ))) (deriv w (t * (y₂ : ℝ)) * (y₂ : ℝ)) t := by
+            simpa using HasDerivAt.comp t hw2_da.hasDerivAt ((hasDerivAt_id t).mul_const (y₂ : ℝ))
+          have hmul_da : HasDerivAt w₁₂ ((deriv w (t * (y₁ : ℝ)) * (y₁ : ℝ)) * w (t * (y₂ : ℝ)) +
+              w (t * (y₁ : ℝ)) * (deriv w (t * (y₂ : ℝ)) * (y₂ : ℝ))) t := h1.mul h2
+          dsimp only
+          rw [hmul_da.deriv]
           congr 1; ring
         have hw'_int : IntervalIntegrable (fun u => |deriv w u|) MeasureTheory.volume P (2 * P) :=
           contDiffOn_Icc_abs_deriv_intervalIntegrable (by linarith : P < 2 * P) hw_diff
@@ -250,12 +256,15 @@ lemma type_II_inner_sum_bound
         have hmono : ∫ t in a₁₂..b₁₂, |deriv w₁₂ t| ≤
             ∫ t in a₁₂..b₁₂, (W₀ * ((y₁ : ℝ) * |deriv w (t * y₁)|) + W₀ * ((y₂ : ℝ) * |deriv w (t * y₂)|)) := by
           refine intervalIntegral.integral_mono_ae_restrict h_empty hint_w (hint1.add hint2) ?_
-          refine (MeasureTheory.ae_restrict_iff' measurableSet_Ioc).mpr ?_
-          have hne_pt : ∀ᵐ t ∂MeasureTheory.volume, t ≠ b₁₂ := by
+          refine (MeasureTheory.ae_restrict_iff' measurableSet_Icc).mpr ?_
+          have hne1 : ∀ᵐ t ∂MeasureTheory.volume, t ≠ a₁₂ := by
             rw [MeasureTheory.ae_iff]
-            simp only [Classical.not_not, Set.setOf_eq_eq_singleton, MeasureTheory.measure_singleton]
-          filter_upwards [hne_pt] with t ht hmem
-          have ht_oo : t ∈ Set.Ioo a₁₂ b₁₂ := ⟨(Set.Ioc_subset_Icc_self hmem).1, lt_of_le_of_ne hmem.2 ht⟩
+            simp only [Classical.not_not, Set.ofPred_eq_eq_singleton, MeasureTheory.measure_singleton]
+          have hne2 : ∀ᵐ t ∂MeasureTheory.volume, t ≠ b₁₂ := by
+            rw [MeasureTheory.ae_iff]
+            simp only [Classical.not_not, Set.ofPred_eq_eq_singleton, MeasureTheory.measure_singleton]
+          filter_upwards [hne1, hne2] with t ht1 ht2 hmem
+          have ht_oo : t ∈ Set.Ioo a₁₂ b₁₂ := ⟨lt_of_le_of_ne hmem.1 ht1.symm, lt_of_le_of_ne hmem.2 ht2⟩
           have ht_cc : t ∈ Set.Icc a₁₂ b₁₂ := Set.Ioo_subset_Icc_self ht_oo
           rw [hderiv_eq t ht_oo]
           calc |(y₁ : ℝ) * deriv w (t * y₁) * w (t * y₂) + w (t * y₁) * ((y₂ : ℝ) * deriv w (t * y₂))|
@@ -271,9 +280,12 @@ lemma type_II_inner_sum_bound
                 · rw [abs_mul, abs_mul, abs_of_pos (a := (y₂ : ℝ)) hy₂_pos]
                   exact mul_le_mul_of_nonneg_right (hw_bd _ (hmem_P2P t ht_cc).1) (by positivity)
         have hv1 : ∫ t in a₁₂..b₁₂, W₀ * ((y₁ : ℝ) * |deriv w (t * y₁)|) ≤ W₀ ^ 2 := by
-          rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
-            intervalIntegral.integral_comp_mul_right (fun u => |deriv w u|) (c := (y₁ : ℝ)), smul_eq_mul,
-            ← mul_assoc (y₁ : ℝ), mul_inv_cancel₀ hy₁_pos.ne', one_mul]
+          rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul]
+          have hcomp : ∫ t in a₁₂..b₁₂, |deriv w (t * y₁)| =
+              (y₁ : ℝ)⁻¹ * ∫ u in (a₁₂ * y₁)..(b₁₂ * y₁), |deriv w u| := by
+            have h := intervalIntegral.integral_comp_mul_right (fun u => |deriv w u|) (a := a₁₂) (b := b₁₂) hy₁_pos.ne'
+            simpa [smul_eq_mul] using h
+          rw [hcomp, ← mul_assoc (y₁ : ℝ), mul_inv_cancel₀ hy₁_pos.ne', one_mul]
           have hsub : ∫ u in (a₁₂ * y₁)..(b₁₂ * y₁), |deriv w u| ≤ ∫ u in P..(2 * P), |deriv w u| :=
             intervalIntegral.integral_mono_interval (hmem_P2P a₁₂ ⟨le_rfl, h_empty⟩).1.1
               (mul_le_mul_of_nonneg_right h_empty hy₁_pos.le) (hmem_P2P b₁₂ ⟨h_empty, le_rfl⟩).1.2
@@ -283,9 +295,12 @@ lemma type_II_inner_sum_bound
             _ ≤ W₀ * W₀ := mul_le_mul_of_nonneg_left hw_tv hW₀
             _ = W₀ ^ 2 := (sq W₀).symm
         have hv2 : ∫ t in a₁₂..b₁₂, W₀ * ((y₂ : ℝ) * |deriv w (t * y₂)|) ≤ W₀ ^ 2 := by
-          rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
-            intervalIntegral.integral_comp_mul_right (fun u => |deriv w u|) (c := (y₂ : ℝ)), smul_eq_mul,
-            ← mul_assoc (y₂ : ℝ), mul_inv_cancel₀ hy₂_pos.ne', one_mul]
+          rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul]
+          have hcomp : ∫ t in a₁₂..b₁₂, |deriv w (t * y₂)| =
+              (y₂ : ℝ)⁻¹ * ∫ u in (a₁₂ * y₂)..(b₁₂ * y₂), |deriv w u| := by
+            have h := intervalIntegral.integral_comp_mul_right (fun u => |deriv w u|) (a := a₁₂) (b := b₁₂) hy₂_pos.ne'
+            simpa [smul_eq_mul] using h
+          rw [hcomp, ← mul_assoc (y₂ : ℝ), mul_inv_cancel₀ hy₂_pos.ne', one_mul]
           have hsub : ∫ u in (a₁₂ * y₂)..(b₁₂ * y₂), |deriv w u| ≤ ∫ u in P..(2 * P), |deriv w u| :=
             intervalIntegral.integral_mono_interval (hmem_P2P a₁₂ ⟨le_rfl, h_empty⟩).2.1
               (mul_le_mul_of_nonneg_right h_empty hy₂_pos.le) (hmem_P2P b₁₂ ⟨h_empty, le_rfl⟩).2.2
@@ -297,7 +312,13 @@ lemma type_II_inner_sum_bound
         rw [intervalIntegral.integral_add hint1 hint2] at hmono
         linarith
     set E : ℝ := C_exp * ((2 * (X₁ : ℝ)) / max T_y 1 + (2 * (X₁ : ℝ)) ^ (1 - η_exp))
-    have hE_nn : 0 ≤ E := by positivity
+    have hE_nn : 0 ≤ E := mul_nonneg hC_exp.le hTy_rhs_nn
+    have hn_pos : (0 : ℝ) < n := by
+      by_contra h0
+      have hn0 : n = 0 := by exact_mod_cast le_antisymm (not_lt.mp h0) (Nat.cast_nonneg n)
+      subst hn0
+      simp at hT₀_ge1
+      linarith
     have hsum_bd : ∀ u : ℕ, ⌈a₁₂⌉₊ ≤ u → u ≤ ⌊b₁₂⌋₊ →
         ‖∑ x ∈ Finset.Icc ⌈a₁₂⌉₊ u,
             ePhase ((∑ r ∈ A, (h r : ℝ) * n / (2 * ((x * y₁ : ℕ) : ℝ) ^ r)) -
@@ -319,10 +340,6 @@ lemma type_II_inner_sum_bound
       let cy : ℕ → ℝ := fun r => (h r : ℝ) * (n : ℝ) / 2 * ((y₁ : ℝ) ^ (-(r : ℤ)) - (y₂ : ℝ) ^ (-(r : ℤ)))
       have hcy0 : cy r₀ ≠ 0 := by
         dsimp only [cy]
-        have hn_pos : (0 : ℝ) < n := by
-          by_contra h0
-          have : n = 0 := by exact_mod_cast le_antisymm (not_lt.mp h0) (Nat.cast_nonneg n)
-          subst this; linarith
         have hh0R : (h r₀ : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hh₀
         have hpow_ne : (y₁ : ℝ) ^ (-(r₀ : ℤ)) - (y₂ : ℝ) ^ (-(r₀ : ℤ)) ≠ 0 := by
           intro heq
@@ -332,7 +349,7 @@ lemma type_II_inner_sum_bound
           have h2 : (y₁ : ℝ) = (y₂ : ℝ) :=
             (pow_left_inj₀ hy₁_pos.le hy₂_pos.le (by exact_mod_cast (hA r₀ hr₀).1)).mp h1
           exact hy_ne (by exact_mod_cast h2)
-        positivity
+        exact mul_ne_zero (div_ne_zero (mul_ne_zero hh0R hn_pos.ne') (by norm_num)) hpow_ne
       have hphase_eq : ∀ x ∈ Finset.Icc ⌈a₁₂⌉₊ u,
           (∑ r ∈ A, (h r : ℝ) * n / (2 * ((x * y₁ : ℕ) : ℝ) ^ r)) -
             (∑ r ∈ A, (h r : ℝ) * n / (2 * ((x * y₂ : ℕ) : ℝ) ^ r)) =
@@ -405,7 +422,7 @@ lemma type_II_inner_sum_bound
             ← zpow_add₀ (by norm_num), ← zpow_add₀ (by norm_num)]
           exact zpow_le_zpow_right₀ (by norm_num) (by have := (hA r₀ hr₀).2; omega)
         dsimp only [T_y, T₀, cy]
-        rw [abs_mul, abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity), abs_of_pos (a := (2 : ℝ)) (by norm_num)]
+        rw [abs_mul, abs_div, abs_mul, abs_of_pos hn_pos, abs_of_pos (a := (2 : ℝ)) (by norm_num)]
         calc (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * (|(h r₀ : ℝ)| * n / P ^ r₀) * (|(y₁ : ℝ) - y₂| / Y₁)
             = |(h r₀ : ℝ)| * n * (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * P ^ (-(r₀ : ℤ)) * |(y₁ : ℝ) - y₂| * (Y₁ : ℝ) ^ (-1 : ℤ) := by
               rw [zpow_neg P (r₀ : ℤ), zpow_natCast P r₀, zpow_neg_one]; ring
@@ -454,8 +471,9 @@ lemma type_II_inner_sum_bound
                     calc (2 * (X₁ : ℝ)) ^ (-(r₀ : ℤ)) = 1 * (2 * (X₁ : ℝ)) ^ (-(r₀ : ℤ)) := (one_mul _).symm
                       _ ≤ (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) := mul_le_mul hr0_1 hupow (by positivity) (by positivity)
       refine le_trans hhexp ?_
+      dsimp only [E]
       refine mul_le_mul_of_nonneg_left (add_le_add ?_ ?_) hC_exp.le
-      · exact div_le_div₀ (by positivity) hu_2X₁ (by positivity) (max_le_max hTy_le le_rfl)
+      · exact div_le_div₀ (by positivity) hu_2X₁ (lt_of_lt_of_le zero_lt_one (le_max_right _ _)) (max_le_max hTy_le le_rfl)
       · exact Real.rpow_le_rpow (by positivity) hu_2X₁ (by linarith)
     have hps := partial_summation_Icc (P := a₁₂) (a := a₁₂) (b := b₁₂) (W₀ := 2 * W₀ ^ 2) (E := E)
       ha₁₂_pos le_rfl h_empty hb₁₂_2a (by positivity) hE_nn hw₁₂_bd hw₁₂_diff hw₁₂_tv hsum_bd
@@ -467,7 +485,8 @@ lemma type_II_inner_sum_bound
       _ = 4 * W₀ ^ 2 * C_exp * ((2 * (X₁ : ℝ)) / max T_y 1 + (2 * (X₁ : ℝ)) ^ (1 - η_exp)) := by
           dsimp only [E]; ring
       _ ≤ 8 * W₀ ^ 2 * C_exp * ((2 * (X₁ : ℝ)) / max T_y 1 + (2 * (X₁ : ℝ)) ^ (1 - η_exp)) := by
-          have hnn : 0 ≤ W₀ ^ 2 * C_exp * ((2 * (X₁ : ℝ)) / max T_y 1 + (2 * (X₁ : ℝ)) ^ (1 - η_exp)) := by positivity
+          have hnn : 0 ≤ W₀ ^ 2 * C_exp * ((2 * (X₁ : ℝ)) / max T_y 1 + (2 * (X₁ : ℝ)) ^ (1 - η_exp)) :=
+            mul_nonneg (mul_nonneg (sq_nonneg W₀) hC_exp.le) hTy_rhs_nn
           linarith
 
 lemma ePhase_mul_star (α β : ℝ) : ePhase α * star (ePhase β) = ePhase (α - β) := by
@@ -613,8 +632,9 @@ lemma type_II_block_bound
         ‖b_coeff p.1‖ * ‖b_coeff p.2‖ *
           ‖∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊),
             (w (x * p.1) * w (x * p.2) : ℂ) * ePhase (F (x * p.1) - F (x * p.2))‖ =
-      (∑ p ∈ Near, _) + (∑ p ∈ Far, _) :=
-    (Finset.sum_filter_add_sum_filter_not _ _ _).symm
+      (∑ p ∈ Near, _) + (∑ p ∈ Far, _) := by
+    dsimp only [Near, Far]
+    exact (Finset.sum_filter_add_sum_filter_not _ _ _).symm
   have hNear_bd : ∑ p ∈ Near,
         ‖b_coeff p.1‖ * ‖b_coeff p.2‖ *
           ‖∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊),
@@ -637,7 +657,7 @@ lemma type_II_block_bound
           ⟨le_trans hPa (le_trans (Nat.le_ceil a) (by exact_mod_cast hx'.2.2.1)),
             le_trans (by exact_mod_cast hx'.2.2.2) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
         rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_mul,
-          show ‖ePhase (F (x * p.1) - F (x * p.2))‖ = 1 by simp [ePhase, Complex.norm_exp_ofReal_mul_I],
+          norm_ePhase (F (x * p.1) - F (x * p.2)),
           mul_one, sq]
         exact mul_le_mul (hw_bd _ h1P) (hw_bd _ h2P) (abs_nonneg _) hW₀
       refine le_trans (Finset.sum_le_sum hterm) ?_
@@ -744,7 +764,7 @@ lemma type_II_block_bound
       rwa [Real.sqrt_eq_rpow] at hX_sqrt
     calc ∑ p ∈ Near, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ * ‖∑ x ∈ _, _‖
         ≤ ∑ p ∈ Near, (‖b_coeff p.1‖ * ‖b_coeff p.2‖) * (2 * (X₁ : ℝ) * W₀ ^ 2) :=
-          Finset.sum_le_sum fun p hp => mul_le_mul_of_nonneg_right (hinner p hp) (by positivity)
+          Finset.sum_le_sum fun p hp => mul_le_mul_of_nonneg_left (hinner p hp) (by positivity)
       _ = (∑ p ∈ Near, ‖b_coeff p.1‖ * ‖b_coeff p.2‖) * (2 * (X₁ : ℝ) * W₀ ^ 2) := by rw [Finset.sum_mul]
       _ ≤ ((2 * D + 1) * B_norm) * (2 * (X₁ : ℝ) * W₀ ^ 2) :=
           mul_le_mul_of_nonneg_right hnear_sum (by positivity)
@@ -767,14 +787,14 @@ lemma type_II_block_bound
       intro ⟨y₁, y₂⟩ hp
       simp only [Far, Finset.mem_filter, Finset.mem_product, not_le] at hp
       have hy_ne : y₁ ≠ y₂ := by
-        intro heq; subst heq; simp at hp; linarith
+        intro heq; subst heq; rw [sub_self, abs_zero] at hp; linarith [hp.2, hD_nn]
       have hy₁_mem := (Finset.mem_Icc.mp hp.1.1)
       have hy₂_mem := (Finset.mem_Icc.mp hp.1.2)
       have hdom_pair := hdom_all y₁ hp.1.1 y₂ hp.1.2 hy_ne
       have h_in := type_II_inner_sum_bound R K_max hK_max C_exp η_exp M₀ hC_exp hη_exp hη_le hM₀ hexp
         n P a b hP1 hPa hab hb2P A hA r₀ hr₀ h hh₀ w W₀ hW₀ hw_bd hw_diff hw_tv
         X₁ X_top Y₁ hX₁ hM₀_X₁ hX_top hY₁ hXY_hi y₁ y₂ hy₁_mem.1 hy₁_mem.2 hy₂_mem.1 hy₂_mem.2 hy_ne
-        hdom_pair.1 hdom_pair.2
+        hdom_pair.1 hdom_pair.2 hT₀_ge1
       dsimp only at h_in
       set T_y := (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * T₀ * (|(y₁ : ℝ) - y₂| / Y₁)
       have hTy_gt : (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * T₀ ^ (2 / 3 : ℝ) ≤ T_y := by
@@ -827,7 +847,7 @@ lemma type_II_block_bound
         ≤ ∑ p ∈ Far, (‖b_coeff p.1‖ * ‖b_coeff p.2‖) *
             (8 * W₀ ^ 2 * C_exp * (2 * (X₁ : ℝ)) *
               ((2 : ℝ) ^ (5 * R + 1) * T₀ ^ (-2 / 3 : ℝ) + (2 * (X₁ : ℝ)) ^ (-η_exp))) :=
-          Finset.sum_le_sum fun p hp => mul_le_mul_of_nonneg_right (hinner p hp) (by positivity)
+          Finset.sum_le_sum fun p hp => mul_le_mul_of_nonneg_left (hinner p hp) (by positivity)
       _ = (∑ p ∈ Far, ‖b_coeff p.1‖ * ‖b_coeff p.2‖) *
             (8 * W₀ ^ 2 * C_exp * (2 * (X₁ : ℝ)) *
               ((2 : ℝ) ^ (5 * R + 1) * T₀ ^ (-2 / 3 : ℝ) + (2 * (X₁ : ℝ)) ^ (-η_exp))) := by rw [Finset.sum_mul]
@@ -894,9 +914,11 @@ lemma type_I_no_log_single_d_bound
   have hP_pos : 0 < P := by linarith
   have hPd_pos : 0 < P / d := div_pos hP_pos hd_pos
   have hPd_ge16 : 16 ≤ P / d := le_trans hM₀ hd_M0
+  have hPd_ge1 : 1 ≤ P / d := by linarith
   by_cases h_empty : ⌊b⌋₊ / d < (⌈a⌉₊ - 1) / d + 1
   · rw [Finset.Icc_eq_empty (not_le.mpr h_empty), Finset.sum_empty, norm_zero]
-    positivity
+    exact mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hW₀) (by positivity))
+      (add_nonneg (div_nonneg (by positivity) (lt_of_lt_of_le zero_lt_one (le_max_right _ _)).le) (by positivity))
   · push_neg at h_empty
     set a' : ℝ := (⌈a⌉₊ : ℝ) / d
     set b' : ℝ := (⌊b⌋₊ : ℝ) / d
@@ -917,11 +939,17 @@ lemma type_I_no_log_single_d_bound
         have h3 : (⌈a⌉₊ : ℝ) / d ≤ ((⌈a⌉₊ - 1) / d : ℕ) := le_trans (Nat.le_ceil a') (by exact_mod_cast h1)
         rw [div_le_iff₀ hd_pos] at h3
         have h4 : ⌈a⌉₊ ≤ ((⌈a⌉₊ - 1) / d) * d := by exact_mod_cast h3
-        have h5 : ((⌈a⌉₊ - 1) / d) * d ≤ ⌈a⌉₊ - 1 := by rw [mul_comm]; exact Nat.div_mul_le_self _ _
+        have h5 : ((⌈a⌉₊ - 1) / d) * d ≤ ⌈a⌉₊ - 1 := Nat.div_mul_le_self _ _
         omega
     have hfloor_eq : ⌊b'⌋₊ = ⌊b⌋₊ / d := by
-      rw [show b' = (⌊b⌋₊ : ℝ) / (d : ℝ) from rfl, ← Nat.floor_div_eq_div (by positivity) hd_pos,
-        Nat.floor_natCast]
+      rw [Nat.floor_eq_iff (div_nonneg (Nat.cast_nonneg _) hd_pos.le)]
+      refine ⟨(le_div_iff₀ hd_pos).mpr (by exact_mod_cast Nat.div_mul_le_self ⌊b⌋₊ d), ?_⟩
+      rw [div_lt_iff₀ hd_pos]
+      have hlt : ⌊b⌋₊ < (⌊b⌋₊ / d + 1) * d := by
+        calc ⌊b⌋₊ = d * (⌊b⌋₊ / d) + ⌊b⌋₊ % d := (Nat.div_add_mod ⌊b⌋₊ d).symm
+          _ < d * (⌊b⌋₊ / d) + d := Nat.add_lt_add_left (Nat.mod_lt _ hd1) _
+          _ = (⌊b⌋₊ / d + 1) * d := by ring
+      exact_mod_cast hlt
     have ha'b' : a' ≤ b' := by
       have h2 : a' ≤ ((⌈a⌉₊ - 1) / d + 1 : ℕ) := by rw [← hceil_eq]; exact Nat.le_ceil a'
       have h3 : ((⌊b⌋₊ / d : ℕ) : ℝ) ≤ b' := by
@@ -950,125 +978,145 @@ lemma type_I_no_log_single_d_bound
             _ = 2 * P := by field_simp [hd_pos.ne']⟩
         have hw_da : DifferentiableAt ℝ w (d * t) :=
           (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
-        have hcomp_da : HasDerivAt (fun u => w (d * u)) (deriv w (d * t) * d) t :=
-          hw_da.hasDerivAt.comp t ((hasDerivAt_id t).const_mul (d : ℝ))
+        have hcomp_da : HasDerivAt wd (deriv w ((d : ℝ) * t) * (d : ℝ)) t := by
+          simpa using HasDerivAt.comp t hw_da.hasDerivAt ((hasDerivAt_id t).const_mul (d : ℝ))
+        dsimp only
         rw [hcomp_da.deriv, abs_mul, abs_of_pos hd_pos, mul_comm]
       have hint_eq : ∫ t in (P / d)..(2 * (P / d)), |deriv wd t| =
           ∫ t in (P / d)..(2 * (P / d)), (d : ℝ) * |deriv w (d * t)| := by
         refine intervalIntegral.integral_congr_ae ?_
         have hne_pt : ∀ᵐ t ∂MeasureTheory.volume, t ≠ 2 * (P / d) := by
           rw [MeasureTheory.ae_iff]
-          simp only [Classical.not_not, Set.setOf_eq_eq_singleton, MeasureTheory.measure_singleton]
+          simp only [Classical.not_not, Set.ofPred_eq_eq_singleton, MeasureTheory.measure_singleton]
         filter_upwards [hne_pt] with t ht hmem
         rw [Set.uIoc_of_le (by linarith : P / d ≤ 2 * (P / d))] at hmem
         exact hderiv_eq ⟨hmem.1, lt_of_le_of_ne hmem.2 ht⟩
       rw [hint_eq, intervalIntegral.integral_const_mul]
       have hcomp : ∫ t in (P / d)..(2 * (P / d)), |deriv w (d * t)| =
           (d : ℝ)⁻¹ * ∫ u in P..(2 * P), |deriv w u| := by
-        have h := intervalIntegral.integral_comp_mul_left (fun u => |deriv w u|) (c := (d : ℝ))
-          (a := P / d) (b := 2 * (P / d))
+        have h := intervalIntegral.integral_comp_mul_left (fun u => |deriv w u|)
+          (a := P / d) (b := 2 * (P / d)) hd_pos.ne'
         rw [show (d : ℝ) * (P / d) = P by field_simp [hd_pos.ne'],
           show (d : ℝ) * (2 * (P / d)) = 2 * P by field_simp [hd_pos.ne'], smul_eq_mul] at h
         exact h
-      rw [hcomp, ← mul_assoc, mul_inv_cancel₀ hd_pos.ne', one_mul]
+      rw [hcomp, ← mul_assoc (d : ℝ), mul_inv_cancel₀ hd_pos.ne', one_mul]
       exact hw_tv
     set E : ℝ := max C_exp 3 *
       ((2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp))
-    have hE_nn : 0 ≤ E := by positivity
+    have hE_nn : 0 ≤ E := mul_nonneg (by positivity)
+      (add_nonneg (div_nonneg (by positivity) (lt_of_lt_of_le zero_lt_one (le_max_right _ _)).le) (by positivity))
     have hsum_bd : ∀ u : ℕ, ⌈a'⌉₊ ≤ u → u ≤ ⌊b'⌋₊ →
         ‖∑ k ∈ Finset.Icc ⌈a'⌉₊ u, ePhase (∑ r ∈ A, (h r : ℝ) * n / (2 * ((d * k : ℕ) : ℝ) ^ r))‖ ≤ E := by
       intro u hau hub
       have hu_ge : P / d ≤ (u : ℝ) := le_trans hPa' (le_trans (Nat.le_ceil a') (by exact_mod_cast hau))
       have hu_le : (u : ℝ) ≤ 2 * (P / d) := le_trans (by exact_mod_cast hub)
         (le_trans (Nat.floor_le (div_nonneg (Nat.cast_nonneg _) hd_pos.le)) hb'2P)
-      have h_eq_phase : ∀ k : ℕ, 1 ≤ k →
-          ePhase (∑ r ∈ A, (h r : ℝ) * n / (2 * ((d * k : ℕ) : ℝ) ^ r)) =
-          ePhase (∑ r ∈ A, ((h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)) * (k : ℝ) ^ (-(r : ℤ))) := by
-        intro k _
-        congr 1; refine Finset.sum_congr rfl fun r _ => ?_
-        rw [Nat.cast_mul, mul_pow, zpow_neg, zpow_natCast]; ring
-      have hsum_eq : ∑ k ∈ Finset.Icc ⌈a'⌉₊ u,
+      have hu_le' : (u : ℝ) ≤ 2 * P / d := by linarith [hu_le, show 2 * (P / d) = 2 * P / d by ring]
+      by_cases hn0 : n = 0
+      · subst hn0
+        have htriv : ‖∑ k ∈ Finset.Icc ⌈a'⌉₊ u, ePhase (∑ r ∈ A, (h r : ℝ) * (0 : ℕ) / (2 * ((d * k : ℕ) : ℝ) ^ r))‖ ≤
+            ((Finset.Icc ⌈a'⌉₊ u).card : ℝ) := by
+          refine le_trans (norm_sum_le _ _) ?_
+          simp [norm_ePhase]
+        have hcard : ((Finset.Icc ⌈a'⌉₊ u).card : ℝ) ≤ 2 * P / d := by
+          rw [Nat.card_Icc]
+          have h1 : 1 ≤ ⌈a'⌉₊ := Nat.ceil_pos.mpr (lt_of_lt_of_le hPd_pos hPa')
+          have h2 : u + 1 - ⌈a'⌉₊ ≤ u := by omega
+          exact le_trans (by exact_mod_cast h2) hu_le'
+        have hT0_0 : T₀ = 0 := by dsimp only [T₀]; simp
+        have hmax1 : max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 = 1 := by rw [hT0_0, mul_zero, max_eq_right zero_le_one]
+        calc ‖∑ k ∈ Finset.Icc ⌈a'⌉₊ u, ePhase (∑ r ∈ A, (h r : ℝ) * (0 : ℕ) / (2 * ((d * k : ℕ) : ℝ) ^ r))‖
+            ≤ 2 * P / d := le_trans htriv hcard
+          _ = 1 * ((2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + 0) := by rw [hmax1, div_one, one_mul, add_zero]
+          _ ≤ E := by
+              dsimp only [E]
+              refine mul_le_mul (le_trans (by norm_num : (1 : ℝ) ≤ 3) (le_max_right _ _))
+                (add_le_add le_rfl (by positivity)) (by positivity) (by positivity)
+      · have hn_pos : (0 : ℝ) < n := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn0)
+        have h_eq_phase : ∀ k : ℕ, 1 ≤ k →
             ePhase (∑ r ∈ A, (h r : ℝ) * n / (2 * ((d * k : ℕ) : ℝ) ^ r)) =
-          ∑ k ∈ Finset.Icc ⌈a'⌉₊ u,
-            ePhase (∑ r ∈ A, ((h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)) * (k : ℝ) ^ (-(r : ℤ))) :=
-        Finset.sum_congr rfl fun k hk => h_eq_phase k (le_trans (Nat.ceil_pos.mpr (by linarith)) (Finset.mem_Icc.mp hk).1)
-      rw [hsum_eq]
-      let cd : ℕ → ℝ := fun r => (h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)
-      have hcd0 : cd r₀ ≠ 0 := by
-        dsimp only [cd]
-        have hn_pos : (0 : ℝ) < n := by
-          by_contra h0
-          have : n = 0 := by exact_mod_cast le_antisymm (not_lt.mp h0) (Nat.cast_nonneg n)
-          subst this; linarith
-        have hh0R : (h r₀ : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hh₀
-        positivity
-      have hM0_a' : M₀ ≤ a' := le_trans hd_M0 hPa'
-      have ha'u : a' ≤ (u : ℝ) := le_trans (Nat.le_ceil a') (by exact_mod_cast hau)
-      have hu2a' : (u : ℝ) ≤ 2 * a' := le_trans hu_le (by linarith [hPa'])
-      have hdom_u : ∀ k ∈ Finset.Icc 1 K_max, ∀ r ∈ A, r ≠ r₀ →
-          |cd r| * (Nat.descFactorial (r + k - 1) k : ℝ) * a' ^ (-(r : ℤ)) ≤
-            (1 / (2 * max (A.card : ℝ) 1)) *
-              (|cd r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ))) := by
-        intro k hk r hr hne
-        have ha'_pow : a' ^ (-(r : ℤ)) ≤ (P / d) ^ (-(r : ℤ)) := by
-          rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
-          exact inv_anti₀ (pow_pos hPd_pos r) (pow_le_pow_left₀ hPd_pos.le hPa' r)
-        have hu_pow : (2 * P / d) ^ (-(r₀ : ℤ)) ≤ (u : ℝ) ^ (-(r₀ : ℤ)) := by
-          rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
-          exact inv_anti₀ (pow_pos (by linarith) r₀) (pow_le_pow_left₀ (by linarith) (by linarith [hu_le]) r₀)
-        calc |cd r| * (Nat.descFactorial (r + k - 1) k : ℝ) * a' ^ (-(r : ℤ))
-            ≤ |cd r| * (Nat.descFactorial (r + k - 1) k : ℝ) * (P / d) ^ (-(r : ℤ)) :=
-              mul_le_mul_of_nonneg_left ha'_pow (mul_nonneg (abs_nonneg _) (Nat.cast_nonneg _))
-          _ ≤ (1 / (2 * max (A.card : ℝ) 1)) *
-                (|cd r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (2 * P / d) ^ (-(r₀ : ℤ))) :=
-              hdom_d k hk r hr hne
-          _ ≤ (1 / (2 * max (A.card : ℝ) 1)) *
-                (|cd r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ))) :=
-              mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hu_pow
-                (mul_nonneg (abs_nonneg _) (Nat.cast_nonneg _))) (by positivity)
-      have hTu_ub : |cd r₀| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) ≤ (u : ℝ) ^ (K_max - 1) := by
-        have h1 : (u : ℝ) ^ (-(r₀ : ℤ)) ≤ (P / d) ^ (-(r₀ : ℤ)) := by
-          rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
-          exact inv_anti₀ (pow_pos hPd_pos r₀) (pow_le_pow_left₀ hPd_pos.le hu_ge r₀)
-        have h3 : (P / d) ^ (K_max - 1) ≤ (u : ℝ) ^ (K_max - 1) := pow_le_pow_left₀ hPd_pos.le hu_ge _
-        calc |cd r₀| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ))
-            ≤ |cd r₀| * (r₀ : ℝ) * (P / d) ^ (-(r₀ : ℤ)) := mul_le_mul_of_nonneg_left h1 (by positivity)
-          _ ≤ (P / d) ^ (K_max - 1) := hT_ub
-          _ ≤ (u : ℝ) ^ (K_max - 1) := h3
-      have hhexp := hexp A r₀ hr₀ hA cd hcd0 a' (u : ℝ) hM0_a' ha'u hu2a' hdom_u hTu_ub
-      rw [Nat.floor_natCast] at hhexp
-      have hT_ge : (2 : ℝ) ^ (-(R : ℤ) - 1) * T₀ ≤ |cd r₀| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) := by
-        dsimp only [cd, T₀]
-        have hr0_1 : (1 : ℝ) ≤ r₀ := by exact_mod_cast (hA r₀ hr₀).1
-        have hupow : (2 * P / d) ^ (-(r₀ : ℤ)) ≤ (u : ℝ) ^ (-(r₀ : ℤ)) := by
-          rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
-          exact inv_anti₀ (pow_pos (by linarith) r₀) (pow_le_pow_left₀ (by linarith) (by linarith [hu_le]) r₀)
-        have h2pow : (2 : ℝ) ^ (-(R : ℤ) - 1) * P ^ (-(r₀ : ℤ)) ≤ (2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ)) := by
-          rw [show (2 * P / d) = (2 * P) / d by ring, zpow_sub₀ (by norm_num),
-            zpow_neg (2 : ℝ) (R : ℤ), zpow_natCast (2 : ℝ) R, zpow_one,
-            zpow_neg P (r₀ : ℤ), zpow_natCast P r₀,
-            zpow_neg ((2 * P) / d) (r₀ : ℤ), zpow_natCast ((2 * P) / d) r₀,
-            div_pow, inv_div, mul_pow, ← div_eq_mul_inv]
-          field_simp [hd_pos.ne', hP_pos.ne']
-          have h2r : (2 : ℝ) ^ r₀ ≤ (2 : ℝ) ^ R := pow_le_pow_right₀ (by norm_num) (hA r₀ hr₀).2
-          linarith [h2r]
-        calc (2 : ℝ) ^ (-(R : ℤ) - 1) * (|(h r₀ : ℝ)| * n / P ^ r₀)
-            = |(h r₀ : ℝ)| * n * ((2 : ℝ) ^ (-(R : ℤ) - 1) * P ^ (-(r₀ : ℤ))) := by
-                rw [zpow_neg, zpow_natCast]; ring
-          _ ≤ |(h r₀ : ℝ)| * n * ((2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ))) :=
-                mul_le_mul_of_nonneg_left h2pow (by positivity)
-          _ ≤ |(h r₀ : ℝ) * n / (2 * (d : ℝ) ^ r₀)| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) := by
-                rw [abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
-                  abs_of_pos (a := 2 * (d : ℝ) ^ r₀) (by positivity)]
-                have hle1 : |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * 1 * (2 * P / d) ^ (-(r₀ : ℤ)) ≤
-                    |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) :=
+            ePhase (∑ r ∈ A, ((h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)) * (k : ℝ) ^ (-(r : ℤ))) := by
+          intro k _
+          congr 1; refine Finset.sum_congr rfl fun r _ => ?_
+          rw [Nat.cast_mul, mul_pow, zpow_neg, zpow_natCast]; ring
+        have hsum_eq : ∑ k ∈ Finset.Icc ⌈a'⌉₊ u,
+              ePhase (∑ r ∈ A, (h r : ℝ) * n / (2 * ((d * k : ℕ) : ℝ) ^ r)) =
+            ∑ k ∈ Finset.Icc ⌈a'⌉₊ u,
+              ePhase (∑ r ∈ A, ((h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)) * (k : ℝ) ^ (-(r : ℤ))) :=
+          Finset.sum_congr rfl fun k hk => h_eq_phase k (by
+            have h1 : (1 : ℝ) ≤ a' := le_trans hPd_ge1 hPa'
+            exact le_trans (Nat.ceil_pos.mpr (by linarith)) (Finset.mem_Icc.mp hk).1)
+        rw [hsum_eq]
+        let cd : ℕ → ℝ := fun r => (h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)
+        have hcd0 : cd r₀ ≠ 0 :=
+          div_ne_zero (mul_ne_zero (Int.cast_ne_zero.mpr hh₀) hn_pos.ne') (by positivity)
+        have hM0_a' : M₀ ≤ a' := le_trans hd_M0 hPa'
+        have ha'u : a' ≤ (u : ℝ) := le_trans (Nat.le_ceil a') (by exact_mod_cast hau)
+        have hu2a' : (u : ℝ) ≤ 2 * a' := le_trans hu_le (by linarith [hPa'])
+        have hdom_u : ∀ k ∈ Finset.Icc 1 K_max, ∀ r ∈ A, r ≠ r₀ →
+            |cd r| * (Nat.descFactorial (r + k - 1) k : ℝ) * a' ^ (-(r : ℤ)) ≤
+              (1 / (2 * max (A.card : ℝ) 1)) *
+                (|cd r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ))) := by
+          intro k hk r hr hne
+          have ha'_pow : a' ^ (-(r : ℤ)) ≤ (P / d) ^ (-(r : ℤ)) := by
+            rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
+            exact inv_anti₀ (pow_pos hPd_pos r) (pow_le_pow_left₀ hPd_pos.le hPa' r)
+          have hu_pow : (2 * P / d) ^ (-(r₀ : ℤ)) ≤ (u : ℝ) ^ (-(r₀ : ℤ)) := by
+            rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
+            exact inv_anti₀ (pow_pos (by linarith) r₀) (pow_le_pow_left₀ (by linarith) hu_le' r₀)
+          calc |cd r| * (Nat.descFactorial (r + k - 1) k : ℝ) * a' ^ (-(r : ℤ))
+              ≤ |cd r| * (Nat.descFactorial (r + k - 1) k : ℝ) * (P / d) ^ (-(r : ℤ)) :=
+                mul_le_mul_of_nonneg_left ha'_pow (mul_nonneg (abs_nonneg _) (Nat.cast_nonneg _))
+            _ ≤ (1 / (2 * max (A.card : ℝ) 1)) *
+                  (|cd r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (2 * P / d) ^ (-(r₀ : ℤ))) :=
+                hdom_d k hk r hr hne
+            _ ≤ (1 / (2 * max (A.card : ℝ) 1)) *
+                  (|cd r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ))) :=
+                mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hu_pow
+                  (mul_nonneg (abs_nonneg _) (Nat.cast_nonneg _))) (by positivity)
+        have hTu_ub : |cd r₀| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) ≤ (u : ℝ) ^ (K_max - 1) := by
+          have h1 : (u : ℝ) ^ (-(r₀ : ℤ)) ≤ (P / d) ^ (-(r₀ : ℤ)) := by
+            rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
+            exact inv_anti₀ (pow_pos hPd_pos r₀) (pow_le_pow_left₀ hPd_pos.le hu_ge r₀)
+          have h3 : (P / d) ^ (K_max - 1) ≤ (u : ℝ) ^ (K_max - 1) := pow_le_pow_left₀ hPd_pos.le hu_ge _
+          calc |cd r₀| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ))
+              ≤ |cd r₀| * (r₀ : ℝ) * (P / d) ^ (-(r₀ : ℤ)) := mul_le_mul_of_nonneg_left h1 (by positivity)
+            _ ≤ (P / d) ^ (K_max - 1) := hT_ub
+            _ ≤ (u : ℝ) ^ (K_max - 1) := h3
+        have hhexp := hexp A r₀ hr₀ hA cd hcd0 a' (u : ℝ) hM0_a' ha'u hu2a' hdom_u hTu_ub
+        rw [Nat.floor_natCast] at hhexp
+        have hT_ge : (2 : ℝ) ^ (-(R : ℤ) - 1) * T₀ ≤ |cd r₀| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) := by
+          dsimp only [cd, T₀]
+          have hr0_1 : (1 : ℝ) ≤ r₀ := by exact_mod_cast (hA r₀ hr₀).1
+          have hupow : (2 * P / d) ^ (-(r₀ : ℤ)) ≤ (u : ℝ) ^ (-(r₀ : ℤ)) := by
+            rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
+            exact inv_anti₀ (pow_pos (by linarith) r₀) (pow_le_pow_left₀ (by linarith) hu_le' r₀)
+          have h2pow : (2 : ℝ) ^ (-(R : ℤ) - 1) * P ^ (-(r₀ : ℤ)) ≤ (2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ)) := by
+            rw [show (2 * P / d) = (2 * P) / d by ring, zpow_sub₀ (by norm_num),
+              zpow_neg (2 : ℝ) (R : ℤ), zpow_natCast (2 : ℝ) R, zpow_one,
+              zpow_neg P (r₀ : ℤ), zpow_natCast P r₀,
+              zpow_neg ((2 * P) / d) (r₀ : ℤ), zpow_natCast ((2 * P) / d) r₀,
+              div_pow, inv_div, mul_pow, ← div_eq_mul_inv]
+            field_simp [hd_pos.ne', hP_pos.ne']
+            have h2r : (2 : ℝ) ^ r₀ ≤ (2 : ℝ) ^ R := pow_le_pow_right₀ (by norm_num) (hA r₀ hr₀).2
+            linarith [h2r]
+          have habs_cd : |(h r₀ : ℝ) * n / (2 * (d : ℝ) ^ r₀)| = |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) := by
+            rw [abs_div, abs_mul, abs_of_pos hn_pos, abs_of_pos (by positivity : (0 : ℝ) < 2 * (d : ℝ) ^ r₀)]
+          rw [habs_cd]
+          calc (2 : ℝ) ^ (-(R : ℤ) - 1) * (|(h r₀ : ℝ)| * n / P ^ r₀)
+              = |(h r₀ : ℝ)| * n * ((2 : ℝ) ^ (-(R : ℤ) - 1) * P ^ (-(r₀ : ℤ))) := by
+                  rw [zpow_neg, zpow_natCast]; ring
+            _ ≤ |(h r₀ : ℝ)| * n * ((2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ))) :=
+                  mul_le_mul_of_nonneg_left h2pow (by positivity)
+            _ = |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * 1 * (2 * P / d) ^ (-(r₀ : ℤ)) := by ring
+            _ ≤ |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) :=
                   mul_le_mul (mul_le_mul_of_nonneg_left hr0_1 (by positivity)) hupow (by positivity) (by positivity)
-                linarith [show |(h r₀ : ℝ)| * n * ((2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ))) =
-                  |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * 1 * (2 * P / d) ^ (-(r₀ : ℤ)) by ring]
-      refine le_trans hhexp ?_
-      refine mul_le_mul (le_max_left _ _) (add_le_add ?_ ?_) (by positivity) (by positivity)
-      · exact div_le_div₀ (by positivity) (by linarith [hu_le]) (by positivity) (max_le_max hT_ge le_rfl)
-      · exact Real.rpow_le_rpow (by positivity) (by linarith [hu_le]) (by linarith)
+        refine le_trans hhexp ?_
+        dsimp only [E]
+        refine mul_le_mul (le_max_left _ _) (add_le_add ?_ ?_)
+          (add_nonneg (div_nonneg (by positivity) (lt_of_lt_of_le zero_lt_one (le_max_right _ _)).le) (by positivity)) (by positivity)
+        · exact div_le_div₀ (by positivity) hu_le' (lt_of_lt_of_le zero_lt_one (le_max_right _ _)) (max_le_max hT_ge le_rfl)
+        · exact Real.rpow_le_rpow (by positivity) hu_le' (by linarith)
     have hps := partial_summation_Icc (P := P / d) (a := a') (b := b') (W₀ := W₀) (E := E)
       hPd_pos hPa' ha'b' hb'2P hW₀ hE_nn hwd_bd hwd_diff hwd_tv hsum_bd
     rw [hceil_eq, hfloor_eq] at hps
@@ -1076,11 +1124,15 @@ lemma type_I_no_log_single_d_bound
             (w (d * k) : ℂ) *
               ePhase (∑ r ∈ A, (h r : ℝ) * n / (2 * ((d * k : ℕ) : ℝ) ^ r))‖
         ≤ 2 * W₀ * E := by simpa [wd] using hps
+      _ = 2 * (W₀ * max C_exp 3 *
+            ((2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp))) := by
+          dsimp only [E]; ring
       _ ≤ 4 * W₀ * max C_exp 3 *
             ((2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp)) := by
-          dsimp only [E]
           have hnn : 0 ≤ W₀ * max C_exp 3 *
-              ((2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp)) := by positivity
+              ((2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp)) :=
+            mul_nonneg (mul_nonneg hW₀ (by positivity))
+              (add_nonneg (div_nonneg (by positivity) (lt_of_lt_of_le zero_lt_one (le_max_right _ _)).le) (by positivity))
           linarith
 
 end BrocardFormalization

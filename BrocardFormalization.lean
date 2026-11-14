@@ -1,1 +1,1 @@
-import BrocardFormalization.ExpSumCore
+import BrocardFormalization.ExpSumMid
