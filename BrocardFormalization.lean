@@ -1,1 +1,1 @@
-import BrocardFormalization.ExpSumTypeI
+import BrocardFormalization.ExpSumCore
