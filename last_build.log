@@ -1,0 +1,1132 @@
+COMMIT=38f03b1ea5e8048cbae97872328f4ba30d88158a
+TIMESTAMP=2026-11-14T16:03:08Z
+info: downloading https://releases.lean-lang.org/lean4/v4.35.0/lean-4.35.0-linux.tar.zst
+info: installing /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0
+info: mathlib: materializing new dependency
+info: mathlib: fetching revision '56a005855ea17e0b0958f73ec801ae140b0a1679' from https://github.com/leanprover-community/mathlib4
+info: mathlib: checking out revision '56a005855ea17e0b0958f73ec801ae140b0a1679'
+info: plausible: materializing new dependency
+info: plausible: fetching revision 'dfa4f38190d07c37e315953e08b90fe2d95b3c24' from https://github.com/leanprover-community/plausible
+info: plausible: checking out revision 'dfa4f38190d07c37e315953e08b90fe2d95b3c24'
+info: LeanSearchClient: materializing new dependency
+info: LeanSearchClient: fetching revision 'd6b4c7be5be75ec4917c873ac50c756dc1436372' from https://github.com/leanprover-community/LeanSearchClient
+info: LeanSearchClient: checking out revision 'd6b4c7be5be75ec4917c873ac50c756dc1436372'
+info: importGraph: materializing new dependency
+info: importGraph: fetching revision 'a41f0e9a4dea23188ea9cc1c41ac9f8bbafe0b93' from https://github.com/leanprover-community/import-graph
+info: importGraph: checking out revision 'a41f0e9a4dea23188ea9cc1c41ac9f8bbafe0b93'
+info: proofwidgets: materializing new dependency
+info: proofwidgets: fetching revision 'df72b022e558978a1c50264cfc4d7fec86fa8e04' from https://github.com/leanprover-community/ProofWidgets4
+info: proofwidgets: checking out revision 'df72b022e558978a1c50264cfc4d7fec86fa8e04'
+info: aesop: materializing new dependency
+info: aesop: fetching revision '4a174c490d8707121c4a9290800489f105d85e07' from https://github.com/leanprover-community/aesop
+info: aesop: checking out revision '4a174c490d8707121c4a9290800489f105d85e07'
+info: Qq: materializing new dependency
+info: Qq: fetching revision 'dce0ad79c486cb1fb504af04f953c3466b0c6db8' from https://github.com/leanprover-community/quote4
+info: Qq: checking out revision 'dce0ad79c486cb1fb504af04f953c3466b0c6db8'
+info: batteries: materializing new dependency
+info: batteries: fetching revision '66e469188fe07963e5cf666c7d4433f45b8131c5' from https://github.com/leanprover-community/batteries
+info: batteries: checking out revision '66e469188fe07963e5cf666c7d4433f45b8131c5'
+info: Cli: materializing new dependency
+info: Cli: fetching revision 'c24fe6078c630e89b489bffe59b3e20ac30d12c8' from https://github.com/leanprover/lean4-cli
+info: Cli: checking out revision 'c24fe6078c630e89b489bffe59b3e20ac30d12c8'
+✔ [2/6] Built Cache.Cli (234ms)
+✔ [3/13] Built Cache.Lean (282ms)
+✔ [7/43] Built Cache.Cli:c.o (127ms)
+✔ [8/43] Built Cache.Lean:c.o (160ms)
+✔ [9/43] Built Cache.Env (270ms)
+✔ [10/43] Built Cache.Env:c.o (114ms)
+✔ [11/43] Built Cache.Infra (296ms)
+✔ [12/43] Built Batteries.Tactic.OpenPrivate (694ms)
+✔ [13/43] Built Cache.Infra:c.o (141ms)
+✔ [14/43] Built Cache.Location (327ms)
+✔ [15/43] Built Cache.Location:c.o (132ms)
+✔ [16/43] Built Batteries.Tactic.OpenPrivate:c.o (745ms)
+✔ [17/43] Built Cache.IO (910ms)
+✔ [18/43] Built Cache.Hashing (409ms)
+✔ [19/43] Built Cache.Hashing:c.o (336ms)
+✔ [20/43] Built Cache.IO:c.o (1.1s)
+✔ [21/43] Built Cache.Requests (1.1s)
+✔ [22/43] Built Cache.Marker (272ms)
+✔ [23/43] Built Cache.Marker:c.o (123ms)
+✔ [24/43] Built Cache.Upload.Curl (508ms)
+✔ [25/43] Built Cache.Upload.Rclone (487ms)
+✔ [26/43] Built Cache.Query (553ms)
+✔ [27/43] Built Cache.Upload.Curl:c.o (187ms)
+✔ [28/43] Built Cache.Query:c.o (236ms)
+✔ [29/43] Built Cache.Upload.Rclone:c.o (216ms)
+✔ [30/43] Built Cache.Upload.Azure (410ms)
+✔ [31/43] Built Cache.Upload.Azure:c.o (115ms)
+✔ [32/43] Built Cache.Warning (482ms)
+✔ [33/43] Built Cache.Upload.S3 (466ms)
+✔ [34/43] Built Cache.Warning:c.o (253ms)
+✔ [35/43] Built Cache.Requests:c.o (1.0s)
+✔ [36/43] Built Cache.Upload.S3:c.o (254ms)
+✔ [37/43] Built Cache.Upload.Defs (340ms)
+✔ [38/43] Built Cache.Upload.Defs:c.o (102ms)
+✔ [39/43] Built Cache.Upload (245ms)
+✔ [40/43] Built Cache.Upload:c.o (74ms)
+✔ [41/43] Built Cache.Main (520ms)
+✔ [42/43] Built Cache.Main:c.o (515ms)
+✔ [43/43] Built cache:exe (477ms)
+Current branch: HEAD
+Using cache from origin: (some leanprover-community/mathlib4)
+Attempting to download 9031 file(s) from leanprover-community/mathlib4 cache at https://cache.mathlib.org/mathlib4-master
+Downloaded: 1 file(s) [attempted 1/9031 = 0%, 129 KB/s]Downloaded: 176 file(s) [attempted 176/9031 = 1%, 4349 KB/s]Downloaded: 321 file(s) [attempted 321/9031 = 3%, 2769 KB/s]Downloaded: 412 file(s) [attempted 412/9031 = 4%, 112 KB/s]Downloaded: 542 file(s) [attempted 542/9031 = 6%, 2078 KB/s]Downloaded: 718 file(s) [attempted 718/9031 = 7%, 1142 KB/s]Downloaded: 870 file(s) [attempted 870/9031 = 9%, 1020 KB/s]Downloaded: 1036 file(s) [attempted 1036/9031 = 11%, 3263 KB/s]Downloaded: 1184 file(s) [attempted 1184/9031 = 13%, 854 KB/s]Downloaded: 1296 file(s) [attempted 1296/9031 = 14%, 816 KB/s]Downloaded: 1460 file(s) [attempted 1460/9031 = 16%, 813 KB/s]Downloaded: 1573 file(s) [attempted 1573/9031 = 17%, 480 KB/s]Downloaded: 1658 file(s) [attempted 1658/9031 = 18%, 227 KB/s]Downloaded: 1817 file(s) [attempted 1817/9031 = 20%, 889 KB/s]Downloaded: 1965 file(s) [attempted 1965/9031 = 21%, 457 KB/s]Downloaded: 2106 file(s) [attempted 2106/9031 = 23%, 490 KB/s]Downloaded: 2249 file(s) [attempted 2249/9031 = 24%, 553 KB/s]Downloaded: 2388 file(s) [attempted 2388/9031 = 26%, 2141 KB/s]Downloaded: 2549 file(s) [attempted 2549/9031 = 28%, 1160 KB/s]Downloaded: 2702 file(s) [attempted 2702/9031 = 29%, 5716 KB/s]Downloaded: 2855 file(s) [attempted 2855/9031 = 31%, 225 KB/s]Downloaded: 2957 file(s) [attempted 2957/9031 = 32%, 90 KB/s]Downloaded: 3064 file(s) [attempted 3064/9031 = 33%, 308 KB/s]Downloaded: 3216 file(s) [attempted 3216/9031 = 35%, 2346 KB/s]Downloaded: 3357 file(s) [attempted 3357/9031 = 37%, 1241 KB/s]Downloaded: 3534 file(s) [attempted 3534/9031 = 39%, 1099 KB/s]Downloaded: 3673 file(s) [attempted 3673/9031 = 40%, 2250 KB/s]Downloaded: 3723 file(s) [attempted 3723/9031 = 41%, 415 KB/s]Downloaded: 3898 file(s) [attempted 3898/9031 = 43%, 2542 KB/s]Downloaded: 4049 file(s) [attempted 4049/9031 = 44%, 1496 KB/s]Downloaded: 4192 file(s) [attempted 4192/9031 = 46%, 1282 KB/s]Downloaded: 4299 file(s) [attempted 4299/9031 = 47%, 2667 KB/s]Downloaded: 4440 file(s) [attempted 4440/9031 = 49%, 379 KB/s]Downloaded: 4606 file(s) [attempted 4606/9031 = 51%, 1747 KB/s]Downloaded: 4765 file(s) [attempted 4765/9031 = 52%, 405 KB/s]Downloaded: 4922 file(s) [attempted 4922/9031 = 54%, 2571 KB/s]Downloaded: 5081 file(s) [attempted 5081/9031 = 56%, 93 KB/s]Downloaded: 5152 file(s) [attempted 5152/9031 = 57%, 205 KB/s]Downloaded: 5315 file(s) [attempted 5315/9031 = 58%, 2052 KB/s]Downloaded: 5477 file(s) [attempted 5477/9031 = 60%, 573 KB/s]Downloaded: 5616 file(s) [attempted 5616/9031 = 62%, 279 KB/s]Downloaded: 5709 file(s) [attempted 5709/9031 = 63%, 1998 KB/s]Downloaded: 5864 file(s) [attempted 5864/9031 = 64%, 2520 KB/s]Downloaded: 6032 file(s) [attempted 6032/9031 = 66%, 177 KB/s]Downloaded: 6214 file(s) [attempted 6214/9031 = 68%, 158 KB/s]Downloaded: 6374 file(s) [attempted 6374/9031 = 70%, 1072 KB/s]Downloaded: 6519 file(s) [attempted 6519/9031 = 72%, 921 KB/s]Downloaded: 6685 file(s) [attempted 6685/9031 = 74%, 355 KB/s]Downloaded: 6842 file(s) [attempted 6842/9031 = 75%, 1843 KB/s]Downloaded: 6938 file(s) [attempted 6938/9031 = 76%, 2553 KB/s]Downloaded: 7086 file(s) [attempted 7086/9031 = 78%, 1733 KB/s]Downloaded: 7191 file(s) [attempted 7191/9031 = 79%, 53 KB/s]Downloaded: 7343 file(s) [attempted 7343/9031 = 81%, 480 KB/s]Downloaded: 7506 file(s) [attempted 7506/9031 = 83%, 610 KB/s]Downloaded: 7673 file(s) [attempted 7673/9031 = 84%, 169 KB/s]Downloaded: 7843 file(s) [attempted 7843/9031 = 86%, 2848 KB/s]Downloaded: 8016 file(s) [attempted 8016/9031 = 88%, 727 KB/s]Downloaded: 8162 file(s) [attempted 8162/9031 = 90%, 567 KB/s]Downloaded: 8257 file(s) [attempted 8257/9031 = 91%, 1547 KB/s]Downloaded: 8408 file(s) [attempted 8408/9031 = 93%, 368 KB/s]Downloaded: 8580 file(s) [attempted 8580/9031 = 95%, 2104 KB/s]Downloaded: 8750 file(s) [attempted 8750/9031 = 96%, 1421 KB/s]Downloaded: 8915 file(s) [attempted 8915/9031 = 98%, 6488 KB/s]Downloaded: 9029 file(s) [attempted 9029/9031 = 99%, 776 KB/s]Downloaded: 9031 file(s) [attempted 9031/9031 = 100%, 776 KB/s]
+Still decompressing downloaded files...
+Decompressed 9031 file(s)
+Already decompressed 9031 file(s)
+⚠ [9047/9068] Built BrocardFormalization.Basic (2.7s)
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.Data.Nat.Factorization.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.Data.Nat.Squarefree` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.NumberTheory.Padics.PadicVal.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.NumberTheory.Chebyshev` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.NumberTheory.PrimeCounting` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.Analysis.SpecialFunctions.Log.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.Analysis.SpecialFunctions.Complex.Circle` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.Algebra.Polynomial.Eval.Defs` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.Algebra.Order.Floor.Defs` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.Algebra.QuadraticAlgebra.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.NumberTheory.NumberField.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/Basic.lean: imports `Mathlib.NumberTheory.FundamentalDiscriminant` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [9048/9068] Built BrocardFormalization.ExternalAxiomsAnalytic (1.8s)
+warning: BrocardFormalization/ExternalAxiomsAnalytic.lean: imports `Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAnalytic.lean: imports `Mathlib.Analysis.Calculus.Deriv.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAnalytic.lean: imports `Mathlib.Analysis.Calculus.IteratedDeriv.Defs` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAnalytic.lean: imports `Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAnalytic.lean: imports `Mathlib.NumberTheory.DirichletCharacter.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAnalytic.lean: imports `Mathlib.NumberTheory.Harmonic.EulerMascheroni` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [9049/9068] Built BrocardFormalization.ExternalAxiomsAlgebraic (1.9s)
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.NumberTheory.NumberField.ClassNumber` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.NumberTheory.NumberField.Units.Regulator` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.NumberTheory.NumberField.Units.DirichletTheorem` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.NumberTheory.Padics.PadicIntegers` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.NumberTheory.LegendreSymbol.JacobiSymbol` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.NumberTheory.Pell` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.RingTheory.PowerSeries.Derivative` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.LinearAlgebra.Matrix.Determinant.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExternalAxiomsAlgebraic.lean: imports `Mathlib.AlgebraicGeometry.EllipticCurve.Weierstrass` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [9050/9068] Built BrocardFormalization.ExternalAxioms (1.6s)
+⚠ [9051/9068] Built BrocardFormalization.ExpSumVaughan (14s)
+warning: BrocardFormalization/ExpSumVaughan.lean: imports `Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExpSumVaughan.lean: imports `Mathlib.NumberTheory.ArithmeticFunction.Moebius` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExpSumVaughan.lean: imports `Mathlib.NumberTheory.Harmonic.Bounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExpSumVaughan.lean: imports `Mathlib.Analysis.Calculus.Deriv.Inv` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExpSumVaughan.lean: imports `Mathlib.Analysis.Calculus.Deriv.ZPow` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExpSumVaughan.lean: imports `Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExpSumVaughan.lean: imports `Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ExpSumVaughan.lean:92:47: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+⚠ [9052/9068] Built BrocardFormalization.ValuationParityDigits (14s)
+warning: BrocardFormalization/ValuationParityDigits.lean: imports `Mathlib.Data.Nat.Digits.Defs` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDigits.lean: imports `Mathlib.Data.Nat.Factorization.PrimePow` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDigits.lean: imports `Mathlib.NumberTheory.Padics.PadicVal.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDigits.lean: imports `Mathlib.NumberTheory.Harmonic.Bounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDigits.lean: imports `Mathlib.Analysis.SpecialFunctions.Log.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDigits.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDigits.lean:240:12: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ValuationParityDigits.lean:430:56: Unused tactic linter: `push_cast` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: BrocardFormalization/ValuationParityDigits.lean:430:80: Unused tactic linter: `push_cast` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: BrocardFormalization/ValuationParityDigits.lean:436:56: Unused tactic linter: `push_cast` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: BrocardFormalization/ValuationParityDigits.lean:436:80: Unused tactic linter: `push_cast` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: BrocardFormalization/ValuationParityDigits.lean:437:62: Unused tactic linter: `push_cast` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: BrocardFormalization/ValuationParityDigits.lean:437:86: Unused tactic linter: `push_cast` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: BrocardFormalization/ValuationParityDigits.lean:550:31: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ValuationParityDigits.lean:621:25: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ValuationParityDigits.lean:628:25: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ValuationParityDigits.lean:634:25: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ValuationParityDigits.lean:664:33: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ValuationParityDigits.lean:669:25: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+⚠ [9053/9068] Built BrocardFormalization.ValuationParityLayer (20s)
+warning: BrocardFormalization/ValuationParityLayer.lean: imports `Mathlib.Data.Nat.Digits.Defs` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityLayer.lean: imports `Mathlib.Data.Nat.Factorization.PrimePow` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityLayer.lean: imports `Mathlib.NumberTheory.Padics.PadicVal.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityLayer.lean: imports `Mathlib.NumberTheory.Harmonic.Bounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityLayer.lean: imports `Mathlib.Analysis.SpecialFunctions.Log.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityLayer.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityLayer.lean:40:2: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+warning: BrocardFormalization/ValuationParityLayer.lean:52:17: This simp argument is unused:
+  padicValNat.self hp.one_lt
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [hqs]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ValuationParityLayer.lean:84:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ValuationParityLayer.lean:115:4: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+warning: BrocardFormalization/ValuationParityLayer.lean:133:4: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+warning: BrocardFormalization/ValuationParityLayer.lean:57:44: Variable name `hj1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hj1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ValuationParityLayer.lean:283:10: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ValuationParityLayer.lean:467:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+⚠ [9054/9068] Built BrocardFormalization.ExpSumTypeI (17s)
+warning: BrocardFormalization/ExpSumTypeI.lean:29:33: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumTypeI.lean:29:48: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumTypeI.lean:30:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [9055/9068] Built BrocardFormalization.ValuationParityMoments (47s)
+warning: BrocardFormalization/ValuationParityMoments.lean: imports `Mathlib.Data.ZMod.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityMoments.lean: imports `Mathlib.MeasureTheory.Integral.Bochner.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityMoments.lean: imports `Mathlib.MeasureTheory.Integral.DominatedConvergence` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityMoments.lean: imports `Mathlib.Analysis.PSeries` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityMoments.lean:325:8: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ValuationParityMoments.lean:336:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ValuationParityMoments.lean:337:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ValuationParityMoments.lean:370:22: This simp argument is unused:
+  Nat.zero_pow (by omega : 0 < 2 * (m + 1))
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ValuationParityMoments.lean:615:41: Variable name `hh` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hh
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ValuationParityMoments.lean:1246:12: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ValuationParityMoments.lean:1261:12: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [9056/9068] Built BrocardFormalization.ExpSumCore (22s)
+warning: BrocardFormalization/ExpSumCore.lean:373:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumCore.lean:390:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumCore.lean:331:19: Variable name `hK_max` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hK_max
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumCore.lean:333:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumCore.lean:333:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumCore.lean:334:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [9057/9068] Built BrocardFormalization.ValuationParityDensity (42s)
+warning: BrocardFormalization/ValuationParityDensity.lean: imports `Mathlib.Data.Nat.Digits.Defs` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDensity.lean: imports `Mathlib.Data.Nat.Factorization.PrimePow` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDensity.lean: imports `Mathlib.NumberTheory.Padics.PadicVal.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDensity.lean: imports `Mathlib.NumberTheory.Harmonic.Bounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDensity.lean: imports `Mathlib.Analysis.SpecialFunctions.Log.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDensity.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/ValuationParityDensity.lean:26:5: Variable name `hll_nn` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hll_nn
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [9058/9068] Built BrocardFormalization.ExpSumMid (21s)
+warning: BrocardFormalization/ExpSumMid.lean:156:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMid.lean:79:19: Variable name `hK_max` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hK_max
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:81:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:81:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:82:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:520:12: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ExpSumMid.lean:523:14: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ExpSumMid.lean:523:25: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ExpSumMid.lean:527:14: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ExpSumMid.lean:527:25: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ExpSumMid.lean:528:12: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ExpSumMid.lean:530:45: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: BrocardFormalization/ExpSumMid.lean:427:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:427:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:428:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:862:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMid.lean:877:23: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMid.lean:821:19: Variable name `hK_max` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hK_max
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:823:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:823:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMid.lean:824:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✖ [9059/9068] Building BrocardFormalization.ExpSumBounds (18s)
+warning: BrocardFormalization/ExpSumBounds.lean: imports `Mathlib.NumberTheory.Harmonic.Bounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+trace: .> LEAN_PATH=/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0/bin/lean -j1 -M 6144 /home/runner/work/brocardgreenberg/brocardgreenberg/BrocardFormalization/ExpSumBounds.lean -o /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/lib/lean/BrocardFormalization/ExpSumBounds.olean -i /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/lib/lean/BrocardFormalization/ExpSumBounds.ilean -c /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/ir/BrocardFormalization/ExpSumBounds.c --setup /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/ir/BrocardFormalization/ExpSumBounds.setup.json --json
+warning: BrocardFormalization/ExpSumBounds.lean:224:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumBounds.lean:281:41: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ExpSumBounds.lean:285:38: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+error: BrocardFormalization/ExpSumBounds.lean:362:48: mod_cast has type
+  d ≤ U * U
+but is expected to have type
+  d ≤ U ^ 2
+error: BrocardFormalization/ExpSumBounds.lean:394:60: unsolved goals
+δ : ℝ
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 3
+R : ℕ := ⌊1 / δ⌋₊
+hR3 : 3 ≤ R
+K_max : ℕ := ⌈4 / δ⌉₊ + 3
+hK_max : 3 ≤ K_max
+C_exp η_exp M₀ : ℝ
+hC_exp : 0 < C_exp
+hη_exp : 0 < η_exp
+hη_le : η_exp ≤ 1 / 4
+hM₀ : 16 ≤ M₀
+hexp :
+  ∀ (A : Finset ℕ),
+    ∀ r₀ ∈ A,
+      (∀ r ∈ A, 1 ≤ r ∧ r ≤ R) →
+        ∀ (c : ℕ → ℝ),
+          c r₀ ≠ 0 →
+            ∀ (M₁ M₂ : ℝ),
+              M₀ ≤ M₁ →
+                M₁ ≤ M₂ →
+                  M₂ ≤ 2 * M₁ →
+                    (∀ k ∈ Icc 1 K_max,
+                        ∀ r ∈ A,
+                          r ≠ r₀ →
+                            |c r| * ↑((r + k - 1).descFactorial k) * M₁ ^ (-↑r) ≤
+                              1 / (2 * max (↑(#A)) 1) * (|c r₀| * ↑((r₀ + k - 1).descFactorial k) * M₂ ^ (-↑r₀))) →
+                      have T := |c r₀| * ↑r₀ * M₂ ^ (-↑r₀);
+                      T ≤ M₂ ^ (K_max - 1) →
+                        ‖∑ m ∈ Icc ⌈M₁⌉₊ ⌊M₂⌋₊, ePhase (∑ r ∈ A, c r * ↑m ^ (-↑r))‖ ≤
+                          C_exp * (M₂ / max T 1 + M₂ ^ (1 - η_exp))
+η'_δ : ℝ := min (η_exp / 6) (1 / 12)
+hη'_pos : 0 < η'_δ
+K_fact : ℝ := ↑(R + K_max)!
+h_ev :
+  ∀ᶠ (n : ℕ) in atTop,
+    16 ≤ n ∧
+      max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ ↑n ^ δ ∧
+        2 * (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R * K_fact * 2 ^ (4 * R + 4) * (2 * ↑R) ≤ ↑n ^ δ ∧
+          (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R ^ 2 * ↑n * 2 ^ (R + 1) ≤ (↑n ^ (δ / 3) / 8) ^ (K_max - 1)
+N₀ : ℕ
+hN₀ :
+  ∀ (b : ℕ),
+    N₀ ≤ b →
+      16 ≤ b ∧
+        max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ ↑b ^ δ ∧
+          2 * (2 * Real.log ↑b ^ (R + 2) + 1) * ↑R * K_fact * 2 ^ (4 * R + 4) * (2 * ↑R) ≤ ↑b ^ δ ∧
+            (2 * Real.log ↑b ^ (R + 2) + 1) * ↑R ^ 2 * ↑b * 2 ^ (R + 1) ≤ (↑b ^ (δ / 3) / 8) ^ (K_max - 1)
+C_I : ℝ := 128 * max C_exp 3 * 2 ^ (R + 1)
+C_II_sq : ℝ := (Real.log 4 + 4) * 256 * (1 + 2 ^ (5 * R + 1) * C_exp + C_exp)
+C_II : ℝ := 16 * √C_II_sq
+C_δ : ℝ := max (C_I + C_II + 64) 1
+n : ℕ
+P a b : ℝ
+A : Finset ℕ
+h : ℕ → ℤ
+w : ℝ → ℝ
+W₀ : ℝ
+hnN₀ : N₀ ≤ n
+hP_lo : ↑n ^ δ ≤ P
+hP_hi : P ≤ ↑n / Real.log ↑n ^ 12
+hPa : P ≤ a
+hab : a ≤ b
+hb2P : b ≤ 2 * P
+hA_sub : A ⊆ Icc 1 R
+hA_ne : A.Nonempty
+hnonzero : ∃ r ∈ A, h r ≠ 0
+hh_bd : ∀ r ∈ A, |h r| ≤ 2 * ↑⌊Real.log ↑n ^ (R + 2)⌋₊ + 1
+hW₀ : 0 ≤ W₀
+hw_bd : ∀ t ∈ Set.Icc P (2 * P), |w t| ≤ W₀
+hw_diff : ContDiffOn ℝ 1 w (Set.Icc P (2 * P))
+hw_tv : ∫ (t : ℝ) in P..2 * P, |deriv w t| ≤ W₀
+r₀ : ℕ := {r ∈ A | h r ≠ 0}.min' ⋯
+T₀ : ℝ := |↑(h r₀)| * ↑n / P ^ r₀
+hT₀_ge1 : 1 ≤ T₀
+hn16 : 16 ≤ n
+hP_M0 : max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ ↑n ^ δ
+hdom_n : 2 * (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R * K_fact * 2 ^ (4 * R + 4) * (2 * ↑R) ≤ ↑n ^ δ
+hT_n : (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R ^ 2 * ↑n * 2 ^ (R + 1) ≤ (↑n ^ (δ / 3) / 8) ^ (K_max - 1)
+hn_pos : 0 < ↑n
+hP_ge_cube : max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ P
+hP_ge_e6 : rexp 6 ≤ P
+hlogP_ge6 : 6 ≤ Real.log P
+hP_pos : 0 < P
+hP_ge1 : 1 ≤ P
+hA_bd : ∀ r ∈ A, 1 ≤ r ∧ r ≤ R
+hr₀_mem : r₀ ∈ A
+hh₀ : h r₀ ≠ 0
+h_min_r₀ : ∀ r ∈ A, h r ≠ 0 → r₀ ≤ r
+U : ℕ := ⌊P ^ (1 / 3)⌋₊
+hP13_ge : max (8 * M₀ + 8) (rexp 2) ≤ P ^ (1 / 3)
+hU_ge_M0 : 8 * M₀ + 7 ≤ ↑U
+hU_pos : 1 ≤ U
+hU_le_P13 : ↑U ≤ P ^ (1 / 3)
+hU_sq_lt_P : ↑U ^ 2 < P
+A₀ : ℕ := ⌈a⌉₊
+B₀ : ℕ := ⌊b⌋₊
+hU_lt_A₀ : U * U < A₀
+hU_lt_A₀' : U < A₀
+h_empty : A₀ ≤ B₀
+hA₀_pos : 1 ≤ A₀
+hB₀_le_2P : ↑B₀ ≤ 2 * P
+F : ℕ → ℝ := fun m ↦ ∑ r ∈ A, ↑(h r) * ↑n / (2 * ↑m ^ r)
+g : ℕ → ℂ := fun m ↦ ↑(w ↑m) * ePhase (F m)
+h_diff_vm :
+  ‖∑ p ∈ Icc A₀ B₀ with Nat.Prime p, ↑(w ↑p) * ↑(Real.log ↑p) * ePhase (F p) -
+        ∑ m ∈ Icc A₀ B₀, ↑(ArithmeticFunction.vonMangoldt m) * g m‖ ≤
+    64 * W₀ * P * P ^ (-η'_δ)
+hvaugh :
+  ∑ m ∈ Icc A₀ B₀, ↑(ArithmeticFunction.vonMangoldt m) * g m =
+    ∑ m ∈ Icc A₀ B₀ with m ≤ U, ↑(ArithmeticFunction.vonMangoldt m) * g m +
+          ∑ d ∈ Icc 1 U,
+            ↑(ArithmeticFunction.moebius d) * ∑ k ∈ Icc ((A₀ - 1) / d + 1) (B₀ / d), ↑(Real.log ↑k) * g (d * k) -
+        ∑ d ∈ Icc 1 U,
+          ↑(ArithmeticFunction.moebius d) *
+            ∑ k ∈ Icc 1 U,
+              ↑(ArithmeticFunction.vonMangoldt k) * ∑ m ∈ Icc ((A₀ - 1) / (d * k) + 1) (B₀ / (d * k)), g (d * k * m) +
+      ∑ k ∈ Icc (U + 1) (B₀ / U),
+        ↑(ArithmeticFunction.vonMangoldt k) *
+          ∑ r ∈ Icc (max (U + 1) ((A₀ - 1) / k + 1)) (B₀ / k),
+            (-∑ d ∈ r.divisors with d ≤ U, ↑(ArithmeticFunction.moebius d)) * g (k * r)
+hS1_zero : ∑ m ∈ Icc A₀ B₀ with m ≤ U, ↑(ArithmeticFunction.vonMangoldt m) * g m = 0
+d : ℕ
+hd1 : 1 ≤ d
+hd_uu : d ≤ U * U
+hd_pos : 0 < ↑d
+hPd_pos : 0 < P / ↑d
+hPd_ge_P13 : P ^ (1 / 3) ≤ P / ↑d
+hPd_M0 : M₀ ≤ P / ↑d
+hr₀_1 : 1 ≤ r₀
+hr₀_R : r₀ ≤ R
+k : ℕ
+hk : k ∈ Icc 1 K_max
+r : ℕ
+hr : r ∈ A
+hne : r ≠ r₀
+hhr : ¬h r = 0
+hr_gt : r₀ < r
+hr_R : r ≤ R
+hh_r0 : 1 ≤ |↑(h r₀)|
+hh_r : |↑(h r)| ≤ 2 * Real.log ↑n ^ (R + 2) + 1
+hdesc_le : ↑((r + k - 1).descFactorial k) ≤ K_fact * ↑((r₀ + k - 1).descFactorial k)
+⊢ 1 = P ^ r * P ^ (-↑r)
+error: BrocardFormalization/ExpSumBounds.lean:400:86: unsolved goals
+δ : ℝ
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 3
+R : ℕ := ⌊1 / δ⌋₊
+hR3 : 3 ≤ R
+K_max : ℕ := ⌈4 / δ⌉₊ + 3
+hK_max : 3 ≤ K_max
+C_exp η_exp M₀ : ℝ
+hC_exp : 0 < C_exp
+hη_exp : 0 < η_exp
+hη_le : η_exp ≤ 1 / 4
+hM₀ : 16 ≤ M₀
+hexp :
+  ∀ (A : Finset ℕ),
+    ∀ r₀ ∈ A,
+      (∀ r ∈ A, 1 ≤ r ∧ r ≤ R) →
+        ∀ (c : ℕ → ℝ),
+          c r₀ ≠ 0 →
+            ∀ (M₁ M₂ : ℝ),
+              M₀ ≤ M₁ →
+                M₁ ≤ M₂ →
+                  M₂ ≤ 2 * M₁ →
+                    (∀ k ∈ Icc 1 K_max,
+                        ∀ r ∈ A,
+                          r ≠ r₀ →
+                            |c r| * ↑((r + k - 1).descFactorial k) * M₁ ^ (-↑r) ≤
+                              1 / (2 * max (↑(#A)) 1) * (|c r₀| * ↑((r₀ + k - 1).descFactorial k) * M₂ ^ (-↑r₀))) →
+                      have T := |c r₀| * ↑r₀ * M₂ ^ (-↑r₀);
+                      T ≤ M₂ ^ (K_max - 1) →
+                        ‖∑ m ∈ Icc ⌈M₁⌉₊ ⌊M₂⌋₊, ePhase (∑ r ∈ A, c r * ↑m ^ (-↑r))‖ ≤
+                          C_exp * (M₂ / max T 1 + M₂ ^ (1 - η_exp))
+η'_δ : ℝ := min (η_exp / 6) (1 / 12)
+hη'_pos : 0 < η'_δ
+K_fact : ℝ := ↑(R + K_max)!
+h_ev :
+  ∀ᶠ (n : ℕ) in atTop,
+    16 ≤ n ∧
+      max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ ↑n ^ δ ∧
+        2 * (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R * K_fact * 2 ^ (4 * R + 4) * (2 * ↑R) ≤ ↑n ^ δ ∧
+          (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R ^ 2 * ↑n * 2 ^ (R + 1) ≤ (↑n ^ (δ / 3) / 8) ^ (K_max - 1)
+N₀ : ℕ
+hN₀ :
+  ∀ (b : ℕ),
+    N₀ ≤ b →
+      16 ≤ b ∧
+        max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ ↑b ^ δ ∧
+          2 * (2 * Real.log ↑b ^ (R + 2) + 1) * ↑R * K_fact * 2 ^ (4 * R + 4) * (2 * ↑R) ≤ ↑b ^ δ ∧
+            (2 * Real.log ↑b ^ (R + 2) + 1) * ↑R ^ 2 * ↑b * 2 ^ (R + 1) ≤ (↑b ^ (δ / 3) / 8) ^ (K_max - 1)
+C_I : ℝ := 128 * max C_exp 3 * 2 ^ (R + 1)
+C_II_sq : ℝ := (Real.log 4 + 4) * 256 * (1 + 2 ^ (5 * R + 1) * C_exp + C_exp)
+C_II : ℝ := 16 * √C_II_sq
+C_δ : ℝ := max (C_I + C_II + 64) 1
+n : ℕ
+P a b : ℝ
+A : Finset ℕ
+h : ℕ → ℤ
+w : ℝ → ℝ
+W₀ : ℝ
+hnN₀ : N₀ ≤ n
+hP_lo : ↑n ^ δ ≤ P
+hP_hi : P ≤ ↑n / Real.log ↑n ^ 12
+hPa : P ≤ a
+hab : a ≤ b
+hb2P : b ≤ 2 * P
+hA_sub : A ⊆ Icc 1 R
+hA_ne : A.Nonempty
+hnonzero : ∃ r ∈ A, h r ≠ 0
+hh_bd : ∀ r ∈ A, |h r| ≤ 2 * ↑⌊Real.log ↑n ^ (R + 2)⌋₊ + 1
+hW₀ : 0 ≤ W₀
+hw_bd : ∀ t ∈ Set.Icc P (2 * P), |w t| ≤ W₀
+hw_diff : ContDiffOn ℝ 1 w (Set.Icc P (2 * P))
+hw_tv : ∫ (t : ℝ) in P..2 * P, |deriv w t| ≤ W₀
+r₀ : ℕ := {r ∈ A | h r ≠ 0}.min' ⋯
+T₀ : ℝ := |↑(h r₀)| * ↑n / P ^ r₀
+hT₀_ge1 : 1 ≤ T₀
+hn16 : 16 ≤ n
+hP_M0 : max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ ↑n ^ δ
+hdom_n : 2 * (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R * K_fact * 2 ^ (4 * R + 4) * (2 * ↑R) ≤ ↑n ^ δ
+hT_n : (2 * Real.log ↑n ^ (R + 2) + 1) * ↑R ^ 2 * ↑n * 2 ^ (R + 1) ≤ (↑n ^ (δ / 3) / 8) ^ (K_max - 1)
+hn_pos : 0 < ↑n
+hP_ge_cube : max (8 * M₀ + 8) (rexp 2) ^ 3 ≤ P
+hP_ge_e6 : rexp 6 ≤ P
+hlogP_ge6 : 6 ≤ Real.log P
+hP_pos : 0 < P
+hP_ge1 : 1 ≤ P
+hA_bd : ∀ r ∈ A, 1 ≤ r ∧ r ≤ R
+hr₀_mem : r₀ ∈ A
+hh₀ : h r₀ ≠ 0
+h_min_r₀ : ∀ r ∈ A, h r ≠ 0 → r₀ ≤ r
+U : ℕ := ⌊P ^ (1 / 3)⌋₊
+hP13_ge : max (8 * M₀ + 8) (rexp 2) ≤ P ^ (1 / 3)
+hU_ge_M0 : 8 * M₀ + 7 ≤ ↑U
+hU_pos : 1 ≤ U
+hU_le_P13 : ↑U ≤ P ^ (1 / 3)
+hU_sq_lt_P : ↑U ^ 2 < P
+A₀ : ℕ := ⌈a⌉₊
+B₀ : ℕ := ⌊b⌋₊
+hU_lt_A₀ : U * U < A₀
+hU_lt_A₀' : U < A₀
+h_empty : A₀ ≤ B₀
+hA₀_pos : 1 ≤ A₀
+hB₀_le_2P : ↑B₀ ≤ 2 * P
+F : ℕ → ℝ := fun m ↦ ∑ r ∈ A, ↑(h r) * ↑n / (2 * ↑m ^ r)
+g : ℕ → ℂ := fun m ↦ ↑(w ↑m) * ePhase (F m)
+h_diff_vm :
+  ‖∑ p ∈ Icc A₀ B₀ with Nat.Prime p, ↑(w ↑p) * ↑(Real.log ↑p) * ePhase (F p) -
+        ∑ m ∈ Icc A₀ B₀, ↑(ArithmeticFunction.vonMangoldt m) * g m‖ ≤
+    64 * W₀ * P * P ^ (-η'_δ)
+hvaugh :
+  ∑ m ∈ Icc A₀ B₀, ↑(ArithmeticFunction.vonMangoldt m) * g m =
+    ∑ m ∈ Icc A₀ B₀ with m ≤ U, ↑(ArithmeticFunction.vonMangoldt m) * g m +
+          ∑ d ∈ Icc 1 U,
+            ↑(ArithmeticFunction.moebius d) * ∑ k ∈ Icc ((A₀ - 1) / d + 1) (B₀ / d), ↑(Real.log ↑k) * g (d * k) -
+        ∑ d ∈ Icc 1 U,
+          ↑(ArithmeticFunction.moebius d) *
+            ∑ k ∈ Icc 1 U,
+              ↑(ArithmeticFunction.vonMangoldt k) * ∑ m ∈ Icc ((A₀ - 1) / (d * k) + 1) (B₀ / (d * k)), g (d * k * m) +
+      ∑ k ∈ Icc (U + 1) (B₀ / U),
+        ↑(ArithmeticFunction.vonMangoldt k) *
+          ∑ r ∈ Icc (max (U + 1) ((A₀ - 1) / k + 1)) (B₀ / k),
+            (-∑ d ∈ r.divisors with d ≤ U, ↑(ArithmeticFunction.moebius d)) * g (k * r)
+hS1_zero : ∑ m ∈ Icc A₀ B₀ with m ≤ U, ↑(ArithmeticFunction.vonMangoldt m) * g m = 0
+d : ℕ
+hd1 : 1 ≤ d
+hd_uu : d ≤ U * U
+hd_pos : 0 < ↑d
+hPd_pos : 0 < P / ↑d
+hPd_ge_P13 : P ^ (1 / 3) ≤ P / ↑d
+hPd_M0 : M₀ ≤ P / ↑d
+hr₀_1 : 1 ≤ r₀
+hr₀_R : r₀ ≤ R
+k : ℕ
+hk : k ∈ Icc 1 K_max
+r : ℕ
+hr : r ∈ A
+hne : r ≠ r₀
+hhr : ¬h r = 0
+hr_gt : r₀ < r
+hr_R : r ≤ R
+hh_r0 : 1 ≤ |↑(h r₀)|
+hh_r : |↑(h r)| ≤ 2 * Real.log ↑n ^ (R + 2) + 1
+hdesc_le : ↑((r + k - 1).descFactorial k) ≤ K_fact * ↑((r₀ + k - 1).descFactorial k)
+h_cancel_lhs : |↑(h r) * ↑n / (2 * ↑d ^ r)| * (P / ↑d) ^ (-↑r) = |↑(h r)| * ↑n / 2 * P ^ (-↑r)
+⊢ 1 = P ^ r₀ * P ^ (-↑r₀)
+error: BrocardFormalization/ExpSumBounds.lean:418:60: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumBounds.lean:418:41: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumBounds.lean:414:57: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumBounds.lean:435:10: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumBounds.lean:356:114: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumBounds.lean:356:114: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumBounds.lean:13:0: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+warning: BrocardFormalization/ExpSumBounds.lean:66:20: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumBounds.lean:117:22: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: BrocardFormalization/ExpSumBounds.lean:1555:8: (kernel) unknown constant '_private.BrocardFormalization.ExpSumBounds.0.BrocardFormalization.lemma_2_4_core'
+warning: BrocardFormalization/ExpSumBounds.lean:1600:18: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: BrocardFormalization/ExpSumBounds.lean:1699:8: (kernel) unknown constant '_private.BrocardFormalization.ExpSumBounds.0.BrocardFormalization.lemma_2_4_core'
+warning: BrocardFormalization/ExpSumBounds.lean:1735:18: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+✖ [9060/9068] Building BrocardFormalization.ExpSumMod (44s)
+trace: .> LEAN_PATH=/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0/bin/lean -j1 -M 6144 /home/runner/work/brocardgreenberg/brocardgreenberg/BrocardFormalization/ExpSumMod.lean -o /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/lib/lean/BrocardFormalization/ExpSumMod.olean -i /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/lib/lean/BrocardFormalization/ExpSumMod.ilean -c /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/ir/BrocardFormalization/ExpSumMod.c --setup /home/runner/work/brocardgreenberg/brocardgreenberg/.lake/build/ir/BrocardFormalization/ExpSumMod.setup.json --json
+warning: BrocardFormalization/ExpSumMod.lean:62:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMod.lean:79:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMod.lean:20:19: Variable name `hK_max` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hK_max
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:22:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:22:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:23:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:390:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMod.lean:313:19: Variable name `hK_max` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hK_max
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:315:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:315:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:316:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:659:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:659:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:660:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:757:31: This simp argument is unused:
+  true_and
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h2a, h2b, and_true, ↓reduceIte]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:761:31: This simp argument is unused:
+  false_and
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h2a, h2b, and_false, ↓reduceIte, mul_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:761:65: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h2a, h2b, false_and, and_false, ↓reduceIte]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:762:42: This simp argument is unused:
+  and_false
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h2a, h2b, false_and, ↓reduceIte, mul_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:762:65: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h2a, h2b, false_and, and_false, ↓reduceIte]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:763:31: This simp argument is unused:
+  false_and
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h2a, h2b, and_false, ↓reduceIte, mul_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:763:65: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h2a, h2b, false_and, and_false, ↓reduceIte]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:764:63: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h1a, h1b, false_and, and_false, ↓reduceIte, Finset.sum_const_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:765:40: This simp argument is unused:
+  and_false
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h1a, h1b, false_and, ↓reduceIte, zero_mul, Finset.sum_const_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:765:63: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h1a, h1b, false_and, and_false, ↓reduceIte, Finset.sum_const_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:766:63: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [h1a, h1b, false_and, and_false, ↓reduceIte, Finset.sum_const_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:760:10: Unused tactic linter: `push_cast` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: BrocardFormalization/ExpSumMod.lean:1111:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMod.lean:1126:23: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMod.lean:1070:19: Variable name `hK_max` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hK_max
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:1072:39: Variable name `hr₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:1072:54: Variable name `hA` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hA
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:1073:21: Variable name `hc₀` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc₀
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: BrocardFormalization/ExpSumMod.lean:1513:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: BrocardFormalization/ExpSumMod.lean:1570:41: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: BrocardFormalization/ExpSumMod.lean:1574:38: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+error: BrocardFormalization/ExpSumMod.lean:1651:48: mod_cast has type
+  d ≤ U * U
+but is expected to have type
+  d ≤ U ^ 2
+error: BrocardFormalization/ExpSumMod.lean:1681:12: (deterministic) timeout at `«Mathlib.Tactic.Linarith.SimplexAlgorithm.runSimplexAlgorithm»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumMod.lean:1688:10: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumMod.lean:1645:124: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumMod.lean:1645:124: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: BrocardFormalization/ExpSumMod.lean:1302:0: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+warning: BrocardFormalization/ExpSumMod.lean:1355:20: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: BrocardFormalization/ExpSumMod.lean:1406:22: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: BrocardFormalization/ExpSumMod.lean:2856:8: (kernel) unknown constant 'BrocardFormalization.lemma_2_4_core_mod'
+warning: BrocardFormalization/ExpSumMod.lean:2901:18: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [9062/9068] Ran BrocardFormalization.PellChebyshev
+warning: BrocardFormalization/PellChebyshev.lean: imports `Mathlib.RingTheory.Polynomial.Chebyshev` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/PellChebyshev.lean: imports `Mathlib.RingTheory.ClassGroup.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: BrocardFormalization/PellChebyshev.lean: imports `Mathlib.Analysis.SpecialFunctions.Stirling` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [9064/9068] Ran BrocardFormalization.PellAndIwasawa
+warning: BrocardFormalization/PellAndIwasawa.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [9065/9068] Ran BrocardFormalization.CriticalRegimeK2
+warning: BrocardFormalization/CriticalRegimeK2.lean: imports `Mathlib.NumberTheory.Wilson` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [9066/9068] Ran BrocardFormalization.FundamentalRegimeK1
+warning: BrocardFormalization/FundamentalRegimeK1.lean: imports `Mathlib.LinearAlgebra.Matrix.Rank` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+Some required targets logged failures:
+- BrocardFormalization.ExpSumBounds
+- BrocardFormalization.ExpSumMod
+error: build failed
