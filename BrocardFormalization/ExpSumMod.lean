@@ -1267,6 +1267,7 @@ lemma type_I_no_log_single_d_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
               (add_nonneg (div_nonneg (by positivity) (lt_of_lt_of_le zero_lt_one (le_max_right _ _)).le) (by positivity))
           linarith
 
+
 lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     let R : ℕ := ⌊1 / δ⌋₊
     ∃ (η'_δ C_δ : ℝ), 0 < η'_δ ∧ 0 < C_δ ∧ ∃ N₀ : ℕ, 16 ≤ N₀ ∧
@@ -1687,7 +1688,7 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
           calc |(h r : ℝ)| * (n : ℝ) / (q_den : ℝ) * P ^ (-(r : ℤ)) * (Nat.descFactorial (r + k - 1) k : ℝ)
               ≤ (2 * (Real.log n) ^ (R + 2) + 1) * (n : ℝ) / (q_den : ℝ) * (P ^ (-1 : ℤ) * P ^ (-(r₀ : ℤ))) *
                   (K_fact * (Nat.descFactorial (r₀ + k - 1) k : ℝ)) := by
-                refine mul_le_mul (mul_le_mul (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r (by positivity)) (by norm_num))
+                refine mul_le_mul (mul_le_mul (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r (by positivity)) (by positivity))
                   hP_sub (by positivity) (by positivity)) hdesc_le (by positivity) (by positivity)
             _ = ((2 * (Real.log n) ^ (R + 2) + 1) * K_fact * P⁻¹) *
                   ((n : ℝ) / (q_den : ℝ) * P ^ (-(r₀ : ℤ)) * (Nat.descFactorial (r₀ + k - 1) k : ℝ)) := by
@@ -1698,8 +1699,8 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
                 · rw [mul_inv, ← div_eq_mul_inv, div_le_div_iff₀ hP_pos (by positivity)]
                   linarith [hdom_P]
                 · refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right ?_ (by positivity)) (by positivity)
-                  calc (n : ℝ) / 2 = 1 * (n : ℝ) / 2 := by ring
-                    _ ≤ |(h r₀ : ℝ)| * (n : ℝ) / (q_den : ℝ) := div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r0 (by positivity)) (by norm_num)
+                  calc (n : ℝ) / (q_den : ℝ) = 1 * (n : ℝ) / (q_den : ℝ) := by ring
+                    _ ≤ |(h r₀ : ℝ)| * (n : ℝ) / (q_den : ℝ) := div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r0 (by positivity)) (by positivity)
             _ ≤ (1 / (2 * max (A.card : ℝ) 1)) *
                   (|(h r₀ : ℝ)| * (n : ℝ) / (q_den : ℝ) * (2 : ℝ) ^ (-(r₀ : ℤ)) * P ^ (-(r₀ : ℤ)) * (Nat.descFactorial (r₀ + k - 1) k : ℝ)) := by
                 have hdiv_le : 1 / (2 * (R : ℝ) * (2 : ℝ) ^ R) ≤ 1 / (2 * max (A.card : ℝ) 1) * (2 : ℝ) ^ (-(r₀ : ℤ)) := by
@@ -1736,10 +1737,13 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
           linarith [hPd_ge_P13, show (n : ℝ) ^ (δ / 3) / 8 ≤ (n : ℝ) ^ (δ / 3) by linarith [Real.rpow_pos_of_pos (by exact_mod_cast (by omega : 0 < n)) (δ / 3)]]
         calc |(h r₀ : ℝ)| * (n : ℝ) / (q_den : ℝ) * (r₀ : ℝ) * P ^ (-(r₀ : ℤ))
             ≤ (2 * (Real.log n) ^ (R + 2) + 1) * (n : ℝ) * (R : ℝ) * 1 := by
-              refine mul_le_mul (mul_le_mul (div_le_self (mul_le_mul_of_nonneg_right hh_r0_le (by positivity)) (by norm_num))
+              refine mul_le_mul (mul_le_mul (div_le_self (mul_le_mul_of_nonneg_right hh_r0_le (by positivity)) (by positivity))
                 hr0_le_R (by positivity) (by positivity)) hP_le1 (by positivity) (by positivity)
           _ ≤ (2 * (Real.log n) ^ (R + 2) + 1) * (R : ℝ) ^ 2 * (n : ℝ) * (q_den : ℝ) * (2 : ℝ) ^ R := by
-              have h21 : (1 : ℝ) ≤ (q_den : ℝ) * (2 : ℝ) ^ R := one_le_pow₀ (by norm_num)
+              have h21 : (1 : ℝ) ≤ (q_den : ℝ) * (2 : ℝ) ^ R := by
+                have hq1 : (1 : ℝ) ≤ (q_den : ℝ) := by exact_mod_cast hq_den
+                have h2p : (1 : ℝ) ≤ (2 : ℝ) ^ R := one_le_pow₀ (by norm_num)
+                nlinarith
               have hR1 : (1 : ℝ) ≤ R := by exact_mod_cast (by omega : 1 ≤ R)
               nlinarith [sq_nonneg (R : ℝ)]
           _ ≤ ((n : ℝ) ^ (δ / 3) / 8) ^ (K_max - 1) := hT_n
@@ -1811,7 +1815,10 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
               rw [hPd_pow]
               exact mul_le_mul h2le (mul_le_mul_of_nonneg_left hP_pow (by positivity)) (by positivity) (by norm_num)
           _ = 2 * (P / d) * P ^ (-η'_δ) := by ring
-      have h2R : (1 : ℝ) ≤ (q_den : ℝ) * (2 : ℝ) ^ R := one_le_pow₀ (by norm_num)
+      have h2R : (1 : ℝ) ≤ (q_den : ℝ) * (2 : ℝ) ^ R := by
+        have hq1 : (1 : ℝ) ≤ (q_den : ℝ) := by exact_mod_cast hq_den
+        have h2p : (1 : ℝ) ≤ (2 : ℝ) ^ R := one_le_pow₀ (by norm_num)
+        nlinarith
       calc (2 * P / d) / max (((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(R : ℤ))) * T₀) 1 + (2 * P / d) ^ (1 - η_exp)
           ≤ 2 * (q_den : ℝ) * (2 : ℝ) ^ R * (P / d) * T₀ ^ (-1 / 6 : ℝ) + 2 * (P / d) * P ^ (-η'_δ) :=
             add_le_add hT_term hP_term
@@ -2116,12 +2123,12 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
               = (|(h r : ℝ)| * (n : ℝ) / (q_den : ℝ)) * |(y₁ : ℝ) ^ (-(r : ℤ)) - (y₂ : ℝ) ^ (-(r : ℤ))| *
                   (Nat.descFactorial (r + k - 1) k : ℝ) * (X₁ : ℝ) ^ (-(r : ℤ)) := by
                   rw [abs_mul, abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
-                    abs_of_pos (a := (2 : ℝ)) (by norm_num)]
+                    abs_of_pos (a := (q_den : ℝ)) (by positivity)]
             _ ≤ ((2 * (Real.log n) ^ (R + 2) + 1) * (n : ℝ) / (q_den : ℝ)) *
                   ((r : ℝ) * |(y₁ : ℝ) - y₂| * (2 : ℝ) ^ (r - 1) * (Y₁ : ℝ) ^ (-(r + 1 : ℤ))) *
                   (K_fact * (Nat.descFactorial (r₀ + k - 1) k : ℝ)) * (X₁ : ℝ) ^ (-(r : ℤ)) := by
                   refine mul_le_mul (mul_le_mul (mul_le_mul (div_le_div_of_nonneg_right
-                    (mul_le_mul_of_nonneg_right hh_r (by positivity)) (by norm_num)) hdiffr (by positivity) (by positivity))
+                    (mul_le_mul_of_nonneg_right hh_r (by positivity)) (by positivity)) hdiffr (by positivity) (by positivity))
                     hdesc_le (by positivity) (by positivity)) le_rfl (by positivity) (by positivity)
             _ = (2 * (Real.log n) ^ (R + 2) + 1) * (r : ℝ) * K_fact * (2 : ℝ) ^ (r - 1) *
                   ((X₁ : ℝ) ^ (-(r : ℤ)) * (Y₁ : ℝ) ^ (-(r + 1 : ℤ))) *
@@ -2146,7 +2153,7 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
                             (2 : ℝ) ^ (4 * R + 1) * (2 * (R : ℝ)) :=
                           mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h2_prod (by positivity)) (by positivity)
                       _ ≤ 1 * P := by linarith [hdom_P']
-                  have hnn : 0 ≤ (n : ℝ) / 2 * |(y₁ : ℝ) - y₂| * (X₁ : ℝ) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ)) *
+                  have hnn : 0 ≤ (n : ℝ) / (q_den : ℝ) * |(y₁ : ℝ) - y₂| * (X₁ : ℝ) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ)) *
                       (Nat.descFactorial (r₀ + k - 1) k : ℝ) := by positivity
                   calc (2 * (Real.log n) ^ (R + 2) + 1) * (R : ℝ) * K_fact * (2 : ℝ) ^ (r - 1) *
                         ((4 / P) * ((X₁ : ℝ) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ)))) *
@@ -2183,8 +2190,8 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
                           refine mul_le_mul h2 ?_ (by positivity) (by positivity)
                           refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
                             (mul_le_mul ?_ h1 (by positivity) (by positivity)) (by positivity)) (by positivity)) (by positivity)
-                          calc (n : ℝ) / 2 = 1 * (n : ℝ) / 2 := by ring
-                            _ ≤ |(h r₀ : ℝ)| * (n : ℝ) / (q_den : ℝ) := div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r0 (by positivity)) (by norm_num)
+                          calc (n : ℝ) / (q_den : ℝ) = 1 * (n : ℝ) / (q_den : ℝ) := by ring
+                            _ ≤ |(h r₀ : ℝ)| * (n : ℝ) / (q_den : ℝ) := div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r0 (by positivity)) (by positivity)
                     _ = _ := by rw [zpow_neg, zpow_natCast]; ring
       · have hh_r0_le : |(h r₀ : ℝ)| ≤ 2 * (Real.log n) ^ (R + 2) + 1 := by
           have h1 := hh_bd r₀ hr₀_mem
@@ -2216,12 +2223,12 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
             = |(h r₀ : ℝ)| * (n : ℝ) / (q_den : ℝ) * |(y₁ : ℝ) ^ (-(r₀ : ℤ)) - (y₂ : ℝ) ^ (-(r₀ : ℤ))| *
                 (r₀ : ℝ) * (X₁ : ℝ) ^ (-(r₀ : ℤ)) := by
                 rw [abs_mul, abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
-                  abs_of_pos (a := (2 : ℝ)) (by norm_num)]
+                  abs_of_pos (a := (q_den : ℝ)) (by positivity)]
           _ ≤ (2 * (Real.log n) ^ (R + 2) + 1) * (n : ℝ) / (q_den : ℝ) *
                 ((r₀ : ℝ) * (2 * (Y₁ : ℝ)) * (2 : ℝ) ^ (r₀ - 1) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ))) *
                 (r₀ : ℝ) * (X₁ : ℝ) ^ (-(r₀ : ℤ)) := by
                 refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-                  (mul_le_mul (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r0_le (by positivity)) (by norm_num))
+                  (mul_le_mul (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hh_r0_le (by positivity)) (by positivity))
                     (le_trans hdiff0_hi (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
                       (mul_le_mul_of_nonneg_left hy_diff (by positivity)) (by positivity)) (by positivity)))
                     (by positivity) (by positivity)) (by positivity)) (by positivity)
@@ -2232,11 +2239,15 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
                 field_simp [hY₁_pos.ne']
                 ring
           _ ≤ (2 * (Real.log n) ^ (R + 2) + 1) * (R : ℝ) ^ 2 * (n : ℝ) * (q_den : ℝ) * (2 : ℝ) ^ R * 1 := by
-                have hstep := mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-                  (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hr0_R 2) (by positivity))
-                  (by positivity)) (by positivity)) (le_trans hXY_pow h4P_le) (by positivity) (by positivity)
-                refine le_trans hstep (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
-                  (pow_le_pow_right₀ (by norm_num) (by omega)) (by positivity)) (by norm_num))
+                have h2q : (2 : ℝ) ^ r₀ ≤ (q_den : ℝ) * (2 : ℝ) ^ R := by
+                  have hq1 : (1 : ℝ) ≤ q_den := by exact_mod_cast hq_den
+                  have h2p : (2 : ℝ) ^ r₀ ≤ (2 : ℝ) ^ R := pow_le_pow_right₀ (by norm_num) hr₀_R
+                  nlinarith [pow_pos (by norm_num : (0 : ℝ) < 2) r₀]
+                calc (2 * (Real.log n) ^ (R + 2) + 1) * (r₀ : ℝ) ^ 2 * (n : ℝ) * (2 : ℝ) ^ (r₀ : ℕ) *
+                      ((X₁ : ℝ) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ : ℤ)))
+                    ≤ (2 * (Real.log n) ^ (R + 2) + 1) * (R : ℝ) ^ 2 * (n : ℝ) * ((q_den : ℝ) * (2 : ℝ) ^ R) * 1 :=
+                      mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hr0_R 2) (by positivity)) (by positivity)) h2q (by positivity) (by positivity)) (le_trans hXY_pow h4P_le) (by positivity) (by positivity)
+                  _ = (2 * (Real.log n) ^ (R + 2) + 1) * (R : ℝ) ^ 2 * (n : ℝ) * (q_den : ℝ) * (2 : ℝ) ^ R * 1 := by ring
           _ ≤ ((n : ℝ) ^ (δ / 3) / 8) ^ (K_max - 1) := by linarith [hT_n]
           _ ≤ (X₁ : ℝ) ^ (K_max - 1) := hpow_le
     -- Step 6: Bound Type II sum (`S3`)
