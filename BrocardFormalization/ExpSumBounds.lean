@@ -168,6 +168,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
   refine ⟨η'_δ, C_δ, hη'_pos, by positivity, N₀, (hN₀ N₀ le_rfl).1, ?_⟩
   intro n P a b A h w W₀ hnN₀ hP_lo hP_hi hPa hab hb2P hA_sub hA_ne hnonzero hh_bd hW₀ hw_bd hw_diff hw_tv r₀ T₀ hT₀_ge1
   obtain ⟨hn16, hP_M0, hdom_n, hT_n⟩ := hN₀ n hnN₀
+  have hn_pos : (0 : ℝ) < n := by exact_mod_cast (by omega : 0 < n)
   have hP_ge_cube : (max (8 * M₀ + 8) (Real.exp 2)) ^ 3 ≤ P := le_trans hP_M0 hP_lo
   have hP_ge_e6 : Real.exp 6 ≤ P := by
     have h1 : Real.exp 2 ≤ max (8 * M₀ + 8) (Real.exp 2) := le_max_right _ _
@@ -227,7 +228,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       have hg_bd : ∀ m, ‖g_ind m‖ ≤ W₀ := by
         intro m; dsimp only [g_ind]; split_ifs with hm
         · rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
-            show ‖ePhase (F m)‖ = 1 by simp [ePhase, Complex.norm_exp_ofReal_mul_I], mul_one]
+            norm_ePhase (F m), mul_one]
           exact hw_bd m ⟨le_trans hPa (le_trans (Nat.le_ceil a) (by exact_mod_cast hm.1)),
             le_trans (by exact_mod_cast hm.2) hB₀_le_2P⟩
         · simp [hW₀]
@@ -367,10 +368,9 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           have hdesc_le : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact * (Nat.descFactorial (r₀ + k - 1) k : ℝ) := by
             have hk_le : k ≤ K_max := (Finset.mem_Icc.mp hk).2
             have h1 : Nat.descFactorial (r + k - 1) k ≤ (R + K_max).factorial := by
-              rw [Nat.descFactorial_eq_factorial_div_factorial (r + k - 1) k]
-              exact le_trans (Nat.div_le_self _ _) (Nat.factorial_le (by omega))
+              exact le_trans (descFactorial_le_factorial (r + k - 1) k) (Nat.factorial_le (by omega))
             have h2 : 1 ≤ Nat.descFactorial (r₀ + k - 1) k := Nat.descFactorial_pos.mpr (by omega : k ≤ r₀ + k - 1)
-            have h1R : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact := by exact_mod_cast h1
+            have h1R : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact := by dsimp only [K_fact]; exact_mod_cast h1
             have h2R : (1 : ℝ) ≤ (Nat.descFactorial (r₀ + k - 1) k : ℝ) := by exact_mod_cast h2
             nlinarith
           have h_cancel_lhs : |(h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)| * (P / d) ^ (-(r : ℤ)) =
@@ -476,28 +476,24 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           _ ≤ ((n : ℝ) ^ (δ / 3) / 8) ^ (K_max - 1) := hT_n
           _ ≤ (P / d) ^ (K_max - 1) := hpow_le
     -- Step 4: Bound Type I sums (`S2a` and `S2b`)
+    have h_harm_eq : ∀ M : ℕ, ∑ d ∈ Finset.Icc 1 M, (1 : ℝ) / d = (harmonic M : ℝ) := by
+      intro M
+      induction M with
+      | zero => simp
+      | succ k ih => rw [Finset.sum_Icc_succ_top (by omega), ih, harmonic_succ]; push_cast; ring
     have h_sum_inv_U : ∑ d ∈ Finset.Icc 1 U, (1 : ℝ) / d ≤ 2 * Real.log P := by
-      have heq : ∑ d ∈ Finset.Icc 1 U, (1 : ℝ) / d = (harmonic U : ℝ) := by
-        clear hdom_I h_diff_vm hvaugh hS1_zero
-        induction U with
-        | zero => simp
-        | succ k ih => rw [Finset.sum_Icc_succ_top (by omega), ih, harmonic_succ]; push_cast; ring
-      rw [heq]
+      rw [h_harm_eq U]
       have h1 := harmonic_le_one_add_log U
       have h2 : Real.log U ≤ Real.log P := Real.log_le_log (by exact_mod_cast hU_pos)
         (le_trans hU_le_P13 (Real.rpow_le_rpow_of_exponent_le hP_ge1 (by norm_num)))
       linarith
     have h_sum_inv_UU : ∑ d ∈ Finset.Icc 1 (U * U), (1 : ℝ) / d ≤ 2 * Real.log P := by
-      have heq : ∑ d ∈ Finset.Icc 1 (U * U), (1 : ℝ) / d = (harmonic (U * U) : ℝ) := by
-        clear hdom_I h_diff_vm hvaugh hS1_zero h_sum_inv_U
-        induction (U * U) with
-        | zero => simp
-        | succ k ih => rw [Finset.sum_Icc_succ_top (by omega), ih, harmonic_succ]; push_cast; ring
-      rw [heq]
+      rw [h_harm_eq (U * U)]
       have h1 := harmonic_le_one_add_log (U * U)
       have h2 : Real.log ((U * U : ℕ) : ℝ) ≤ Real.log P := Real.log_le_log (by exact_mod_cast (by nlinarith [hU_pos]))
         (by push_cast; simpa [sq] using hU_sq_lt_P.le)
       linarith
+    -- Now bound `S2a` using `type_I_single_d_bound` and `S2b` using `type_I_no_log_single_d_bound`!
     have h_err_sum : ∀ d : ℕ, 1 ≤ d → d ≤ U * U →
         (2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp) ≤
           2 * (2 : ℝ) ^ (R + 1) * (P / d) * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) := by
@@ -797,10 +793,9 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           have hdesc_le : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact * (Nat.descFactorial (r₀ + k - 1) k : ℝ) := by
             have hk_le : k ≤ K_max := (Finset.mem_Icc.mp hk).2
             have h1 : Nat.descFactorial (r + k - 1) k ≤ (R + K_max).factorial := by
-              rw [Nat.descFactorial_eq_factorial_div_factorial (r + k - 1) k]
-              exact le_trans (Nat.div_le_self _ _) (Nat.factorial_le (by omega))
+              exact le_trans (descFactorial_le_factorial (r + k - 1) k) (Nat.factorial_le (by omega))
             have h2 : 1 ≤ Nat.descFactorial (r₀ + k - 1) k := Nat.descFactorial_pos.mpr (by omega : k ≤ r₀ + k - 1)
-            have h1R : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact := by exact_mod_cast h1
+            have h1R : (Nat.descFactorial (r + k - 1) k : ℝ) ≤ K_fact := by dsimp only [K_fact]; exact_mod_cast h1
             have h2R : (1 : ℝ) ≤ (Nat.descFactorial (r₀ + k - 1) k : ℝ) := by exact_mod_cast h2
             nlinarith
           have hA_le_R : max (A.card : ℝ) 1 ≤ (R : ℝ) := by
@@ -1071,7 +1066,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               have hsum_le : ∑ x ∈ Finset.Icc X₁ X₂, (ArithmeticFunction.vonMangoldt x : ℝ) ≤
                   (Real.log 4 + 4) * (2 * X₁ : ℝ) := by
                 by_cases hX₂0 : X₂ = 0
-                · subst hX₂0; simp [Finset.Icc_eq_empty (by omega : ¬ X₁ ≤ 0)]; positivity
+                · rw [hX₂0]; simp [Finset.Icc_eq_empty (by omega : ¬ X₁ ≤ 0)]; positivity
                 · refine le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => ArithmeticFunction.vonMangoldt_nonneg)) ?_
                   refine le_trans (sum_vonMangoldt_le X₂ (by omega)) ?_
                   exact mul_le_mul_of_nonneg_left (by exact_mod_cast hX₂) (by positivity)
@@ -1110,6 +1105,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                         linarith [Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Y₂) : (1 : ℝ) ≤ Y₂)]) hlog_bd 3)
                         (by positivity) (by positivity)
                   _ = 16 * (Y₁ : ℝ) * (Real.log P) ^ 3 := by ring
+            -- Helper for a single `(X₁, X_top, Y₁, Y₂)` sub-block
             have hsub_block : ∀ (X₁ X_top Y₁ Y₂ : ℕ) (a_c b_c : ℕ → ℂ) (A_n B_n : ℝ),
                 1 ≤ X₁ → M₀ ≤ (X₁ : ℝ) → P ^ (1 / 3 : ℝ) / 8 ≤ (X₁ : ℝ) → X_top ≤ 2 * X₁ →
                 (X₁ : ℝ) ≤ 2 * Real.sqrt P →
@@ -1204,6 +1200,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                   _ = (Real.sqrt C_II_sq * W₀ * P * (Real.log P) ^ 2 * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ))) ^ 2 := by
                       rw [mul_pow, mul_pow, mul_pow, mul_pow, Real.sq_sqrt (by positivity)]; ring
               exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq_le
+            -- Now apply `hsub_block` by splitting `[Y_lo, Y_hi]` into at most 3 dyadic pieces!
             set Y_lo := max (U + 1) (A₀ / (2 * K₁))
             set Y_hi := B₀ / K₁
             have hY_lo_hi : ∀ k ∈ Finset.Icc K₁ K₂,
@@ -1232,6 +1229,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 have hr_A : (A₀ - 1) / k + 1 ≤ r :=
                   Nat.succ_le_of_lt (Nat.div_lt_of_lt_mul (by rw [mul_comm]; omega))
                 exact ⟨max_le hr_A hr_U, (Nat.le_div_iff_mul_le (by omega)).mpr (by linarith)⟩
+            -- Split `[Y_lo, Y_hi]` into at most 3 dyadic intervals `[Y_lo, 2*Y_lo]`, `[2*Y_lo+1, 4*Y_lo]`, `[4*Y_lo+1, Y_hi]`
+            -- First check `Y_hi ≤ 8 * Y_lo` (when `Y_lo ≤ Y_hi`):
             by_cases hY_empty : Y_hi < Y_lo
             · have h0 : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                   ∑ r ∈ Finset.Icc (max ((A₀ - 1) / k + 1) (U + 1)) (B₀ / k), c_r r * g (k * r) = 0 := by
@@ -1241,6 +1240,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             · push_neg at hY_empty
               have hY_lo_pos : 1 ≤ Y_lo := le_trans (by omega : 1 ≤ U + 1) (le_max_left _ _)
               have hY_hi_8 : Y_hi ≤ 8 * Y_lo := by
+                -- `Y_hi = B₀ / K₁ ≤ 2 * P / K₁`, and `Y_lo ≥ A₀ / (2 * K₁) ≥ (P - 2 K₁) / (2 K₁)`
                 have h1 : (Y_hi : ℝ) ≤ 2 * P / K₁ := by
                   rw [le_div_iff₀ (by exact_mod_cast hK₁_pos)]
                   exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
@@ -1311,6 +1311,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
               have hY_hi_B0 : Y_hi ≤ B₀ := Nat.div_le_self B₀ K₁
               have hK₂_B0 : K₂ ≤ B₀ := le_trans (min_le_right _ _) (Nat.div_le_self B₀ U)
+              -- Split `Finset.Icc Y_lo Y_hi` into `[Y_lo, min Y_hi (2 * Y_lo)]`, `[2 * Y_lo + 1, min Y_hi (4 * Y_lo)]`, `[4 * Y_lo + 1, Y_hi]`
               have hpart_Y : Finset.Icc Y_lo Y_hi =
                   Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo)) ∪
@@ -1322,6 +1323,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               have hd123 : Disjoint (Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo))) (Finset.Icc (4 * Y_lo + 1) Y_hi) := by
                 rw [Finset.disjoint_left]; intro r h1 h2; simp only [Finset.mem_union, Finset.mem_Icc] at h1 h2; omega
+              -- Helper for one `(Y_a, Y_b)` piece
               have hpiece : ∀ (Y_a Y_b : ℕ), Y_lo ≤ Y_a → Y_b ≤ Y_hi → Y_b ≤ 2 * Y_a →
                   ‖∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                       ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
@@ -1357,6 +1359,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                       hK₁_pos hK₁_M0 (by linarith) hK₂_2K₁ hK_sq hYa_pos hYab hYb2 hKY_lo hKY_hi
                       hAn hBn (by positivity) (by positivity) hAB
                   · push_neg at hK_sq
+                    -- Swap `k` and `r`!
                     have hswap : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                           ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
                             c_r r * g (k * r) =

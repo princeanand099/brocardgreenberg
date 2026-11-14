@@ -136,7 +136,7 @@ lemma sum_divisors_card_sq_le (X : ℕ) (hX : 1 ≤ X) :
     have hprod_eq : ∑ q ∈ Finset.Icc 1 X ×ˢ Finset.Icc 1 X ×ˢ Finset.Icc 1 X, g_fn q =
         (X : ℝ) * (∑ g ∈ Finset.Icc 1 X, (1 : ℝ) / g) ^ 3 := by
       dsimp only [g_fn]
-      rw [Finset.sum_product, Finset.sum_product]
+      simp_rw [Finset.sum_product]
       have h_inner : ∀ a b : ℕ, ∑ c ∈ Finset.Icc 1 X, (X : ℝ) / ((a : ℝ) * (b : ℝ) * (c : ℝ)) =
           ((X : ℝ) * ((1 : ℝ) / a) * ((1 : ℝ) / b)) * ∑ c ∈ Finset.Icc 1 X, (1 : ℝ) / c := by
         intro a b
@@ -449,7 +449,7 @@ lemma type_I_single_d_bound
         have hk_ge1 : (1 : ℝ) ≤ k := le_trans hPd_ge1 (le_trans hPa' (le_trans (Nat.le_ceil a') (by exact_mod_cast hk.1)))
         have hk_le : (k : ℝ) ≤ 2 * P := le_trans (by exact_mod_cast hk.2.le) (le_trans (Nat.floor_le (by linarith))
           (le_trans hb'2P (by rw [show 2 * (P / d) = (2 * P) / d by ring]; exact div_le_self (by linarith) hd_ge1)))
-        have hdk1_mem : (d : ℝ) * (k + 1 : ℕ) ∈ Set.Icc P (2 * P) := ⟨by
+        have hdk1_mem : ((d * (k + 1) : ℕ) : ℝ) ∈ Set.Icc P (2 * P) := ⟨by
           exact le_trans hA'_ge (by push_cast; exact mul_le_mul_of_nonneg_left (by exact_mod_cast (by omega : ⌈a'⌉₊ ≤ k + 1)) hd_pos.le),
           by exact le_trans (by push_cast; exact mul_le_mul_of_nonneg_left (by exact_mod_cast hk.2) hd_pos.le) hB'_le⟩
         have hlog_mono : Real.log (k : ℝ) ≤ Real.log (k + 1 : ℕ) :=

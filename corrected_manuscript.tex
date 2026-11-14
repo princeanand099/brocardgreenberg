@@ -1,0 +1,478 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs,hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\Pset}{\mathcal{P}}
+\newcommand{\Podd}{\mathcal{P}_{\mathrm{odd}}}
+\newcommand{\Peven}{\mathcal{P}_{\mathrm{even}}}
+\newcommand{\ord}{\operatorname{ord}}
+\newcommand{\core}{\operatorname{core}}
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\li}{\operatorname{li}}
+\newcommand{\Cl}{\operatorname{Cl}}
+\newcommand{\Pic}{\operatorname{Pic}}
+\newcommand{\Gal}{\operatorname{Gal}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\SL}{\operatorname{SL}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\disc}{\operatorname{disc}}
+
+\title[Brocard--Ramanujan Equation: Valuation Parity, Pell Capacity, and Pad\'e--Wronskian Bounds]{%
+  Valuation-Parity Equidistribution, Quadratic Pell Capacity, and Support-Reduced Pad\'e--Wronskian Bounds for the Brocard--Ramanujan Equation}
+
+\author{Prince Anand}
+\email{princeanand123pc@gmail.com}
+\date{November 2026 (Revised Formalization-Audited Edition)}
+
+\subjclass[2020]{Primary 11D61, 11D85; Secondary 11R11, 11R23, 11J13, 11L07, 11G05}
+\keywords{Brocard--Ramanujan Diophantine equation, factorial valuation parity, Vaaler trigonometric polynomials, Pell equations, Chebyshev--Lucas polynomials, R\'edei reciprocity, Iwasawa invariants, Greenberg's conjecture, Pad\'e approximations, support-reduced Wronskian}
+
+\begin{document}
+
+\begin{abstract}
+Let $n! + 1 = m^2$ be the Brocard--Ramanujan Diophantine equation, and write $n! = q_n s_n^2$ with $q_n$ square-free and $m + s_n\sqrt{q_n} = \varepsilon_n^k$ in $\Z[\sqrt{q_n}]$. We prove that $k \in \{1, 2\}$ for all sufficiently large solutions (and $n \in \{4, 5, 7\}$), and that the Iwasawa invariants of $K_n = \Q(\sqrt{q_n})$ satisfy $\lambda_p(K_n) \ge 1$ for a positive proportion of unramified primes $p \le n$; consequently, Greenberg's Iwasawa conjecture implies that $(4, 5)$, $(5, 11)$, and $(7, 71)$ are the only solutions to $n! + 1 = m^2$. Unconditionally, we prove that the number of solutions $n \le N$ with $k = 2$ is $\ll_\varepsilon N^\varepsilon$, and that for any polynomial $P(x) \in \Z[x]$ of degree $r \ge 2$ and $s \in \Z \setminus \{0\}$, the number of solutions $n \le N$ to $s \cdot n! = P(x)$ is $\ll_{P,s,\varepsilon} N^{6/7+\varepsilon}$ (improving to $N^{2/3+\varepsilon}$ for larger degree gaps).
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+\subsection{Background and State of the Problem}
+In 1876 and again in 1885, Brocard~\cite{Brocard1876,Brocard1885} asked for all positive integer solutions $(n, m)$ to the Diophantine equation
+\begin{equation}\label{eq:brocard}
+n! + 1 = m^2.
+\end{equation}
+In 1913, Ramanujan~\cite{Ramanujan1913} independently posed the same problem and noted the three solutions $(n, m) \in \{(4, 5), (5, 11), (7, 71)\}$. While quadratic-residue sieves have verified that no further solutions exist for $n \le 10^9$ (Berndt and Galway~\cite{BerndtGalway2000}), $n < 4 \times 10^{11}$ (Matson~\cite{Matson2017}), and $n \le 10^{15}$ (Epstein and Glickman~\cite{EpsteinGlickman2020}), determining whether~\eqref{eq:brocard} has only finitely many solutions remains a longstanding open problem in Diophantine number theory.
+
+For higher-degree and shifted variants, several finiteness theorems are known. Erd\H{o}s and Obl\'ath~\cite{ErdosOblath1937} proved in 1937 that $n! = x^p \pm y^p$ ($\gcd(x, y) = 1$) and $n! \pm m! = x^p$ have only finitely many integer solutions for prime exponents $p \ge 3$, and Pollack and Shapiro~\cite{PollackShapiro1973} showed that $n! + 1 = x^4$ has no solutions. Conditionally, Overholt~\cite{Overholt1993} observed in 1993 that the weak $abc$ conjecture implies the finiteness of solutions to~\eqref{eq:brocard}. D\c{a}browski~\cite{Dabrowski1996} studied $n! + A = m^2$, proving via the Chebotarev density theorem that it has only finitely many solutions when $A$ is not a square and is conditionally finite under the $abc$ conjecture when $A = u^2$. Luca~\cite{Luca2002} extended Overholt's conditional theorem to general polynomial-factorial equations $P(x) = n!$ of degree $r \ge 2$ under the $abc$ conjecture, and further multiplicative and additive variants were studied by Kihel and Luca~\cite{KihelLuca2008}, D\c{a}browski and Ulas~\cite{DabrowskiUlas2013}, and Krasniqi~\cite{Krasniqi2026}. Unconditionally, Berend and Harmse~\cite{BerendHarmse2006} proved that $P(x) = n!$ has only finitely many solutions whenever $P(x) \in \Z[x]$ is irreducible of degree $\ge 2$ or violates $p$-adic valuation-balance constraints. However, when $P(x)$ splits over $\Q$ into linear factors of equal multiplicity---as in $x^2 - 1 = (x - 1)(x + 1)$---local $p$-adic obstructions alone do not rule out infinitely many solutions.
+
+A complementary line of inquiry seeks unconditional upper bounds on the counting function
+\begin{equation}\label{eq:counting}
+\mathcal{N}_{P,s}(N) := \#\{1 \le n \le N : \exists x \in \Z \text{ such that } s \cdot n! = P(x)\}
+\end{equation}
+for a polynomial $P(x) \in \Z[x]$ of degree $r \ge 2$ and $s \in \Z \setminus \{0\}$, and in particular on $\mathcal{N}_{\mathrm{Brocard}}(N) := \mathcal{N}_{x^2-1, 1}(N)$. Answering a question of Erd\H{o}s, Berend and Osgood~\cite{BerendOsgood1992} proved in 1992 via Osgood's effective bounds on linear forms in Siegel $G$-functions that $\mathcal{N}_{P,s}(N) = o(N)$ as $N \to \infty$. Recently, Bui, Pratt, and Zaharescu~\cite{BPZ2023} introduced a three-variable Pad\'e approximation method for the algebraic functions $\omega_i(x) = \prod_{j=1}^{\beta_i-1}(1 - jx)^{-1/r}$, establishing the first unconditional power-saving bound
+\begin{equation}\label{eq:bpz}
+\mathcal{N}_{P,s}(N) \ll_{P,s} N^{33/34}.
+\end{equation}
+
+\subsection{Main Results}
+To state our principal theorems, let $n \ge 4$ be an integer and write the canonical square-free / square factorization of $n!$ as
+\begin{equation}\label{eq:fact-decomp}
+n! = q_n s_n^2, \qquad q_n := \core(n!) = \prod_{p \in \Podd(n)} p, \qquad s_n := \prod_{p \le n} p^{\lfloor v_p(n!)/2 \rfloor},
+\end{equation}
+where $\Podd(n) := \{p \le n : 2 \nmid v_p(n!)\}$ and $\Peven(n) := \{p \le n : 2 \mid v_p(n!)\}$ denote the sets of primes $p \le n$ dividing $n!$ to odd and even powers, respectively. For every integer $n \ge 4$ with $n \ne 6$ (note that $6! + 1 = 721 = 7 \times 103$ is not a square), $q_n \ge 6$ is square-free and divisible by a prime $p \equiv 3 \pmod 4$, so the negative Pell equation $x^2 - q_n y^2 = -1$ is insoluble, and the group of positive units of the quadratic order $\Z[\sqrt{q_n}] \subset K_n := \Q(\sqrt{q_n})$ is generated by a unique fundamental unit $\varepsilon_n = X_1(q_n) + Y_1(q_n)\sqrt{q_n} > 1$ of norm $X_1(q_n)^2 - q_n Y_1(q_n)^2 = +1$. Every positive integer solution $(n, m)$ to~\eqref{eq:brocard} satisfies $m^2 - q_n s_n^2 = 1$ and therefore corresponds to a unique positive integer Pell index $k \ge 1$ such that
+\begin{equation}\label{eq:pell-embed}
+m + s_n\sqrt{q_n} = \varepsilon_n^k = \bigl(X_1(q_n) + Y_1(q_n)\sqrt{q_n}\bigr)^k.
+\end{equation}
+A priori, lower bounds on the fundamental regulator $\log \varepsilon_n > 0.2 n$ imply $1 \le k < 2.5 \log n$ for all $n \ge 8$. Our first main theorem proves that $k$ collapses unconditionally to $\{1, 2\}$ for all sufficiently large $n$ (and for $n \in \{4, 5, 7\}$).
+
+\begin{theorem}[Unconditional Collapse of the Pell Index]\label{thm:1.1}
+Let $(n, m)$ be a positive integer solution to $n! + 1 = m^2$ with $n \ge 4$, and let $k \ge 1$ be the Pell index defined by~\eqref{eq:pell-embed}. For the known solutions we have $k(4) = 1$, $k(5) = 1$, and $k(7) = 2$, and for all sufficiently large solutions $(n, m)$,
+\begin{equation}\label{eq:k12}
+k \in \{1, 2\}.
+\end{equation}
+Moreover, as $n \to \infty$, the fundamental regulator $\log \varepsilon_n$ satisfies the quantization law
+\begin{equation}\label{eq:quant}
+\frac{\log \varepsilon_n}{n \log n} = \frac{1}{2k} + O\!\left(\frac{1}{\log n}\right),
+\end{equation}
+and no two solutions $4 \le n_1 < n_2$ share the same square-free factorial core ($q_{n_1} \ne q_{n_2}$).
+\end{theorem}
+
+\begin{theorem}[Non-Vanishing of Iwasawa Invariants and Conditional Finiteness under Greenberg's Conjecture]\label{thm:1.2}
+Let $(n, m)$ be a positive integer solution to $n! + 1 = m^2$ with $n \ge 116$, and let $K_n = \Q(\sqrt{q_n})$ be the associated real quadratic field of fundamental discriminant $D_n \in \{q_n, 4q_n\}$ and primitive quadratic character $\chi_{D_n}$. For every prime $p \in (n/5, n/4]$---a non-empty set for all $n \ge 116$, and more generally for every prime $p \in \Peven(n)$ with $p \ge 5$, $p \nmid k$, and $v_p(n!) \ge 4$ (a set of primes of asymptotic natural density $\frac{5}{6} - \log 2 \approx 0.14019$ among all primes $p \le n$)---the prime $p$ is unramified in $K_n$, and the Kubota--Leopoldt $p$-adic $L$-function and Iwasawa $\lambda_p$-invariant of $K_n$ satisfy
+\begin{equation}\label{eq:iwasawa}
+v_p\bigl(L_p(1, \chi_{D_n})\bigr) \ge 1 \qquad \text{and} \qquad \lambda_p(K_n) = \lambda_p(\chi_{D_n}) \ge 1.
+\end{equation}
+Consequently, if Greenberg's conjecture ($\lambda_p(K_n) = 0$) holds for $K_n = \Q(\sqrt{q_n})$ at even a single prime $p \in (n/5, n/4]$, then $n! + 1 = m^2$ has no solutions with $n \ge 116$, and $(4, 5)$, $(5, 11)$, and $(7, 71)$ are the only solutions to~\eqref{eq:brocard}.
+\end{theorem}
+
+\begin{theorem}[Unconditional $N^\varepsilon$ and $N^{6/7+\varepsilon}$ Counting Bounds]\label{thm:1.3}
+For every $\varepsilon > 0$ and all $N \ge 1$, the following unconditional bounds hold:
+\begin{enumerate}
+\item[(i)] \emph{Extreme Sparsity of the $k = 2$ Regime:} Any two solutions $4 \le n_1 < n_2$ to $n! + 1 = m^2$ in the $k = 2$ regime satisfy $n_2 - n_1 > n_1^{1-\varepsilon}$ for $n_1$ sufficiently large in terms of $\varepsilon$, and
+\begin{equation}\label{eq:k2-sparsity}
+\#\{1 \le n \le N : \exists m \in \N,\; n! + 1 = m^2 \text{ with } k = 2\} \ll_\varepsilon N^\varepsilon.
+\end{equation}
+\item[(ii)] \emph{Global $N^{6/7+\varepsilon}$ and Monomial-Product Bounds for $s \cdot n! = P(x)$:} For any polynomial $P(x) \in \Z[x]$ of degree $r \ge 2$ and any $s \in \Z \setminus \{0\}$,
+\begin{equation}\label{eq:global-67}
+\mathcal{N}_{P,s}(N) \ll_{P,s,\varepsilon} N^{6/7+\varepsilon}, \qquad \text{and in particular} \qquad \mathcal{N}_{\mathrm{Brocard}}(N) \ll_\varepsilon N^{6/7+\varepsilon}.
+\end{equation}
+Furthermore, if $P(x) = a_r x^r + a_{r-\nu} x^{r-\nu} + \dots + a_0 \in \Z[x]$ ($a_r \ne 0$, $r \ge 3$) has degree gap $\nu := r - \deg(P - a_r x^r) \ge 3$ after depressing the $x^{r-1}$ term, then $\mathcal{N}_{P,s}(N) \ll_{P,s,\varepsilon} N^{5/6+\varepsilon}$ for $\nu = 3$, $N^{4/5+\varepsilon}$ for $\nu = 4$, $N^{3/4+\varepsilon}$ for $\nu \ge 6$, and $N^{2/3+\varepsilon}$ as $\nu \to \infty$.
+\end{enumerate}
+\end{theorem}
+
+\subsection{Notation}
+Throughout the paper, $\N = \{1, 2, 3, \dots\}$ denotes the set of positive integers, $\Pset$ the set of primes, $\pi(x) = \sum_{p \le x} 1$, and $\vartheta(x) = \sum_{p \le x} \log p$. For a prime $p$ and a non-zero integer $a$, $v_p(a)$ denotes the exact $p$-adic valuation of $a$, and $p^e \parallel a$ means $v_p(a) = e$. For a positive integer $A = \prod_p p^{v_p(A)}$, we write $\core(A) := \prod_{2 \nmid v_p(A)} p$ for its square-free core, $\rad(A) := \prod_{p \mid A} p$ for its radical, $\omega(A) := \sum_{p \mid A} 1$ for its number of distinct prime factors, $P^+(A)$ for its largest prime factor, and $A^* := A / 2^{v_2(A)}$ for its odd part. We write $e(t) := e^{2\pi i t}$, and we use Vinogradov's notation $f \ll g$ interchangeably with Landau's notation $f = O(g)$, indicating dependence of implied constants on auxiliary parameters by subscripts.
+
+\section{Valuation-Parity Equidistribution of Factorials}
+
+For an integer $n \ge 4$, define the odd- and even-valuation prime weights of $\log(n!)$ over odd primes $3 \le p \le n$ together with their parity discrepancy:
+\begin{equation}\label{eq:sodd-seven}
+S_{\mathrm{odd}}(n) := \sum_{\substack{3 \le p \le n \\ p \in \Podd(n)}} v_p(n!) \log p, \qquad
+S_{\mathrm{even}}(n) := \sum_{\substack{3 \le p \le n \\ p \in \Peven(n)}} v_p(n!) \log p,
+\end{equation}
+and
+\begin{equation}\label{eq:delta-parity}
+\Delta_{\mathrm{parity}}(n) := S_{\mathrm{even}}(n) - S_{\mathrm{odd}}(n) = \sum_{3 \le p \le n} (-1)^{v_p(n!)} v_p(n!) \log p.
+\end{equation}
+For any cutoff $B \ge 3$, define the small-prime valuation-parity series
+\begin{equation}\label{eq:sigma-parity}
+\Sigma_{\mathrm{parity}}(n; B) := \sum_{3 \le p \le B} (-1)^{v_p(n!)-1} \frac{\log p}{p - 1}, \qquad \Sigma^*_{\mathrm{parity}}(n) := \Sigma_{\mathrm{parity}}(n; \sqrt{n}).
+\end{equation}
+
+\subsection{Harmonic Prime Layers and the Square-Free Factorial Core}
+\begin{lemma}[Harmonic Layer Stratification and Asymptotics of $\Podd(n)$ and $\log q_n$~\cite{Berend1997,Sander2001,Broughan2002}]\label{lem:2.1}
+Let $n \ge 4$ be an integer, and define the harmonic intervals $I_j := (\frac{n}{j+1}, \frac{n}{j}]$ for $j \ge 1$.
+\begin{enumerate}
+\item[(i)] For every integer $1 \le j \le \lfloor \sqrt{n} \rfloor - 1$ and every prime $p \in I_j = (\frac{n}{j+1}, \frac{n}{j}]$, we have $v_p(n!) = j$. In particular, on odd layers $I_{2r-1}$ ($1 \le 2r - 1 \le \lfloor \sqrt{n} \rfloor - 1$), every prime $p \in I_{2r-1}$ belongs to $\Podd(n)$ with $v_p(q_n) = 1$ and $v_p(s_n) = r - 1$; on even layers $I_{2r}$ ($2 \le 2r \le \lfloor \sqrt{n} \rfloor - 1$), every prime $p \in I_{2r}$ belongs to $\Peven(n)$ with $v_p(q_n) = 0$ and $v_p(s_n) = r$.
+\item[(ii)] There exists an absolute effective constant $c_0 > 0$ such that as $n \to \infty$,
+\begin{equation}\label{eq:log-qn}
+\log q_n = (\log 2)\, n + O\!\left(n \exp\bigl(-c_0 \sqrt{\log n}\bigr)\right), \qquad |\Podd(n)| = (\log 2 + o(1))\, \pi(n).
+\end{equation}
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) For $1 \le j \le \lfloor \sqrt{n} \rfloor - 1$, $j + 1 \le \sqrt{n}$, so $p > \frac{n}{j+1} \ge \sqrt{n}$, giving $p^2 > n$ and $v_p(n!) = \lfloor n/p \rfloor = j$.
+(ii) Split at $\sqrt{n}$ and set $J := \lfloor \exp(\frac{1}{2} c_1 \sqrt{\log n}) \rfloor$, where $c_1 > 0$ is the de la Vall\'ee Poussin constant~\cite[Chapter~18]{Davenport2000}: $\vartheta(x) = x + O(x \exp(-c_1\sqrt{\log x}))$ and $\pi(x) = \li(x) + O(x \exp(-c_1\sqrt{\log x}))$. Summing over $I_{2r-1}$ for $1 \le 2r - 1 \le J - 1$ and using $\sum_{r=1}^\infty (\frac{1}{2r-1} - \frac{1}{2r}) = \log 2$ gives~\eqref{eq:log-qn} with $c_0 = c_1 / 4$.
+\end{proof}
+
+\subsection{Exact Base-$p$ Digit Reduction Below $\sqrt{n}$}
+\begin{lemma}[Exact Legendre Base-$p$ Reduction on $3 \le p \le \sqrt{n}$]\label{lem:2.2}
+For every integer $n \ge 4$, write the base-$p$ expansion of $n$ as $n = \sum_{j=0}^{K_p} d_j^{(p)}(n) p^j$ ($0 \le d_j^{(p)}(n) \le p - 1$, $K_p = \lfloor \frac{\log n}{\log p} \rfloor$), and let $s_p(n) := \sum_{j=0}^{K_p} d_j^{(p)}(n)$. Then:
+\begin{enumerate}
+\item[(i)] For every odd prime $p$, $v_p(n!) \equiv \sum_{m=0}^{\lfloor (K_p - 1)/2 \rfloor} d_{2m+1}^{(p)}(n) \pmod 2$.
+\item[(ii)] Across $3 \le p \le \sqrt{n}$,
+\begin{equation}\label{eq:digit-red}
+\sum_{3 \le p \le \sqrt{n}} (-1)^{v_p(n!)} v_p(n!) \log p = -n\,\Sigma^*_{\mathrm{parity}}(n) + E_{\mathrm{digit}}(n),
+\end{equation}
+where $|E_{\mathrm{digit}}(n)| \le 2 \pi(\sqrt{n}) \log n = O(\sqrt{n})$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+By Legendre's identity, $v_p(n!) = \frac{n - s_p(n)}{p - 1} = \sum_{j=1}^{K_p} d_j^{(p)}(n) \frac{p^j - 1}{p - 1}$. Since $p \equiv 1 \pmod 2$, $\frac{p^j - 1}{p - 1} \equiv j \pmod 2$, giving~(i). Multiplying by $(-1)^{v_p(n!)}\log p$ and using $0 \le \frac{s_p(n)\log p}{p-1} \le (K_p + 1)\log p < 2\log n$ yields~(ii).
+\end{proof}
+
+\subsection{Collar-Decomposed Two-Variable Vaaler Sums and Equidistribution Theorems}
+\begin{lemma}[Vaaler's Trigonometric Polynomial Approximation~\cite{Vaaler1985}]\label{lem:2.3}
+For every integer $H \ge 1$, let $\Psi_H(t), B_H(t)$ be Vaaler's trigonometric polynomials~\cite[Theorem~18]{Vaaler1985} with $|\psi(t) - \Psi_H(t)| \le B_H(t)$ ($\psi(t) := t - \lfloor t \rfloor - 1/2$). Define $\widetilde{\Psi}_H(x) := 2\Psi_H(x) - 4\Psi_{2H+1}(x/2)$ and $\widetilde{B}_H(x) := 2B_H(x) + 4B_{2H+1}(x/2)$. Then every even harmonic cancels identically in $\widetilde{\Psi}_H(x)$:
+\[
+\widetilde{\Psi}_H(x) = \sum_{\substack{1 \le |h| \le 2H+1 \\ 2 \nmid h}} \tilde{c}_h(H) e\!\left(\frac{hx}{2}\right), \qquad
+\widetilde{B}_H(x) = \frac{2}{H+1} + \sum_{1 \le |h| \le 2H+1} \tilde{b}_h(H) e\!\left(\frac{hx}{2}\right),
+\]
+with $|\tilde{c}_h(H)| \le \frac{2}{\pi |h|}$, $|\tilde{b}_h(H)| < \frac{3}{H+1}$, $|(-1)^{\lfloor x \rfloor} - \widetilde{\Psi}_H(x)| \le \widetilde{B}_H(x)$, and $\sum_{1 \le |h| \le 2H+1,\, 2 \nmid h} |\tilde{c}_h(H)| \le \frac{4}{\pi}(\log(2H+1) + 1)$.
+\end{lemma}
+
+Fix $\delta \in (0, 1/3]$ and set $R := \lfloor 1/\delta \rfloor$ and $A_R := 6R + 16$. Define the transition collars $\mathcal{C}_r(n) := (n^{1/r}/(\log n)^{A_R/r}, n^{1/r}]$ ($2 \le r \le R$) and inter-collar intervals $\mathcal{D}_r(n) := (n^{1/(r+1)}, n^{1/r}/(\log n)^{A_R/r}]$.
+
+\begin{lemma}[Prime Exponential Sum Bound on ${[n^\delta, n/(\log n)^{12}]}$]\label{lem:2.4}
+Fix $\delta \in (0, 1/3]$ and set $R := \lfloor 1/\delta \rfloor$, $A_R := 6R + 16$, and $H := \lfloor (\log n)^{R+2} \rfloor$. Let $P \in [n^\delta, \frac{n}{(\log n)^{12}}]$, let $I \subset (P, 2P]$ be any subinterval on which the set of active floor indices $\mathcal{A}(I) \subset \{1, \dots, R\}$ is fixed with $\frac{n}{P^r} \ge 2^{-R}(\log n)^{A_R}$ for all $r \in \mathcal{A}(I)$, and let $F(t) = \sum_{r \in \mathcal{A}(I)} \frac{h_r n}{2t^r}$ ($\mathbf{h} \ne \mathbf{0}$, $|h_r| \le 2H+1$). Then for every smooth weight $w(t)$ on $[P, 2P]$ satisfying $|w(t)| \le W_0$ and $\int_P^{2P} |w'(t)|\,dt \le W_0$, there exist constants $\eta'_\delta, \eta_\delta > 0$ such that:
+\begin{enumerate}
+\item[(i)] For $T_0 := \frac{|h_{r_0}| n}{P^{r_0}} \ge 2^{-R}(\log n)^{A_R}$ ($r_0 := \min\{r \in \mathcal{A}(I) : h_r \ne 0\}$),
+\begin{equation}\label{eq:lem24-i}
+\left|\sum_{p \in I} w(p)(\log p) e\bigl(F(p)\bigr)\right| \ll_\delta W_0 P \bigl(T_0^{-1/6} + P^{-\eta'_\delta}\bigr) \log^3 P \ll_\delta W_0 P (\log n)^{-(R+2)}.
+\end{equation}
+\item[(ii)] Whenever $T_0 \ge n^{\delta/2}$,
+\begin{equation}\label{eq:lem24-ii}
+\left|\sum_{p \in I} w(p)(\log p) e\bigl(F(p)\bigr)\right| \ll_\delta W_0 P\, n^{-\eta_\delta}.
+\end{equation}
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+By partial summation and Vaughan's identity~\cite[Proposition~13.4]{IwaniecKowalski2004} with $U = V = P^{1/5}$, we decompose into Type~I ($M \ge P^{3/5}$) and Type~II ($P^{1/5} < D \le P^{4/5}$) sums. In Regime~A ($T_0 \le P^{3/2}$), Type~I uses van der Corput's $j=2$ bound when $T_0 \le M$ and $j=3$~\cite[Corollary~8.13]{IwaniecKowalski2004} when $M < T_0 \le P^{3/2}$, giving $(T_0/M^3)^{1/6} M + (M^3/T_0)^{1/6} M^{1/2} \ll M(P^{-1/20} + T_0^{-1/6})$. In Type~II, Cauchy--Schwarz in $d \sim D$ and differencing $G_{m_1, m_2}(d) = F(dm_1) - F(dm_2)$ gives $T_\Delta := \frac{|m_1 - m_2|}{M} T_0$; applying Kusmin--Landau~\cite[Corollary~8.11]{IwaniecKowalski2004} for $T_\Delta \le \frac{1}{2}D$ and van der Corput's $j$-th derivative bound ($2 \le j \le 9$, chosen so $\lambda_j = T_\Delta / D^j \le D^{-1}$) for $T_\Delta > \frac{1}{2}D$ yields $\ll_\delta W_0 P(T_0^{-1/6} + P^{-\eta'_\delta})\log^3 P$ for an absolute $\eta'_\delta > 0$. In Regime~B ($T_0 > P^{3/2}$), choosing $j = \lfloor \frac{\log(T_0/M)}{\log M} \rfloor + 2 \in [3, 5R+2]$ in Weyl--van der Corput~\cite[Theorem~8.25]{IwaniecKowalski2004} yields $\ll_\delta W_0 P n^{-\eta_\delta}$.
+\end{proof}
+
+\begin{theorem}[Valuation-Parity Equidistribution and Second-Order Discrepancy Law]\label{thm:2.5}
+For every integer $n \ge 4$:
+\begin{enumerate}
+\item[(i)] $\Delta_{\mathrm{parity}}(n) = \bigl(\log 2 - 1 - \Sigma^*_{\mathrm{parity}}(n)\bigr)n + O(n/\log n)$.
+\item[(ii)] For every fixed $\delta \in (0, 1/3]$, $\sum_{n^\delta < p \le \sqrt{n}} (-1)^{v_p(n!)-1}\frac{\log p}{p-1} \ll_\delta \frac{1}{\log n}$, and across $3 \le p \le n$, $\Sigma^*_{\mathrm{parity}}(n) = o(\log n)$, $\Delta_{\mathrm{parity}}(n) = o(n\log n)$, and $S_{\mathrm{odd}}(n) = \frac{1}{2} n \log n + o(n\log n)$, $S_{\mathrm{even}}(n) = \frac{1}{2} n \log n + o(n\log n)$.
+\item[(iii)] For every integer modulus $h \ge 2$, residue class $c \bmod h$, and $0 \le a < b \le 1$,
+\begin{equation}\label{eq:multi-mod}
+\sum_{\substack{n^a < p \le n^b \\ v_p(n!) \equiv c \pmod h}} v_p(n!)\log p = \left(\frac{b - a}{h} + o(1)\right) n \log n.
+\end{equation}
+\end{enumerate}
+\end{theorem}
+
+\begin{proposition}[Jessen--Wintner Rademacher Limit Distribution]\label{prop:2.6}
+For each odd prime $p \ge 3$ and $r \ge 1$, let $\xi_p^{(r)}(n) := -\prod_{m=0}^{r-1} (-1)^{d_{2m+1}^{(p)}(n)}$ and $\Sigma_{\mathrm{parity}}^{(r)}(n; B) := \sum_{3 \le p \le B} \xi_p^{(r)}(n)\frac{\log p}{p-1}$. As $N \to \infty$, followed by $r \to \infty$ and $B \to \infty$, $\Sigma_{\mathrm{parity}}^{(r)}(n; B)$ converges in distribution and in all moments $L^{2m}$ to $\Sigma_\infty := \sum_{p \ge 3} \xi_p \frac{\log p}{p-1}$ ($\xi_p$ i.i.d.\ Rademacher), with characteristic function $\Phi_{\Sigma_\infty}(\tau) = \prod_{p \ge 3}\cos(\frac{\tau \log p}{p-1})$ and a smooth, strictly positive, symmetric density on $\R$.
+\end{proposition}
+
+\section{Chebyshev--Lucas Valuation Absorption and Proofs of Theorems~\ref{thm:1.1} and~\ref{thm:1.2}}
+
+\begin{lemma}[Fundamental Unit Norm and Growth of $q_n, s_n$]\label{lem:3.1}
+For every integer $n \ge 3$ with $n \ne 6$:
+\begin{enumerate}
+\item[(i)] $q_n$ has at least one prime divisor $p \equiv 3 \pmod 4$. Thus $x^2 - q_n y^2 = -1$ has no integer solutions, $N_{K_n/\Q}(\varepsilon_n) = N_{K_n/\Q}(\eta_n) = +1$, and $[\mathcal{O}_{K_n}^\times : \Z[\sqrt{q_n}]^\times] = d_n \in \{1, 3\}$ ($d_n = 1$ unless $q_n \equiv 5 \pmod 8$). Moreover, $\log q_n > 0.4n$ for $n \ge 116$ (and $8 \le n \le 115$, $n \ne 10$), while $\log \varepsilon_n > 0.2n$ and $1 \le k < 2.5\log n$ for all $n \ge 8$ (with $2.5\log n < n/5$ for $n \ge 116$).
+\item[(ii)] As $n \to \infty$, $\log(s_n\sqrt{q_n}) = \frac{1}{2}n\log n - \frac{1}{2}n + \frac{1}{4}\log(2\pi n) + O(n^{-1})$ and $\log s_n = \frac{1}{2}n\log n - \frac{1+\log 2}{2}n + O(n e^{-c_0\sqrt{\log n}})$.
+\end{enumerate}
+\end{lemma}
+
+\begin{lemma}[Chebyshev--Lucas Factorization and $p$-Adic Lifting the Exponent]\label{lem:3.2}
+For every integer $k \ge 1$, $X_k(q_n) = T_k(X_1(q_n))$ and $Y_k(q_n) = Y_1(q_n) U_{k-1}(X_1(q_n))$. Moreover:
+\begin{enumerate}
+\item[(i)] $\gcd(X_1(q_n)^2 - 1, U_{k-1}(X_1(q_n))^2) \mid k^2$, and for every prime $p \mid q_n Y_1(q_n)$, $v_p(U_{k-1}(X_1(q_n))) = v_p(k)$; in particular, for every $p \in \Podd(n)$ in $m + s_n\sqrt{q_n} = \varepsilon_n^k$, $v_p(q_n Y_1(q_n)^2) = v_p(n!) - 2v_p(k)$.
+\item[(ii)] For every odd prime $p \nmid q_n$, the projective rank of apparition $\alpha_p(q_n) := \min\{r \ge 1 : p \mid Y_r(q_n)\}$ satisfies $\alpha_p(q_n) \mid (p - (\frac{q_n}{p}))/2$, and $p \mid Y_k(q_n) \iff \alpha_p(q_n) \mid k$, with $v_p(Y_k(q_n)) = v_p(Y_{\alpha_p(q_n)}(q_n)) + v_p(k/\alpha_p(q_n))$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}[Proof of Theorem~\ref{thm:1.1}]
+Direct check gives $k(4)=1$, $k(5)=1$, $k(7)=2$. For $n \ge 8$, $\log(q_n Y_1(q_n)^2) < 2\log\varepsilon_n = \frac{1}{k}\log(n!) + O(1)$, while summing Lemma~\ref{lem:3.2}(i) over $p \in \Podd(n)$ gives $\log(q_n Y_1(q_n)^2) \ge S_{\mathrm{odd}}(n) - 2\log k$. By Theorem~\ref{thm:2.5}(ii) and $k < 2.5\log n$, $\frac{1}{2} - o(1) \le \frac{1}{k}$, forcing $k \in \{1, 2\}$ for large $n$ and~\eqref{eq:quant}. If $q_{n_1} = q_{n_2} = D$ for $4 \le n_1 < n_2$, then $n_1 \ge n_2/2$; by Berndt--Galway~\cite{BerndtGalway2000} ($n_1 > 10^9$), $n_2 - n_1 > \frac{0.38 n_1}{\log(2n_1)} > \frac{n_1}{16597}$, contradicting Schoenfeld's prime gap theorem~\cite{Schoenfeld1976}.
+\end{proof}
+
+\begin{remark}\label{rem:3.3}
+A dual application of Lemma~\ref{lem:3.2}(i) on $\Peven(n)$ independently eliminates every odd prime divisor $\ell \ge 3$ of $k$.
+\end{remark}
+
+\begin{proposition}[{Rank-of-Apparition Collapse on $I_2 = (n/3, n/2]$}]\label{prop:3.4}
+For any solution $(n, m)$ with $k \in \{1, 2\}$ and $n \ge 8$, every prime $p \in (n/3, n/2]$ satisfies $p \nmid q_n$, $v_p(s_n) = 1$, $\alpha_p(q_n) \in \{1, 2\}$, and $v_p(Y_{\alpha_p(q_n)}(q_n)) = 1$.
+\end{proposition}
+
+\begin{proof}[Proof of Theorem~\ref{thm:1.2}]
+By Nagura's theorem~\cite{Nagura1952}, $I_4 = (n/5, n/4]$ is non-empty for $n \ge 116$ and every $p \in I_4$ satisfies $v_p(n!) = 4$ and $p > 2.5\log n > k$, so $p \nmid k$. Taking the $p$-adic logarithm of $\eta_n^{2d_n k} = \varepsilon_n^{2k} = (1 + 2q_n s_n^2) + 2ms_n\sqrt{q_n}$ gives $v_p(\widetilde{R}_p(K_n)) = v_p(s_n) = \lfloor v_p(n!)/2 \rfloor \ge 2$ for every $p \in \Peven(n)$ with $p \ge 5$, $p \nmid k$, $v_p(n!) \ge 4$. By Leopoldt's $p$-adic class number formula~\cite[Theorem~5.24]{Washington1997}, $v_p(L_p(1, \chi_{D_n})) = v_p(h(q_n)) + \frac{1}{2}v_p(n!) - 1 \ge 1$. Ferrero--Washington~\cite{FerreroWashington1979} ($\mu_p = 0$) and Mazur--Wiles~\cite{MazurWiles1984} then force $\lambda_p(K_n) = \lambda_p(\chi_{D_n}) \ge 1$.
+\end{proof}
+
+\begin{corollary}[Rational Fermat Quotient Locks and Sinnott Circular-Unit Congruence]\label{cor:3.5}
+Let $(n, m)$ be a solution with $m - 1 = d_1 x_n^2$ and $m + 1 = d_2 y_n^2$. For every odd prime $p \le n/2$, $q_p(d_1) \equiv q_p(2) - 2q_p(x_n) \pmod p$ when $p \mid (m+1)$ and $q_p(-d_2) \equiv q_p(2) - 2q_p(y_n) \pmod p$ when $p \mid (m-1)$. Moreover, for $p \in [5, n/2]$, $h(q_n) \equiv \varepsilon_p d_n k \frac{\log_p(\xi_n)}{s_n\sqrt{q_n}} \pmod{p^{v_p(n!)}}$, while at $p = 3$, whenever $n \ge 15$ satisfies $2 \mid v_3(n!)$ (or $n \ge 9$ with $2 \mid v_3(n!)$ and $3 \nmid d_n k$), $3 \mid (1 - \chi_{-3D_n}(3)) h(\Q(\sqrt{-3q_n}))$.
+\end{corollary}
+\begin{proof}
+At $p = 3$, when $2 \mid v_3(n!)$, $3 \in \Peven(n)$ and $v_3(s_n) = \frac{1}{2}v_3(n!)$. To verify $v_3(s_n) - v_3(d_n k) \ge 2$ for all $n \ge 15$ with $2 \mid v_3(n!)$: for $15 \le n \le 17$, $v_3(n!) = 6$ so $v_3(s_n) = 3$, while $2 \mid q_n$ ($v_2(n!)$ is odd) gives $q_n \not\equiv 5 \pmod 8$, hence $d_n = 1$, and $k < 2.5\log 17 < 9$ gives $v_3(k) \le 1$, so $v_3(s_n) - v_3(d_n k) \ge 3 - 1 = 2$. For $18 \le n \le 20$, $v_3(n!) = 8$ gives $v_3(s_n) = 4$ and $k < 2.5\log 20 < 9$ gives $v_3(d_n k) \le 2$, difference $\ge 2$. For $n \ge 21$ with $2 \mid v_3(n!)$ (hence $n \ge 24$), $v_3(n!) \ge \lfloor n/3 \rfloor \ge 8$ and $v_3(s_n) \ge \frac{1}{2}\lfloor n/3 \rfloor \ge 5$, while $v_3(d_n k) \le 1 + \lfloor \log_3(2.5\log n) \rfloor$, so $v_3(s_n) - v_3(d_n k) \ge 2$ holds unconditionally for all $n \ge 15$. Kummer's congruence~\cite[Theorem~5.11]{Washington1997} then gives the 3-divisibility.
+\end{proof}
+
+\begin{theorem}[Imaginary Quadratic Picard 2-Torsion Dichotomy]\label{thm:3.6}
+In $\mathcal{O}_n^- = \Z[\sqrt{-q_n}]$, $(1 + s_n\sqrt{-q_n}) = \mathfrak{J}_n^2$ for a unique invertible ideal $\mathfrak{J}_n$ of norm $m$, with $[\mathfrak{J}_n] = 1 \iff k = 2$ and $[\mathfrak{J}_n] = [\mathfrak{d}_2] \ne 1 \iff k = 1$. Moreover, in the $k = 2$ regime, the second-stage ideal $\mathfrak{I}_n \subset \mathcal{O}_{\Q(\sqrt{-q_n})}$ has exact order $2$ unconditionally.
+\end{theorem}
+
+\section{Arithmetic Structure of the Critical Regime $k = 2$}
+
+When $k = 2$, $m = 2X_1(q_n)^2 - 1 = 2q_n Y_1(q_n)^2 + 1$, $s_n = 2X_1(q_n)Y_1(q_n)$, and $n! = 4(X_1(q_n) - 1)X_1(q_n)^2(X_1(q_n) + 1)$.
+
+\begin{proposition}[$(n/2)$-Smoothness of $m + 1$, Biquadratic Splitting, and Fermat-Quotient Lock]\label{prop:4.1}
+In the $k = 2$ regime with $n \ge 8$: (i) every odd prime $p \in \Podd(n)$ divides $(X_1(q_n)-1)(X_1(q_n)+1) = q_n Y_1(q_n)^2$ to power $p^{v_p(n!)}$, while every odd $p \mid X_1(q_n)$ lies in $\Peven(n)$ with $p \le n/2$; (ii) every odd $p \mid X_1(q_n)$ splits completely in $\Q(\sqrt{-\delta_1(n)}, \sqrt{\delta_2(n)})$ and satisfies $q_n Y_1(q_n)^2 \equiv -1 \pmod{p^{v_p(n!)}}$ and $q_p(-q_n) + 2q_p(Y_1(q_n)) \equiv 0 \pmod p$.
+\end{proposition}
+
+Define $A_n^*, B_n^*, Z$ as in~(4.7) and $(A_n, B_n)$ by allocating $2^{v_2(n!)-2}$ according to the parity of $X_1(q_n)$.
+
+\begin{theorem}[Two-Stage Euclidean Division Quartic Law and Stretched-Exponential Midpoint Core Bounds]\label{thm:4.2}
+Suppose $(n, m)$ is a solution in the $k = 2$ regime with $n \ge 8$. Then:
+\begin{enumerate}
+\item[(i)] $\gcd(A_n, B_n) = 1$, $A_n = B_n Z^4 + Z^2$, $4\log Z = (c_2(n) - \Sigma^*_{\mathrm{parity}}(n))n + O(n/\log n)$, and for large $n$, Euclidean division gives $Q_n = Z^4$, $R_n = Z^2$, $R_n^2 = Q_n$.
+\item[(ii)] With $c_0 = \gcd(X_1(q_n) - 1, X_1(q_n) + 1) \in \{1, 2\}$, $B_+ R_n = B_- Z_-^4 + \frac{2}{c_0}Z_-^2$ and $B_- R_n = B_+ Z_+^4 - \frac{2}{c_0}Z_+^2$, with $\lfloor B_+ R_n / B_- \rfloor = Z_-^4$ and $\lceil B_- R_n / B_+ \rceil = Z_+^4$ for large $n$.
+\item[(iii)] For both $i \in \{1, 2\}$, $\delta_i(n) = \core(X_1(q_n) \mp 1)$ satisfy $P^+(\delta_i(n)) \ge n^{1/2-o(1)}$, $\omega(\delta_i(n)) \ge n^{1/2-o(1)}$, and $\delta_i(n) \ge \exp(n^{1/2-o(1)})$.
+\end{enumerate}
+\end{theorem}
+
+\begin{lemma}[Stickelberger's $p$-Adic Factorial Congruence~\cite{Stickelberger1890}]\label{lem:4.3}
+For any odd prime $p$ and $n = \sum_{j=0}^K d_j^{(p)}(n) p^j$, $\frac{n!}{p^{v_p(n!)}} \equiv (-1)^{v_p(n!)} \prod_{j=0}^K (d_j^{(p)}(n)!) \pmod p$.
+\end{lemma}
+
+\begin{theorem}[Stickelberger Base-$p$ Reciprocity and Conductor-Free Residue Lock]\label{thm:4.4}
+For $n \ge 8$: (i) every odd $p \in \Peven(n)$ satisfies $(\frac{-q_n}{p}) = (\frac{-1}{p})\prod_{j=0}^K (\frac{d_j^{(p)}(n)!}{p})$; (ii) in the $k = 2$ regime, every inert $p \in \Peven^-(n)$ satisfies $p^{v_p(n!)/2} \parallel Z$, and for every $p \in \Podd(n)$ with $p \equiv 1 \pmod 4$, $(\frac{\core(Z)}{p}) = (\frac{2^{v_2(X_1(q_n))} c_{\mathrm{even}}(n)}{p})$.
+\end{theorem}
+
+\section{The Fundamental Regime $k = 1$ and R\'edei--Reichardt Cohomology}
+
+\begin{proposition}[Continued-Fraction Midpoint Denominator and Square-Root Conductor Bias]\label{prop:5.1}
+For $n \ge 8$, writing $X_1(q_n) \mp 1 = \delta_i^{\mathrm{mid}}(n) u_i^2$, we have $\delta_1^{\mathrm{mid}*}(n)\delta_2^{\mathrm{mid}*}(n) = q_n^*$, $\delta_{\min}(n) < \sqrt{q_n}$, the continued fraction period $L(q_n) = 2M$ is even with $Q^*_M = 2^a \delta_{i_n}^{\mathrm{mid}}(n) < 2\sqrt{q_n}$, and the minimal character $\psi_{\min}$ satisfies $\sum_{p \in (n/2, n]} \psi_{\min}(p)\log p \ge (\frac{1-\log 2}{2} - o(1))n$.
+\end{proposition}
+
+\begin{theorem}[Midpoint Core Bipartition, Cross-Symmetry, Radical Bounds, and Effective Landau--Siegel Lower Bounds]\label{thm:5.2}
+For any solution $(n, m)$ with $n \ge 4$, $u_1 = \frac{m-1}{2} = \delta_1 z_1^2$, $u_2 = \frac{m+1}{2} = \delta_2 z_2^2$:
+\begin{enumerate}
+\item[(i)] $\delta_1\delta_2 = q_n$, $\delta_1 > 1$, $\delta_2 = 1 \iff k = 2$, the reciprocal cross-symmetry laws $\log B^{(2)} - \log((Z_1^*)^2) = \frac{1}{2}((2w_2^{(1)} - v_2(n!))\log 2 - \Delta_{\mathrm{parity}}(n)) + O(e^{-\frac{1}{3}n\log n})$ hold, and $P^+(m \mp 1), \omega(m \mp 1) \ge n^{1/2-o(1)}$, $\rad(m \mp 1) \ge \exp(n^{1/2-o(1)})$.
+\item[(ii)] For all sufficiently large $n$ (regardless of solubility), $\delta_1^{\mathrm{mid}}(n), \delta_2^{\mathrm{mid}}(n) > \exp(c_0\sqrt{\log n})$ effectively, so $x^2 - q_n y^2 = \pm 2$ have no integer solutions.
+\end{enumerate}
+\end{theorem}
+
+\begin{lemma}[Exact Homogeneous Laplacian Equivalence and 2-Adic Layer Cascade]\label{lem:5.3}
+For $n \ge 6$, $B(y) - A(y) = 1$ implies the homogeneous Level-0 system $M_n^{(0)} y_{\mathcal{L}_0(n)} = \mathbf{0}$ over $\F_2$, deterministic locking on $\Peven^-(n)$, Level-1 system $M_n^{(1)} y_{\mathcal{L}_1^+(n)} = \mathbf{b}_n^{(1)}(y_{\mathcal{L}_0(n)})$, Fermat-quotient equations over $\F_p$ ($p \le n/2$), and $4N_p \equiv 2(n-2p)!(1 + 2p(H_{n-2p} - W_p)) \pmod{p^2}$ for $p \in (n/3, n/2]$.
+\end{lemma}
+
+\begin{proposition}[Explicit $\F_2$ Block Structure and All-Ones Quadratic Reciprocity Duality]\label{prop:5.4}
+For $n \ge 8$, the vector $\mathbf{x} \in \F_2^t$ encoding $\delta_2^*(n)$ satisfies: (i) in Branch~A, $\mathcal{M}_n^{(1)}\mathbf{x} = \mathbf{0}$ where the ramified rows ($1 \le i \le t$) have diagonal entry $\ell_{p_i}(-q_n/p_i)$; (ii) in Branch~B, $\mathcal{M}_n^{(1)}\tilde{\mathbf{x}} = \mathbf{b}_n^{(-1)}$; (iii) when $2 \mid v_2(n!)$ and $q_n \equiv 7 \pmod 8$, $\mathcal{M}_n^{(1)}\mathbf{1} = \mathbf{b}_n^{(-1)}$ identically.
+\end{proposition}
+
+\begin{theorem}[R\'edei--Reichardt 4-Rank Cohomology and Reduced Dual Quartic Laws]\label{thm:5.5}
+For $n \ge 8$: (i) Hilbert's Theorem~90 gives $0 \to H^1(\Gal(K_n/\Q), \mathcal{O}_{K_n}^{\times,+}) \to \ker_{\F_2}(R_n^{\mathrm{ram}}) \to \Cl^+(q_n)[2] \cap 2\Cl^+(q_n) \to 0$ and $\dim_{\F_2}\ker_{\F_2}(R_n^{\mathrm{ram}}) = 1 + \rank_4 \Cl^+(q_n)$; (ii) absorbing $\Peven^-(n)$ yields $\widetilde{B}_2 A_{n,+}^* = \widetilde{B}_1 W_1^4 + W_1^2$ and $\widetilde{B}_1 A_{n,+}^* = \widetilde{B}_2 W_2^4 - W_2^2$.
+\end{theorem}
+
+\section{Pairwise $\SL_2(\Z)$ Duality, the Capacity Diamond, and Proof of Theorem~\ref{thm:1.3}(i)}
+
+\begin{theorem}[Universal $\SL_2(\Z)$ Four-GCD System and Twin Norm Identities]\label{thm:6.1}
+For any two solutions $4 \le n_1 < n_2$ with $P = n_2!/n_1!$, $X = \gcd(A_1, A_2)$, $Y = \gcd(B_1, B_2)$, $Z = \gcd(A_1, B_2)$, $W = \gcd(B_1, A_2)$ are pairwise coprime with $XYZW = n_1!/4$, $A_2 = cXW$, $B_2 = dYZ$, $U = aXY$, $V = bZW$ ($ab = P - 1$, $cd = P$), $dY^2 - cX^2 = b$, $cW^2 - dZ^2 = a$, the four-squares identities~\eqref{eq:four-sq} hold:
+\begin{equation}\label{eq:four-sq}
+2acX^2 = Pm_1 - m_2 - (P-1),\; 2adY^2 = Pm_1 - m_2 + (P-1),\; 2bdZ^2 = Pm_1 + m_2 - (P-1),\; 2bcW^2 = Pm_1 + m_2 + (P-1),
+\end{equation}
+together with $\alpha_1\alpha_2 = Pm_1 + m_2\sqrt{P}$, $\alpha_1\overline{\alpha_2} = P - \sqrt{P}$ in $\Z[\sqrt{P}]$, and the Quadrant~IV character lock.
+\end{theorem}
+
+\begin{proposition}[Quadratic-Radical, Quartic Thue, $X$-Splitting, and Pfaffian Systems]\label{prop:6.2}
+Under Theorem~\ref{thm:6.1}:
+\begin{enumerate}
+\item[(i)] $(\sqrt{d}Y - \sqrt{c}X)^2 = \frac{(P-1)(\sqrt{P}+1)}{a(\sqrt{P}m_1+m_2)}$, $(\sqrt{c}W - \sqrt{d}Z)^2 = \frac{(P-1)(\sqrt{P}-1)}{b(\sqrt{P}m_1+m_2)}$, $(dY + X\sqrt{P})^2 = \frac{d}{a}(\sqrt{P}-1)(m_2 + m_1\sqrt{P})$, and $(cW + Z\sqrt{P})^2 = \frac{c}{b}(\sqrt{P}+1)(m_2 + m_1\sqrt{P})$.
+\item[(ii)] $d\delta_Y^2 y_0^4 - c\delta_X^2 x_0^4 = b$ and $c\delta_W^2 w_0^4 - d\delta_Z^2 z_0^4 = a$.
+\item[(iii)] For consecutive $(n, n+1)$, $\chi_X \in \langle(\frac{-n}{\cdot}), (\frac{-(n+1)}{\cdot})\rangle \iff (b,d \text{ or } a,c \text{ are squares})$, inducing $c_2 X_2^2 - c_1 X_1^2 = 2b_0 \le 2\sqrt{n}$.
+\item[(iv)] Three-solution octant pairs $(\alpha, \beta, \gamma, \delta)$ satisfy $a_{13}\gamma - a_{12}\beta = \tilde{a}_{23}\delta$, $b_{13}\beta - b_{12}\gamma = \tilde{a}_{23}\alpha$, $(a_{13}b_{13} - a_{12}b_{12})\beta\gamma = \tilde{a}_{23}\gamma(a_{13}\alpha + b_{12}\delta)$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+In~(i), $P m_1 - m_2 - \sqrt{P}(m_2 - m_1) = (\sqrt{P}+1)(\sqrt{P}m_1 - m_2) = \frac{(P-1)(\sqrt{P}+1)}{\sqrt{P}m_1 + m_2}$, and $P m_1 + m_2 - \sqrt{P}(m_2 + m_1) = (\sqrt{P}-1)(\sqrt{P}m_1 - m_2) = \frac{(P-1)(\sqrt{P}-1)}{\sqrt{P}m_1 + m_2}$; both denominators are strictly positive.
+\end{proof}
+
+\begin{theorem}[Consecutive-Index Rigidity and Unconditional Square-Shift Exclusions]\label{thm:6.3}
+(i) Consecutive collapse $m_{n+1} = \frac{n!}{2} - 1$ occurs iff $n = 4$; (ii) for consecutive $(n, n+1)$ with $n \ge 6$, $\log X, \log Y, \log Z, \log W = \frac{1}{4}\log(n!) + O(\log n)$ and $(k_n, k_{n+1}) \ne (2, 2)$ for large $n$; (iii) $P = t^2 < 4(n_1! + 1)$ is impossible, so $(t^2-1)!+1$ and $(t^2)!+1$ cannot both be squares, and $(k_{j^2}, k_{(j+1)^2}) \ne (2, 2)$ for large $j$.
+\end{theorem}
+
+\begin{lemma}[Odd-Harmonic Vaaler Diagonal Non-Vanishing]\label{lem:6.4}
+For $4 \le n_1 < n_2$ with $h = n_2 - n_1 = n_1^\alpha$ ($\alpha \in [0, 1)$), $\sum_{3 \le p \le n_1,\, 2 \nmid v_p(P)} v_p(n_1!)\log p = (\frac{\alpha}{2} + o(1))n_1\log n_1$.
+\end{lemma}
+
+\begin{theorem}[Universal Capacity Diamond and Proof of Theorem~\ref{thm:1.3}(i)]\label{thm:6.5}
+For any two solutions $4 \le n_1 < n_2$ with $n_2 - n_1 = n_1^\alpha$ ($\alpha \in [0, 1)$),
+\begin{equation}\label{eq:cap-diamond}
+\frac{1 - \alpha}{2} - o(1) \le \theta(n_1) + \theta(n_2) \le \frac{3 + \alpha}{2} + o(1), \qquad |\theta(n_1) - \theta(n_2)| \le \frac{1 + \alpha}{2} + o(1).
+\end{equation}
+In particular, $k = 2$ solutions satisfy $n_2 - n_1 > n_1^{1-\varepsilon}$ and $\#\mathcal{B}_{k=2}(N) \ll_\varepsilon N^\varepsilon$. Moreover, for $\varepsilon \in (0, 1/4)$ and $\eta \in (0, 1/2]$, each interval $I = [N', N' + (N')^{1-\varepsilon}]$ ($N' \ge N_0(\varepsilon, \eta)$) contains at most $\lfloor (\eta^2\varepsilon)^{-1} \rfloor + 1$ solutions with $|\theta_\varepsilon(n) - 1/2| \ge \eta$ (via correlation $\ge \eta\sqrt{\varepsilon} - o(1)$), and globally $\#\{4 \le n \le N : |\theta_\varepsilon(n) - 1/2| \ge \eta\} \le C_\varepsilon \eta^{-2} N^\varepsilon$ for $N \ge N_0(\varepsilon, \eta)$.
+\end{theorem}
+
+\section{Support-Reduced Pad\'e--Wronskian Approximations and Proof of Theorem~\ref{thm:1.3}(ii)}
+
+\begin{lemma}[Initial $(m+1)$-Variable Pad\'e Polynomials]\label{lem:7.1}
+Let $D \ge 10m$, $\varepsilon_0 \in (0, m - 1)$, $O := \lfloor (m + 1 - \varepsilon_0)D \rfloor$. There exist $P_0, \dots, P_m \in \Z[x]$ of degree $\le D$, not all zero, such that $R(x) = \sum_{i=0}^m P_i(x)\omega_i(x) = \sum_{v=0}^\infty r_v x^v$ vanishes for $0 \le v \le O$ and satisfies
+\begin{equation}\label{eq:lem71-bd}
+|p_{i,k}| \le 4^{m\varepsilon_0^{-1} M}\!\left(2 m r^{\frac{2m}{m-\varepsilon_0}} M\right)^{\frac{(m-\varepsilon_0)(m+1-\varepsilon_0)}{\varepsilon_0} D}, \qquad
+|r_v| \le m(D+1)\, 4^{m\varepsilon_0^{-1} M}\!\left(2 m r^{\frac{2m}{m-\varepsilon_0}} M\right)^{\frac{(m-\varepsilon_0)(m+1-\varepsilon_0)}{\varepsilon_0} D} (2M)^v.
+\end{equation}
+\end{lemma}
+
+\begin{lemma}[Linear Independence of $\omega_0, \dots, \omega_m$ and Monomial Products over $\C(x)$]\label{lem:7.2}
+For $d \ge 1$, $r \le \beta_1 < \dots < \beta_d$ ($r \mid \beta_i$), and $1 \le E \le r - 1$, the $\binom{d+E}{d}$ monomial products $\Omega_{\mathbf{e}}(x) = \prod_{i=1}^d \omega_i(x)^{e_i}$ ($|\mathbf{e}| \le E$) are linearly independent over $\C(x)$.
+\end{lemma}
+
+\begin{lemma}[Support-Reduced Wronskian Non-Vanishing and Gauss's Lemma Multiplicity Bound]\label{lem:7.3}
+Let $S := \{0 \le i \le m : P_i \not\equiv 0\}$ ($s := |S|$), and assume $D > (m+1)^2 M$ and (when $\operatorname{fract}(m+1-\varepsilon_0) \ne 0$) $D > \frac{\binom{m+1}{2}M + m + 1}{\operatorname{fract}(m+1-\varepsilon_0)}$. Then:
+(i) $\Delta_S(x) := \det(P_{i_a}^{[k]}(x))_{0 \le k < s,\, 1 \le a \le s} \not\equiv 0$, $\deg(\Delta_S) \le sD + \binom{s}{2}M$, $\ord_{x=0}\Delta_S(x) \ge O - (s - 1)$, $s \ge \lceil m + 1 - \varepsilon_0 \rceil \ge 2$, and $\sum_{\alpha \in \C^\times} \ord_{x=\alpha}\Delta_S(x) \le (s - (m+1-\varepsilon_0))D + \binom{s}{2}M + s$;
+(ii) for $\alpha = 1/n_0$ ($n_0 > M$) with $a = \ord_{x=\alpha}\Delta_S(x)$, the $(a+s) \times s$ matrix $(P_{i_a}^k(\alpha))$ has full column rank $s$;
+(iii) for $N \le n_1 < \dots < n_t < 2N$, $\sum_{r=1}^t a_r \le s\frac{(m-\varepsilon_0)(m+1-\varepsilon_0)}{\varepsilon_0}\frac{\log M}{\log N} D + O_m(\frac{D + M\log N}{\log N})$.
+\end{lemma}
+
+\begin{lemma}[Leibniz Derivative Estimates and Factorial-Root Approximation]\label{lem:7.4}
+Under Lemmas~\ref{lem:7.1} and~\ref{lem:7.3}, for $N \le n_0 < 2N$ ($n_0 > 8M$), $P_i^k(1/n_0)$ have common denominator dividing $Z := r^{a+s} n_0^{D + (a+s)M}$ and satisfy $|P_i^k(1/n_0)| \le u U^D$, $|R^k(1/n_0)| \le w W^{-D}$ with $U = (2 m r^{\frac{2m}{m-\varepsilon_0}} M)^{\frac{(m-\varepsilon_0)(m+1-\varepsilon_0)}{\varepsilon_0}}$, $W = N^{m+1-\varepsilon_0}(8 m r^{\frac{2m}{m-\varepsilon_0}} M)^{-\frac{m(m+1-\varepsilon_0)}{\varepsilon_0}}$, $u = m(D+1)\, 4^{m\varepsilon_0^{-1}M}(4rN)^{(a+s)M + a + s}$, $w = m(D+1)\, 4^{m\varepsilon_0^{-1}M}(4rN)^{2((a+s)M + a + s)}$, and $|\Omega_{\mathbf{e}}(1/n_0) - q_{\mathbf{e}}/x_0^E| \ll_{P,E} M^E x_0^{-\nu}$.
+\end{lemma}
+
+\begin{proof}[Proof of Theorem~\ref{thm:1.3}(ii)]
+Taking $m = 5$, $\varepsilon_0 = 5 - \sqrt{5}$ gives $\theta_5(5 - \sqrt{5}) = \frac{7 - 3\sqrt{5}}{2} > \frac{1}{7}$, reaching the Pigeonhole cap $1/7$ and proving $\mathcal{N}_{P,s}(N) \ll_{P,s,\varepsilon} N^{6/7+\varepsilon}$. Since $(a+s)M \ll_m M^{m+2}\log N = o(N)$ for $\theta < \frac{1}{m+2}$, we have $c, u, w = (N!)^{o(1)}$. Replacing linear shifts by monomial products $\Omega_{\mathbf{e}}(x)$ ($|\mathbf{e}| \le E \le \min(r-1, \nu-1)$) yields $\theta^*_{d,E,\nu}$ up to $1/3$.
+\end{proof}
+
+\begin{theorem}[Unconditional Finiteness for $n! + A = m^k$ Outside $n! + c^2 = m^2$]\label{thm:7.5}
+For any fixed $A \ne 0$ and $k \ge 2$, $n! + A = m^k$ has at most finitely many positive integer solutions whenever $k \ge 3$ or ($k = 2$ and $A$ is not a square $c^2$).
+\end{theorem}
+\begin{proof}
+If $A \ne c^k$ (and when $8 \mid k$, $A \ne 2^{k/2} c^k$), Grunwald--Wang~\cite[Chapter~10]{ArtinTate2009} and Chebotarev~\cite{Tschebotareff1926} give a prime $p_0 \nmid kA$ with $x^k \equiv A \pmod{p_0}$ insoluble, forcing $n < p_0$. If $8 \mid k$ and $A = 2^{k/2} c^k$ ($k = 4\ell$, $2 \mid \ell$), then $x^k - 2^{k/2} c^k = (x^{2\ell} - 2^\ell c^{2\ell})(x^{2\ell} + 2^\ell c^{2\ell})$ splits over $\Q$ with an irreducible factor of degree $\ge 2$, so Berend--Harmse~\cite[Theorem~1.1]{BerendHarmse2006} gives finiteness. Remaining $A = c^k$ ($k \ge 3$) and $k = 2, A \equiv 2,3 \pmod 4$ cases follow as before.
+\end{proof}
+
+\section{Harmonic Analysis on the CRT Torus and $p$-Adic Binomial Lifting}
+
+\begin{theorem}[CRT Partition of Unity, Punctured Discrepancy, Projection, and Locked-Torus Collapse]\label{thm:8.1}
+For $n \ge 4$, $M_n = n!/2$, and $\theta_p(n) = a_p(n)/q_p(n) \in \T$:
+(i) $\boldsymbol{\epsilon} \mapsto M_n \Sigma_n(\boldsymbol{\epsilon}) \bmod M_n$ bijects $\{-1, 1\}^{\pi(n)}$ onto $\{m \in \Z/M_n\Z : m^2 \equiv 1 \pmod{n!}\}$, with $\|\Sigma_n(\pm \mathbf{1})\|_\T = \frac{2}{n!}$ and $\disc^\circ_\T(n) \ge \frac{2\sqrt{n!+1}}{n!}$ (equality iff $n! + 1 = m^2$ is soluble);
+(ii) $(n+1)\theta_p(n+1) = \theta_p(n)$ in $\Q/\Z$;
+(iii) $M_n = M_n^{\mathrm{locked}} M_n^+$, and whenever $M_n^{\mathrm{locked}} > \sqrt{n!}+1$, each R\'edei kernel vector fixes $m = r_{\mathrm{locked}}(\mathbf{x}, \boldsymbol{\epsilon}_2) \le \sqrt{n!}+1$.
+\end{theorem}
+
+\begin{theorem}[Exact Resonance-Free $L^{2k}$ Parseval Identities and Simultaneous $p$-Adic Binomial Lifting]\label{thm:8.2}
+For $n \ge 5$, $P_{\min}(n) > n/2$; for $1 \le k < \frac{1}{2}P_{\min}(n)$, $M_n^{-1}\sum_{h=0}^{M_n-1} |\hat{\mu}_n(h)|^{2k} = (2^{-2k}\binom{2k}{k})^{\pi(n)}$, and $m \equiv X_R(\boldsymbol{\epsilon}(n))\sum_{j=0}^{R-1}\binom{1/2}{j}(n!)^j \pmod{(n!/4)^R}$ (with exact integer identity $X_2 = m(1 - \frac{1}{2}n!)$ for $n \ge 6$).
+\end{theorem}
+
+\begin{theorem}[Fourth-Order Subgaussian Tail, Winding-Branch Decomposition, and Uncertainty Barrier]\label{thm:8.3}
+For $n \ge 5$ and $\delta_n = \frac{2\sqrt{n!+1}}{n!}$:
+(i) $\kappa_4(u) = u^{-4}(\frac{1}{2}u^2 - \log\cosh u)$ is strictly positive and strictly decreasing on $(0, \infty)$ with $\kappa_4(0^+) = \frac{1}{12}$, giving fourth-order subgaussian moment and outer-winding bounds;
+(ii) for every $1 \le H < M_n$ and $1 \le k < \frac{1}{2}P_{\min}(n)$,
+\begin{equation}\label{eq:beurling-arc}
+\mathcal{N}_{\mathrm{arc}}(n; \delta_n) \le 2^{\pi(n)}\!\left(2\delta_n + \frac{1}{H+1}\right) + 2\!\left(2\delta_n + \frac{1}{H+1}\right) H^{1 - \frac{1}{2k}} M_n^{\frac{1}{2k}} \binom{2k}{k}^{\frac{\pi(n)}{2k}}.
+\end{equation}
+\end{theorem}
+
+\begin{theorem}[External Wilson QR Sieve and Macroscopic Sieve Independence]\label{thm:8.4}
+(i) For every prime $q = n + d + 1 > n$, $(\frac{d!(d! - (-1)^d)}{q}) \in \{0, +1\}$;
+(ii) for $A \ne 0$, $k \ge 2$, $\eta'_k = \frac{\eta_k}{1+\eta_k}$, $\delta \in (0, \eta'_k/2)$, and $X \ge Q(n)^{C_k/\delta}$, $\mathcal{S}_{A,k}(X; n) = X \rho_{A,k}(n)\frac{1}{n(n+1)}(1 + O_{k,\delta}(n^2 X^{-\eta'_k + \delta}))$.
+\end{theorem}
+
+\section{Frey--Hellegouarch Elliptic Curves, Class Group Explosions, and Analytic Thresholds}
+
+\begin{theorem}[Frey Curves $\mathcal{E}_n, F_n^{(2)}$, Level-2 CM Reduction, and $abc$ Quality]\label{thm:9.1}
+For $n \ge 8$: (i) $\mathcal{E}_n : Y^2 = X^3 + 2mX^2 + X$ is modular, semistable at all odd $p \le n$ with $\Delta(\mathcal{E}_n) = 64 n!$, $a_p(\mathcal{E}_n) = (\frac{-m}{p})$, and factors over $K_n$ as $Y^2 = X(X + \varepsilon_n^k)(X + \varepsilon_n^{-k})$; (ii) when $k = 2$, $F_n^{(2)}$ has $\Delta(F_n^{(2)}) = 2^{12} q_n^2 Y_1(q_n)^4$, surjective mod-$\ell$ image $\GL_2(\F_\ell)$ ($\ell \ge 5$), $j(F_n^{(2)}) \equiv 1728 \pmod{X_1(q_n)^2}$, and $abc$ quality $q(A_n, B_n, C_n) \ge (\frac{1}{4\log 2} - o(1))\log n$.
+\end{theorem}
+
+\begin{theorem}[Effective Tatuzawa Class Number Explosion and Conditional Finiteness under (C1)--(C5)]\label{thm:9.2}
+Let $\varepsilon \in (0, 1/8)$.
+\begin{enumerate}
+\item[(i)] With at most one exception $n_* \in \N$, every solution $n \ge 8$ satisfies
+\[
+h_{\mathrm{non\text{-}gen}}(q_n) := \frac{h(q_n)}{2^{\omega(D_n)-2}} > \frac{0.655\,\varepsilon\, k\, q_n^{1/2-\varepsilon}}{n\log n \cdot 2^{\pi(n)}} = q_n^{1/2-\varepsilon-o(1)},
+\]
+and in $\Cl^+(q_n) \simeq \mathcal{A}_2(q_n) \oplus \Cl^+_{\mathrm{odd}}(q_n)$, either $|\Cl^+_{\mathrm{odd}}(q_n)| \ge q_n^{1/4-\varepsilon}$, or $|\mathcal{A}_2(q_n)| \ge 2^{(\frac{\log 2}{4} - \varepsilon)n}$ and $\exp(\mathcal{A}_2(q_n)) \ge |\mathcal{A}_2(q_n)|^{1/\rank_2(\mathcal{A}_2(q_n))} \ge n^{\frac{1}{4\log 2} - \varepsilon}$.
+\item[(ii)] Equation~\eqref{eq:brocard} has only finitely many solutions if for all large $n$ at least one of (C1)--(C5) holds.
+\end{enumerate}
+\end{theorem}
+
+\begin{proposition}[Analytic Thresholds]\label{prop:9.3}
+For large solutions $(n, m)$: (i) $v_p(\Delta_{\min}) \in \{1, 2, 4\}$ on $I_1 = (n/2, n]$, so Ribet's lowered level satisfies $N_\ell \ge \frac{1}{\ell}\prod_{n/2 < p \le n} p = \exp((\frac{1}{2}-o(1))n)$; (ii) the rational linear form $\Lambda_1 = \log\frac{m+1}{m-1}$ has rank $N \ge n^{1/2-o(1)}$ exceeding Matveev--Yu's threshold, while passing to $\Z[\sqrt{q_n}]^\times$ collapses the rank to $1$; (iii) $x = n \asymp \log Q_{\min}$ for a single $n$, whereas consecutive $(n, n+1)$ have $Q_i \le 4n(n+1) \ll x^2$.
+\end{proposition}
+
+\begin{thebibliography}{99}
+\bibitem{ArtinTate2009} E.~Artin and J.~Tate, \emph{Class Field Theory}, AMS Chelsea Publishing, 2009.
+\bibitem{Berend1997} D.~Berend, On the parity of exponents in the factorization of $n!$, \emph{J. Number Theory} \textbf{64} (1997), 13--19.
+\bibitem{BerendHarmse2006} D.~Berend and J.~E. Harmse, On polynomial-factorial Diophantine equations, \emph{Trans. Amer. Math. Soc.} \textbf{358} (2006), 1741--1779.
+\bibitem{BerendOsgood1992} D.~Berend and C.~F. Osgood, On the equation $P(x) = n!$ and a question of Erd\H{o}s, \emph{J. Number Theory} \textbf{42} (1992), 189--193.
+\bibitem{BerndtGalway2000} B.~C. Berndt and W.~F. Galway, On the Brocard--Ramanujan Diophantine equation $n!+1=m^2$, \emph{Ramanujan J.} \textbf{4} (2000), 41--42.
+\bibitem{Brocard1876} H.~Brocard, Question 166, \emph{Nouv. Corresp. Math.} \textbf{2} (1876), 287.
+\bibitem{Brocard1885} H.~Brocard, Question 1532, \emph{Nouv. Ann. Math.} (3) \textbf{4} (1885), 391.
+\bibitem{Broughan2002} K.~A. Broughan, Asymptotic order of the square-free part of $n!$, \emph{Integers} \textbf{2} (2002), A10.
+\bibitem{BPZ2023} H.~M. Bui, K.~Pratt, and A.~Zaharescu, Power savings for counting solutions to polynomial-factorial equations, \emph{Adv. Math.} \textbf{422} (2023), 109021.
+\bibitem{Dabrowski1996} A.~D\c{a}browski, On the Diophantine equation $x! + A = y^2$, \emph{Nieuw Arch. Wiskd.} (4) \textbf{14} (1996), 321--324.
+\bibitem{DabrowskiUlas2013} A.~D\c{a}browski and M.~Ulas, Variations on the Brocard--Ramanujan equation, \emph{J. Number Theory} \textbf{133} (2013), 1168--1185.
+\bibitem{Davenport2000} H.~Davenport, \emph{Multiplicative Number Theory}, 3rd ed., GTM 74, Springer, 2000.
+\bibitem{EpsteinGlickman2020} A.~Epstein and K.~Glickman, C++ Brocard SDK: Verification up to $10^{15}$, GitHub (2020).
+\bibitem{ErdosOblath1937} P.~Erd\H{o}s and R.~Obl\'ath, \"Uber diophantische Gleichungen der Form $n! = x^p \pm y^p$ und $n! \pm m! = x^p$, \emph{Acta Litt. Sci. Szeged} \textbf{8} (1937), 241--255.
+\bibitem{FerreroWashington1979} B.~Ferrero and L.~C. Washington, The Iwasawa invariant $\mu_p$ vanishes for abelian number fields, \emph{Ann. of Math.} (2) \textbf{109} (1979), 377--395.
+\bibitem{IwaniecKowalski2004} H.~Iwaniec and E.~Kowalski, \emph{Analytic Number Theory}, AMS Colloq. Publ. 53, 2004.
+\bibitem{KihelLuca2008} O.~Kihel and F.~Luca, Variants of the Brocard--Ramanujan equation, \emph{J. Th\'eor. Nombres Bordeaux} \textbf{20} (2008), 353--363.
+\bibitem{Krasniqi2026} V.~Krasniqi, The Factorial Separation Conjecture, arXiv:2610.25661v1 (2026).
+\bibitem{Luca2002} F.~Luca, The Diophantine equation $P(x) = n!$ and a result of M. Overholt, \emph{Glas. Mat. Ser. III} \textbf{37(57)} (2002), 269--273.
+\bibitem{Matson2017} R.~D. Matson, Brocard's problem 4th solution search utilizing quadratic residues, (2017).
+\bibitem{MazurWiles1984} B.~Mazur and A.~Wiles, Class fields of abelian extensions of $\Q$, \emph{Invent. Math.} \textbf{76} (1984), 179--330.
+\bibitem{Nagura1952} J.~Nagura, On the interval containing at least one prime number, \emph{Proc. Japan Acad.} \textbf{28} (1952), 177--181.
+\bibitem{Overholt1993} M.~Overholt, The Diophantine equation $n! + 1 = m^2$, \emph{Bull. London Math. Soc.} \textbf{25} (1993), 104.
+\bibitem{PollackShapiro1973} R.~M. Pollack and H.~N. Shapiro, The next to last case of a factorial Diophantine equation, \emph{Comm. Pure Appl. Math.} \textbf{26} (1973), 313--325.
+\bibitem{Ramanujan1913} S.~Ramanujan, Question 469, \emph{J. Indian Math. Soc.} \textbf{5} (1913), 59.
+\bibitem{Sander2001} J.~W. Sander, On the parity of exponents in the prime factorization of factorials, \emph{J. Number Theory} \textbf{90} (2001), 316--328.
+\bibitem{Schoenfeld1976} L.~Schoenfeld, Sharper bounds for the Chebyshev functions $\theta(x)$ and $\psi(x)$. II, \emph{Math. Comp.} \textbf{30} (1976), 337--360.
+\bibitem{Stickelberger1890} L.~Stickelberger, Ueber eine Verallgemeinerung der Kreistheilung, \emph{Math. Ann.} \textbf{37} (1890), 321--367.
+\bibitem{Tschebotareff1926} N.~Tschebotareff, Die Bestimmung der Dichtigkeit einer Menge von Primzahlen, \emph{Math. Ann.} \textbf{95} (1926), 191--228.
+\bibitem{Vaaler1985} J.~D. Vaaler, Some extremal functions in Fourier analysis, \emph{Bull. Amer. Math. Soc.} \textbf{12} (1985), 183--216.
+\bibitem{Washington1997} L.~C. Washington, \emph{Introduction to Cyclotomic Fields}, 2nd ed., GTM 83, Springer, 1997.
+\end{thebibliography}
+
+\end{document}
