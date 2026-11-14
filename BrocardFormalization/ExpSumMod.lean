@@ -820,13 +820,15 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
         have h2P : P ≤ (x * p.2 : ℝ) ∧ (x * p.2 : ℝ) ≤ 2 * P :=
           ⟨le_trans hPa (le_trans (Nat.le_ceil a) (by exact_mod_cast hx'.2.2.1)),
             le_trans (by exact_mod_cast hx'.2.2.2) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
-        simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_mul,
-          norm_ePhase, mul_one, sq]
+        rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_real,
+          Real.norm_eq_abs, Real.norm_eq_abs,
+          norm_ePhase (F (x * p.1) - F (x * p.2)),
+          mul_one, sq]
         exact mul_le_mul (hw_bd _ h1P) (hw_bd _ h2P) (abs_nonneg _) hW₀
       refine le_trans (Finset.sum_le_sum hterm) ?_
       rw [Finset.sum_const, nsmul_eq_mul]
-      have hcard_le : (((Finset.Icc X₁ X_top).filter _).card : ℝ) ≤ 2 * (X₁ : ℝ) := by
-        have h1 : ((Finset.Icc X₁ X_top).filter _).card ≤ (Finset.Icc X₁ X_top).card := Finset.card_filter_le _ _
+      have hcard_le : (((Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊)).card : ℝ) ≤ 2 * (X₁ : ℝ) := by
+        have h1 := Finset.card_filter_le (Finset.Icc X₁ X_top) (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊)
         have h2 : (Finset.Icc X₁ X_top).card ≤ X_top := by rw [Nat.card_Icc]; omega
         exact_mod_cast le_trans h1 (le_trans h2 hX_top)
       exact mul_le_mul_of_nonneg_right hcard_le (sq_nonneg W₀)
@@ -834,84 +836,80 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
       have h1 : ∑ p ∈ Near, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ ≤
           ∑ p ∈ Near, (‖b_coeff p.1‖ ^ 2 + ‖b_coeff p.2‖ ^ 2) / 2 :=
         Finset.sum_le_sum fun p _ => by nlinarith [sq_nonneg (‖b_coeff p.1‖ - ‖b_coeff p.2‖)]
-      have hcard_D1 : ∀ y₁ : ℕ, ((Finset.Icc Y₁ Y₂).filter (fun y₂ => |(y₁ : ℝ) - y₂| ≤ D)).card ≤ 2 * ⌊D⌋₊ + 1 := by
-        intro y₁
-        have hsub_y : (Finset.Icc Y₁ Y₂).filter (fun y₂ => |(y₁ : ℝ) - y₂| ≤ D) ⊆
-            Finset.Icc (y₁ - ⌊D⌋₊) (y₁ + ⌊D⌋₊) := by
-          intro y₂ hy₂
-          have hyD : |(y₁ : ℝ) - y₂| ≤ D := (Finset.mem_filter.mp hy₂).2
-          rw [abs_le] at hyD
-          have hfl : (⌊D⌋₊ : ℝ) ≤ D := Nat.floor_le hD_nn
-          have hlt : D < (⌊D⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one D
-          rw [Finset.mem_Icc]
-          have hlo : (y₁ : ℤ) - (⌊D⌋₊ : ℤ) ≤ y₂ := by
-            have : (y₁ : ℝ) - (⌊D⌋₊ : ℝ) - 1 < y₂ := by linarith
-            have : (y₁ : ℤ) - (⌊D⌋₊ : ℤ) - 1 < y₂ := by exact_mod_cast this
-            omega
-          have hhi : (y₂ : ℤ) ≤ (y₁ : ℤ) + (⌊D⌋₊ : ℤ) := by
-            have : (y₂ : ℝ) < (y₁ : ℝ) + (⌊D⌋₊ : ℝ) + 1 := by linarith
-            have : (y₂ : ℤ) < (y₁ : ℤ) + (⌊D⌋₊ : ℤ) + 1 := by exact_mod_cast this
-            omega
-          omega
-        refine le_trans (Finset.card_le_card hsub_y) ?_
-        rw [Nat.card_Icc]; omega
-      have hcard_D2 : ∀ y₂ : ℕ, ((Finset.Icc Y₁ Y₂).filter (fun y₁ => |(y₁ : ℝ) - y₂| ≤ D)).card ≤ 2 * ⌊D⌋₊ + 1 := by
-        intro y₂
-        have hsub_y : (Finset.Icc Y₁ Y₂).filter (fun y₁ => |(y₁ : ℝ) - y₂| ≤ D) ⊆
-            Finset.Icc (y₂ - ⌊D⌋₊) (y₂ + ⌊D⌋₊) := by
-          intro y₁ hy₁
-          have hyD : |(y₁ : ℝ) - y₂| ≤ D := (Finset.mem_filter.mp hy₁).2
-          rw [abs_le] at hyD
-          have hfl : (⌊D⌋₊ : ℝ) ≤ D := Nat.floor_le hD_nn
-          have hlt : D < (⌊D⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one D
-          rw [Finset.mem_Icc]
-          have hlo : (y₂ : ℤ) - (⌊D⌋₊ : ℤ) ≤ y₁ := by
-            have : (y₂ : ℝ) - (⌊D⌋₊ : ℝ) - 1 < y₁ := by linarith
-            have : (y₂ : ℤ) - (⌊D⌋₊ : ℤ) - 1 < y₁ := by exact_mod_cast this
-            omega
-          have hhi : (y₁ : ℤ) ≤ (y₂ : ℤ) + (⌊D⌋₊ : ℤ) := by
-            have : (y₁ : ℝ) < (y₂ : ℝ) + (⌊D⌋₊ : ℝ) + 1 := by linarith
-            have : (y₁ : ℤ) < (y₂ : ℤ) + (⌊D⌋₊ : ℤ) + 1 := by exact_mod_cast this
-            omega
-          omega
-        refine le_trans (Finset.card_le_card hsub_y) ?_
-        rw [Nat.card_Icc]; omega
       have h2 : ∑ p ∈ Near, ‖b_coeff p.1‖ ^ 2 ≤ (2 * D + 1) * B_norm := by
-        calc ∑ p ∈ Near, ‖b_coeff p.1‖ ^ 2
-            = ∑ p ∈ Finset.Icc Y₁ Y₂ ×ˢ Finset.Icc Y₁ Y₂,
-                if |(p.1 : ℝ) - p.2| ≤ D then ‖b_coeff p.1‖ ^ 2 else 0 := by
-              dsimp only [Near]; rw [Finset.sum_filter]
-          _ = ∑ y₁ ∈ Finset.Icc Y₁ Y₂, ∑ y₂ ∈ Finset.Icc Y₁ Y₂,
-                if |(y₁ : ℝ) - y₂| ≤ D then ‖b_coeff y₁‖ ^ 2 else 0 := by
-              rw [Finset.sum_product]
-          _ = ∑ y₁ ∈ Finset.Icc Y₁ Y₂,
-                (((Finset.Icc Y₁ Y₂).filter (fun y₂ => |(y₁ : ℝ) - y₂| ≤ D)).card : ℝ) * ‖b_coeff y₁‖ ^ 2 := by
-              refine Finset.sum_congr rfl fun y₁ _ => ?_
-              rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
-          _ ≤ ∑ y₁ ∈ Finset.Icc Y₁ Y₂, (2 * D + 1) * ‖b_coeff y₁‖ ^ 2 := by
-              refine Finset.sum_le_sum fun y₁ _ => mul_le_mul_of_nonneg_right ?_ (sq_nonneg _)
-              have hle : (((Finset.Icc Y₁ Y₂).filter (fun y₂ => |(y₁ : ℝ) - y₂| ≤ D)).card : ℝ) ≤ (2 * ⌊D⌋₊ + 1 : ℕ) := by
-                exact_mod_cast hcard_D1 y₁
-              push_cast at hle; linarith [Nat.floor_le hD_nn]
+        dsimp only [Near]
+        rw [Finset.sum_filter, Finset.sum_product]
+        have hrow : ∀ y₁ ∈ Finset.Icc Y₁ Y₂,
+            ∑ y₂ ∈ Finset.Icc Y₁ Y₂, (if |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D then ‖b_coeff (y₁, y₂).1‖ ^ 2 else 0) ≤
+            (2 * D + 1) * ‖b_coeff y₁‖ ^ 2 := by
+          intro y₁ _
+          dsimp only
+          rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
+          refine mul_le_mul_of_nonneg_right ?_ (sq_nonneg _)
+          have hsub_y : (Finset.Icc Y₁ Y₂).filter (fun y₂ : ℕ => |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D) ⊆
+              Finset.Icc (y₁ - ⌊D⌋₊) (y₁ + ⌊D⌋₊) := by
+            intro y₂ hy₂
+            have hyD : |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D := (Finset.mem_filter.mp hy₂).2
+            rw [abs_le] at hyD
+            have hfl : (⌊D⌋₊ : ℝ) ≤ D := Nat.floor_le hD_nn
+            have hlt : D < (⌊D⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one D
+            rw [Finset.mem_Icc]
+            have hlo : (y₁ : ℤ) - (⌊D⌋₊ : ℤ) ≤ y₂ := by
+              have : (y₁ : ℝ) - (⌊D⌋₊ : ℝ) - 1 < y₂ := by linarith
+              have : (y₁ : ℤ) - (⌊D⌋₊ : ℤ) - 1 < y₂ := by exact_mod_cast this
+              omega
+            have hhi : (y₂ : ℤ) ≤ (y₁ : ℤ) + (⌊D⌋₊ : ℤ) := by
+              have : (y₂ : ℝ) < (y₁ : ℝ) + (⌊D⌋₊ : ℝ) + 1 := by linarith
+              have : (y₂ : ℤ) < (y₁ : ℤ) + (⌊D⌋₊ : ℤ) + 1 := by exact_mod_cast this
+              omega
+            omega
+          have hcard_le : ((Finset.Icc Y₁ Y₂).filter (fun y₂ : ℕ => |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D)).card ≤ 2 * ⌊D⌋₊ + 1 := by
+            refine le_trans (Finset.card_le_card hsub_y) ?_
+            rw [Nat.card_Icc]; omega
+          calc (((Finset.Icc Y₁ Y₂).filter (fun y₂ : ℕ => |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D)).card : ℝ)
+              ≤ (2 * ⌊D⌋₊ + 1 : ℕ) := by exact_mod_cast hcard_le
+            _ ≤ 2 * D + 1 := by push_cast; linarith [Nat.floor_le hD_nn]
+        calc ∑ y₁ ∈ Finset.Icc Y₁ Y₂, ∑ y₂ ∈ Finset.Icc Y₁ Y₂, (if |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D then ‖b_coeff (y₁, y₂).1‖ ^ 2 else 0)
+            ≤ ∑ y₁ ∈ Finset.Icc Y₁ Y₂, (2 * D + 1) * ‖b_coeff y₁‖ ^ 2 :=
+              Finset.sum_le_sum fun y₁ hy₁ => hrow y₁ hy₁
           _ = (2 * D + 1) * ∑ y₁ ∈ Finset.Icc Y₁ Y₂, ‖b_coeff y₁‖ ^ 2 := by rw [Finset.mul_sum]
           _ ≤ (2 * D + 1) * B_norm := mul_le_mul_of_nonneg_left hB_norm (by positivity)
       have h3 : ∑ p ∈ Near, ‖b_coeff p.2‖ ^ 2 ≤ (2 * D + 1) * B_norm := by
-        calc ∑ p ∈ Near, ‖b_coeff p.2‖ ^ 2
-            = ∑ p ∈ Finset.Icc Y₁ Y₂ ×ˢ Finset.Icc Y₁ Y₂,
-                if |(p.1 : ℝ) - p.2| ≤ D then ‖b_coeff p.2‖ ^ 2 else 0 := by
-              dsimp only [Near]; rw [Finset.sum_filter]
-          _ = ∑ y₂ ∈ Finset.Icc Y₁ Y₂, ∑ y₁ ∈ Finset.Icc Y₁ Y₂,
-                if |(y₁ : ℝ) - y₂| ≤ D then ‖b_coeff y₂‖ ^ 2 else 0 := by
-              rw [Finset.sum_product_right]
-          _ = ∑ y₂ ∈ Finset.Icc Y₁ Y₂,
-                (((Finset.Icc Y₁ Y₂).filter (fun y₁ => |(y₁ : ℝ) - y₂| ≤ D)).card : ℝ) * ‖b_coeff y₂‖ ^ 2 := by
-              refine Finset.sum_congr rfl fun y₂ _ => ?_
-              rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
-          _ ≤ ∑ y₂ ∈ Finset.Icc Y₁ Y₂, (2 * D + 1) * ‖b_coeff y₂‖ ^ 2 := by
-              refine Finset.sum_le_sum fun y₂ _ => mul_le_mul_of_nonneg_right ?_ (sq_nonneg _)
-              have hle : (((Finset.Icc Y₁ Y₂).filter (fun y₁ => |(y₁ : ℝ) - y₂| ≤ D)).card : ℝ) ≤ (2 * ⌊D⌋₊ + 1 : ℕ) := by
-                exact_mod_cast hcard_D2 y₂
-              push_cast at hle; linarith [Nat.floor_le hD_nn]
+        dsimp only [Near]
+        rw [Finset.sum_filter, Finset.sum_product, Finset.sum_comm]
+        have hrow : ∀ y₂ ∈ Finset.Icc Y₁ Y₂,
+            ∑ y₁ ∈ Finset.Icc Y₁ Y₂, (if |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D then ‖b_coeff (y₁, y₂).2‖ ^ 2 else 0) ≤
+            (2 * D + 1) * ‖b_coeff y₂‖ ^ 2 := by
+          intro y₂ _
+          dsimp only
+          rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
+          refine mul_le_mul_of_nonneg_right ?_ (sq_nonneg _)
+          have hsub_y : (Finset.Icc Y₁ Y₂).filter (fun y₁ : ℕ => |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D) ⊆
+              Finset.Icc (y₂ - ⌊D⌋₊) (y₂ + ⌊D⌋₊) := by
+            intro y₁ hy₁
+            have hyD : |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D := (Finset.mem_filter.mp hy₁).2
+            rw [abs_le] at hyD
+            have hfl : (⌊D⌋₊ : ℝ) ≤ D := Nat.floor_le hD_nn
+            have hlt : D < (⌊D⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one D
+            rw [Finset.mem_Icc]
+            have hlo : (y₂ : ℤ) - (⌊D⌋₊ : ℤ) ≤ y₁ := by
+              have : (y₂ : ℝ) - (⌊D⌋₊ : ℝ) - 1 < y₁ := by linarith
+              have : (y₂ : ℤ) - (⌊D⌋₊ : ℤ) - 1 < y₁ := by exact_mod_cast this
+              omega
+            have hhi : (y₁ : ℤ) ≤ (y₂ : ℤ) + (⌊D⌋₊ : ℤ) := by
+              have : (y₁ : ℝ) < (y₂ : ℝ) + (⌊D⌋₊ : ℝ) + 1 := by linarith
+              have : (y₁ : ℤ) < (y₂ : ℤ) + (⌊D⌋₊ : ℤ) + 1 := by exact_mod_cast this
+              omega
+            omega
+          have hcard_le : ((Finset.Icc Y₁ Y₂).filter (fun y₁ : ℕ => |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D)).card ≤ 2 * ⌊D⌋₊ + 1 := by
+            refine le_trans (Finset.card_le_card hsub_y) ?_
+            rw [Nat.card_Icc]; omega
+          calc (((Finset.Icc Y₁ Y₂).filter (fun y₁ : ℕ => |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D)).card : ℝ)
+              ≤ (2 * ⌊D⌋₊ + 1 : ℕ) := by exact_mod_cast hcard_le
+            _ ≤ 2 * D + 1 := by push_cast; linarith [Nat.floor_le hD_nn]
+        calc ∑ y₂ ∈ Finset.Icc Y₁ Y₂, ∑ y₁ ∈ Finset.Icc Y₁ Y₂, (if |(y₁ : ℝ) - (y₂ : ℝ)| ≤ D then ‖b_coeff (y₁, y₂).2‖ ^ 2 else 0)
+            ≤ ∑ y₂ ∈ Finset.Icc Y₁ Y₂, (2 * D + 1) * ‖b_coeff y₂‖ ^ 2 :=
+              Finset.sum_le_sum fun y₂ hy₂ => hrow y₂ hy₂
           _ = (2 * D + 1) * ∑ y₂ ∈ Finset.Icc Y₁ Y₂, ‖b_coeff y₂‖ ^ 2 := by rw [Finset.mul_sum]
           _ ≤ (2 * D + 1) * B_norm := mul_le_mul_of_nonneg_left hB_norm (by positivity)
       rw [← Finset.sum_div, Finset.sum_add_distrib] at h1
@@ -946,7 +944,7 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
       intro ⟨y₁, y₂⟩ hp
       simp only [Far, Finset.mem_filter, Finset.mem_product, not_le] at hp
       have hy_ne : y₁ ≠ y₂ := by
-        intro heq; subst heq; rw [sub_self, abs_zero] at hp; linarith [hp.2, hD_nn]
+        intro heq; subst heq; rw [sub_self, abs_zero] at hp; exact not_le_of_gt hp.2 hD_nn
       have hy₁_mem := (Finset.mem_Icc.mp hp.1.1)
       have hy₂_mem := (Finset.mem_Icc.mp hp.1.2)
       have hdom_pair := hdom_all y₁ hp.1.1 y₂ hp.1.2 hy_ne
@@ -959,13 +957,10 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
       have hTy_gt : ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ ^ (2 / 3 : ℝ) ≤ T_y := by
         dsimp only [T_y]
         have hdiff_gt : T₀ ^ (-1 / 3 : ℝ) < |(y₁ : ℝ) - y₂| / Y₁ := by
-          rw [lt_div_iff₀ hY₁_pos]
-          have hDlt : (Y₁ : ℝ) * T₀ ^ (-1 / 3 : ℝ) < |(y₁ : ℝ) - y₂| := hp.2
-          linarith
+          rw [lt_div_iff₀ hY₁_pos, mul_comm]; exact hp.2
         have hT_eq : T₀ * T₀ ^ (-1 / 3 : ℝ) = T₀ ^ (2 / 3 : ℝ) := by
-          conv_lhs => lhs; rw [← Real.rpow_one T₀]
-          rw [← Real.rpow_add (by linarith)]
-          norm_num
+          rw [show (2 / 3 : ℝ) = 1 + (-1 / 3 : ℝ) by norm_num,
+            Real.rpow_add (by linarith only [hT₀_ge1]), Real.rpow_one]
         calc ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ ^ (2 / 3 : ℝ)
             = ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ * T₀ ^ (-1 / 3 : ℝ) := by rw [← hT_eq]; ring
           _ ≤ ((q_den : ℝ)⁻¹ * (2 : ℝ) ^ (-(5 * R + 1 : ℤ))) * T₀ * (|(y₁ : ℝ) - y₂| / Y₁) :=
@@ -980,8 +975,7 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
           _ = (2 * (X₁ : ℝ)) * (((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * T₀ ^ (-2 / 3 : ℝ)) := by
               rw [show -(5 * R + 1 : ℤ) = -(((5 * R + 1 : ℕ) : ℤ)) by push_cast; rfl,
                 div_eq_mul_inv, mul_inv, mul_inv, inv_inv, zpow_neg, zpow_natCast, inv_inv,
-                ← Real.rpow_neg (by linarith), show -(2 / 3 : ℝ) = -2 / 3 by norm_num]
-              ring
+                ← Real.rpow_neg (by linarith only [hT₀_ge1]), show -(2 / 3 : ℝ) = -2 / 3 by norm_num]
       have hpow_eq : (2 * (X₁ : ℝ)) ^ (1 - η_exp) = (2 * (X₁ : ℝ)) * (2 * (X₁ : ℝ)) ^ (-η_exp) := by
         rw [sub_eq_add_neg, Real.rpow_add (by positivity), Real.rpow_one]
       refine le_trans h_in ?_
@@ -1038,8 +1032,26 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
           128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by
     refine le_trans hre_le ?_
     rw [hsplit]
-    linarith [hNear_bd, hFar_bd]
-  exact le_trans hCS (le_trans (mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn) (by ring_nf; rfl))
+    linarith only [hNear_bd, hFar_bd]
+  calc ‖∑ x ∈ Finset.Icc X₁ X_top,
+        a_coeff x *
+          ∑ y ∈ (Finset.Icc Y₁ Y₂).filter (fun y => ⌈a⌉₊ ≤ x * y ∧ x * y ≤ ⌊b⌋₊),
+            b_coeff y * (w (x * y) : ℂ) *
+              ePhase (∑ r ∈ A, (h r : ℝ) * n / ((q_den : ℝ) * ((x * y : ℕ) : ℝ) ^ r))‖ ^ 2
+      ≤ (∑ x ∈ Finset.Icc X₁ X_top, ‖a_coeff x‖ ^ 2) *
+          ∑ x ∈ Finset.Icc X₁ X_top,
+            ‖∑ y ∈ (Finset.Icc Y₁ Y₂).filter (fun y => ⌈a⌉₊ ≤ x * y ∧ x * y ≤ ⌊b⌋₊),
+              b_coeff y * (w (x * y) : ℂ) *
+                ePhase (∑ r ∈ A, (h r : ℝ) * n / ((q_den : ℝ) * ((x * y : ℕ) : ℝ) ^ r))‖ ^ 2 := hCS
+    _ ≤ A_norm * (B_norm * W₀ ^ 2 *
+          (32 * P * T₀ ^ (-1 / 3 : ℝ) + 8 * P ^ (1 / 2 : ℝ) +
+            128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
+            128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp))) :=
+        mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn
+    _ = A_norm * B_norm * W₀ ^ 2 *
+          (32 * P * T₀ ^ (-1 / 3 : ℝ) + 8 * P ^ (1 / 2 : ℝ) +
+            128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
+            128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by ring
 
 lemma type_I_no_log_single_d_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     (R K_max : ℕ) (hK_max : 3 ≤ K_max)
@@ -2950,7 +2962,8 @@ theorem lemma_2_4_i_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 
           rw [h_rhs_eq]
           exact mul_le_mul_of_nonneg_right h2_le (by positivity)
       _ = (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [mul_assoc, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne', show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
+          rw [mul_assoc, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
+            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
   -- Bound `P ^ (-η'_δ) * (log P)^3`
   have hP_pow : P ^ (-η'_δ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hP_rpow : P ^ (-η'_δ) ≤ (Real.log n) ^ (-(R + 5 : ℤ)) := by
@@ -2962,8 +2975,8 @@ theorem lemma_2_4_i_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 
         ≤ (Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ 3 :=
           mul_le_mul hP_rpow hlogP_cube (by positivity) (by positivity)
       _ = 1 * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [one_mul, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne',
-            show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
+          rw [one_mul, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
+            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
       _ ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) :=
           mul_le_mul_of_nonneg_right (one_le_pow₀ (by norm_num)) (by positivity)
   calc C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3
