@@ -70,7 +70,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
             dsimp only [Function.comp_def]
             rw [Real.log_rpow hx]
-            field_simp [hpos.ne']
+            field_simp [hpos.ne', hδ0.ne', show (R + 2 : ℝ) ≠ 0 by positivity, (Real.rpow_pos_of_pos hx _).ne']
           have hpow := hsub.pow (R + 2)
           simp only [zero_pow (by omega : R + 2 ≠ 0)] at hpow
           refine hpow.congr' ?_
@@ -1604,7 +1604,7 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
           dsimp only [Function.comp_def]
           rw [Real.log_rpow hx]
-          field_simp [hpos.ne']
+          field_simp [hpos.ne', hδ0.ne', hη'_pos.ne', show (R + 5 : ℝ) ≠ 0 by positivity, (Real.rpow_pos_of_pos hx _).ne']
         have hpow := (hsub.comp tendsto_natCast_atTop_atTop).pow (R + 5)
         simp only [zero_pow (by omega : R + 5 ≠ 0)] at hpow
         refine hpow.congr' ?_
@@ -1739,7 +1739,7 @@ theorem lemma_2_4_ii_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
           dsimp only [Function.comp_def]
           rw [Real.log_rpow hx]
-          field_simp [hpos.ne']
+          field_simp [hpos.ne', hη_pos.ne', (Real.rpow_pos_of_pos hx _).ne']
         have hpow := (hsub.comp tendsto_natCast_atTop_atTop).pow 3
         simp only [zero_pow (by omega : 3 ≠ 0)] at hpow
         refine hpow.congr' ?_

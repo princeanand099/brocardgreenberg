@@ -919,7 +919,9 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     have hX1_Y1 : (X₁ : ℝ) * (Y₁ : ℝ) ≤ 4 * P := by linarith [hXY_hi]
     have hX_sqrt' : (X₁ : ℝ) ≤ 2 * P ^ (1 / 2 : ℝ) := by
       rwa [Real.sqrt_eq_rpow] at hX_sqrt
-    calc ∑ p ∈ Near, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ * ‖∑ x ∈ _, _‖
+    calc ∑ p ∈ Near, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ *
+        ‖∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊),
+          (w (x * p.1) * w (x * p.2) : ℂ) * ePhase (F (x * p.1) - F (x * p.2))‖
         ≤ ∑ p ∈ Near, (‖b_coeff p.1‖ * ‖b_coeff p.2‖) * (2 * (X₁ : ℝ) * W₀ ^ 2) :=
           Finset.sum_le_sum fun p hp => mul_le_mul_of_nonneg_left (hinner p hp) (by positivity)
       _ = (∑ p ∈ Near, ‖b_coeff p.1‖ * ‖b_coeff p.2‖) * (2 * (X₁ : ℝ) * W₀ ^ 2) := by rw [Finset.sum_mul]
@@ -993,8 +995,7 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     have hfar_sum : ∑ p ∈ Far, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ ≤ 2 * (Y₁ : ℝ) * B_norm := by
       have hsub : Far ⊆ Finset.Icc Y₁ Y₂ ×ˢ Finset.Icc Y₁ Y₂ := Finset.filter_subset _ _
       refine le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => by positivity)) ?_
-      rw [Finset.sum_product]
-      simp_rw [← Finset.mul_sum, ← Finset.sum_mul]
+      rw [Finset.sum_product]; dsimp only; rw [← Finset.sum_mul_sum]
       have h1 : (∑ y ∈ Finset.Icc Y₁ Y₂, ‖b_coeff y‖) ^ 2 ≤ ((Finset.Icc Y₁ Y₂).card : ℝ) * B_norm := by
         have hcs := Finset.sum_mul_sq_le_sq_mul_sq (Finset.Icc Y₁ Y₂) (fun _ => (1 : ℝ)) (fun y => ‖b_coeff y‖)
         simp only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one] at hcs
@@ -1004,7 +1005,9 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
         exact_mod_cast le_trans this hY₂_2
       rw [← sq]
       exact le_trans h1 (mul_le_mul_of_nonneg_right hcard hB_nn)
-    calc ∑ p ∈ Far, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ * ‖∑ x ∈ _, _‖
+    calc ∑ p ∈ Far, ‖b_coeff p.1‖ * ‖b_coeff p.2‖ *
+        ‖∑ x ∈ (Finset.Icc X₁ X_top).filter (fun x => ⌈a⌉₊ ≤ x * p.1 ∧ x * p.1 ≤ ⌊b⌋₊ ∧ ⌈a⌉₊ ≤ x * p.2 ∧ x * p.2 ≤ ⌊b⌋₊),
+          (w (x * p.1) * w (x * p.2) : ℂ) * ePhase (F (x * p.1) - F (x * p.2))‖
         ≤ ∑ p ∈ Far, (‖b_coeff p.1‖ * ‖b_coeff p.2‖) *
             (8 * W₀ ^ 2 * C_exp * (2 * (X₁ : ℝ)) *
               (((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * T₀ ^ (-2 / 3 : ℝ) + (2 * (X₁ : ℝ)) ^ (-η_exp))) :=
@@ -1036,7 +1039,7 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     refine le_trans hre_le ?_
     rw [hsplit]
     linarith [hNear_bd, hFar_bd]
-  exact le_trans hCS (mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn)
+  exact le_trans hCS (le_trans (mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn) (by ring_nf; rfl))
 
 lemma type_I_no_log_single_d_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     (R K_max : ℕ) (hK_max : 3 ≤ K_max)
@@ -1331,7 +1334,7 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
             filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
             dsimp only [Function.comp_def]
             rw [Real.log_rpow hx]
-            field_simp [hpos.ne']
+            field_simp [hpos.ne', hδ0.ne', show (R + 2 : ℝ) ≠ 0 by positivity, (Real.rpow_pos_of_pos hx _).ne']
           have hpow := hsub.pow (R + 2)
           simp only [zero_pow (by omega : R + 2 ≠ 0)] at hpow
           refine hpow.congr' ?_
@@ -2877,7 +2880,7 @@ theorem lemma_2_4_i_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 
           filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
           dsimp only [Function.comp_def]
           rw [Real.log_rpow hx]
-          field_simp [hpos.ne']
+          field_simp [hpos.ne', hδ0.ne', hη'_pos.ne', show (R + 5 : ℝ) ≠ 0 by positivity, (Real.rpow_pos_of_pos hx _).ne']
         have hpow := (hsub.comp tendsto_natCast_atTop_atTop).pow (R + 5)
         simp only [zero_pow (by omega : R + 5 ≠ 0)] at hpow
         refine hpow.congr' ?_
