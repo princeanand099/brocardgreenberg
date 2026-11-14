@@ -1032,26 +1032,8 @@ lemma type_II_block_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
           128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by
     refine le_trans hre_le ?_
     rw [hsplit]
-    linarith only [hNear_bd, hFar_bd]
-  calc ‖∑ x ∈ Finset.Icc X₁ X_top,
-        a_coeff x *
-          ∑ y ∈ (Finset.Icc Y₁ Y₂).filter (fun y => ⌈a⌉₊ ≤ x * y ∧ x * y ≤ ⌊b⌋₊),
-            b_coeff y * (w (x * y) : ℂ) *
-              ePhase (∑ r ∈ A, (h r : ℝ) * n / ((q_den : ℝ) * ((x * y : ℕ) : ℝ) ^ r))‖ ^ 2
-      ≤ (∑ x ∈ Finset.Icc X₁ X_top, ‖a_coeff x‖ ^ 2) *
-          ∑ x ∈ Finset.Icc X₁ X_top,
-            ‖∑ y ∈ (Finset.Icc Y₁ Y₂).filter (fun y => ⌈a⌉₊ ≤ x * y ∧ x * y ≤ ⌊b⌋₊),
-              b_coeff y * (w (x * y) : ℂ) *
-                ePhase (∑ r ∈ A, (h r : ℝ) * n / ((q_den : ℝ) * ((x * y : ℕ) : ℝ) ^ r))‖ ^ 2 := hCS
-    _ ≤ A_norm * (B_norm * W₀ ^ 2 *
-          (32 * P * T₀ ^ (-1 / 3 : ℝ) + 8 * P ^ (1 / 2 : ℝ) +
-            128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
-            128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp))) :=
-        mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn
-    _ = A_norm * B_norm * W₀ ^ 2 *
-          (32 * P * T₀ ^ (-1 / 3 : ℝ) + 8 * P ^ (1 / 2 : ℝ) +
-            128 * ((q_den : ℝ) * (2 : ℝ) ^ (5 * R + 1)) * C_exp * P * T₀ ^ (-2 / 3 : ℝ) +
-            128 * C_exp * P * (2 * (X₁ : ℝ)) ^ (-η_exp)) := by ring
+    linarith [hNear_bd, hFar_bd]
+  exact le_trans hCS (le_trans (mul_le_mul hA_norm htot (Finset.sum_nonneg fun _ _ => sq_nonneg _) hA_nn) (by ring_nf; rfl))
 
 lemma type_I_no_log_single_d_bound_mod (q_den : ℕ) (hq_den : 1 ≤ q_den)
     (R K_max : ℕ) (hK_max : 3 ≤ K_max)
@@ -1618,7 +1600,7 @@ lemma lemma_2_4_core_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 :
         _ ≤ W₀ * (64 * P * P ^ (-η'_δ)) := mul_le_mul_of_nonneg_left hsqrt_bd hW₀
         _ = 64 * W₀ * P * P ^ (-η'_δ) := by ring
     -- Step 2: Vaughan's identity
-    have hvaugh := vaughan_identity U U hU_pos hU_pos hA₀_pos g
+    have hvaugh := vaughan_identity U U hU_pos hU_pos (B₀ := B₀) hA₀_pos g
     have hS1_zero : ∑ m ∈ (Finset.Icc A₀ B₀).filter (· ≤ U), (ArithmeticFunction.vonMangoldt m : ℂ) * g m = 0 := by
       refine Finset.sum_eq_zero fun m hm => ?_
       rw [Finset.mem_filter, Finset.mem_Icc] at hm; omega
@@ -2962,8 +2944,7 @@ theorem lemma_2_4_i_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 
           rw [h_rhs_eq]
           exact mul_le_mul_of_nonneg_right h2_le (by positivity)
       _ = (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [mul_assoc, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
-            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
+          rw [mul_assoc, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne', show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
   -- Bound `P ^ (-η'_δ) * (log P)^3`
   have hP_pow : P ^ (-η'_δ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hP_rpow : P ^ (-η'_δ) ≤ (Real.log n) ^ (-(R + 5 : ℤ)) := by
@@ -2975,8 +2956,8 @@ theorem lemma_2_4_i_mod (q_den : ℕ) (hq_den : 1 ≤ q_den) (δ : ℝ) (hδ0 : 
         ≤ (Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ 3 :=
           mul_le_mul hP_rpow hlogP_cube (by positivity) (by positivity)
       _ = 1 * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [one_mul, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
-            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
+          rw [one_mul, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne',
+            show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
       _ ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) :=
           mul_le_mul_of_nonneg_right (one_le_pow₀ (by norm_num)) (by positivity)
   calc C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3

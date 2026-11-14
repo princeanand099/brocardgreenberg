@@ -342,7 +342,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         _ ≤ W₀ * (64 * P * P ^ (-η'_δ)) := mul_le_mul_of_nonneg_left hsqrt_bd hW₀
         _ = 64 * W₀ * P * P ^ (-η'_δ) := by ring
     -- Step 2: Vaughan's identity
-    have hvaugh := @vaughan_identity U U hU_pos hU_pos A₀ B₀ hA₀_pos g
+    have hvaugh := vaughan_identity U U hU_pos hU_pos (B₀ := B₀) hA₀_pos g
     have hS1_zero : ∑ m ∈ (Finset.Icc A₀ B₀).filter (· ≤ U), (ArithmeticFunction.vonMangoldt m : ℂ) * g m = 0 := by
       refine Finset.sum_eq_zero fun m hm => ?_
       rw [Finset.mem_filter, Finset.mem_Icc] at hm; omega
@@ -1674,8 +1674,7 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           rw [h_rhs_eq]
           exact mul_le_mul_of_nonneg_right h2_le (by positivity)
       _ = (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [mul_assoc, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
-            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
+          rw [mul_assoc, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne', show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
   -- Bound `P ^ (-η'_δ) * (log P)^3`
   have hP_pow : P ^ (-η'_δ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hP_rpow : P ^ (-η'_δ) ≤ (Real.log n) ^ (-(R + 5 : ℤ)) := by
@@ -1687,8 +1686,8 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         ≤ (Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ 3 :=
           mul_le_mul hP_rpow hlogP_cube (by positivity) (by positivity)
       _ = 1 * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [one_mul, ← zpow_natCast (Real.log n) 3, ← zpow_add₀ hlog_pos.ne',
-            show -(R + 5 : ℤ) + ((3 : ℕ) : ℤ) = -(R + 2 : ℤ) by omega]
+          rw [one_mul, show (Real.log n) ^ (3 : ℕ) = (Real.log n) ^ (3 : ℤ) by norm_cast, ← zpow_add₀ hlog_pos.ne',
+            show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
       _ ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) :=
           mul_le_mul_of_nonneg_right (one_le_pow₀ (by norm_num)) (by positivity)
   calc C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3
