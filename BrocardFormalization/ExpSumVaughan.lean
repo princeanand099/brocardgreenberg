@@ -624,7 +624,7 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
           (if U < m / k then -∑ d ∈ (m / k).divisors.filter (· ≤ U), (ArithmeticFunction.moebius d : ℂ) else 0)) * g m) := by
     refine Finset.sum_congr rfl fun m hm => ?_
     have h1 := congr_arg (· * g m) (hpt m (le_trans hA (Finset.mem_Icc.mp hm).1))
-    rw [h1]
+    conv_lhs => rw [h1]
     by_cases hmV : m ≤ V
     · simp only [hmV, ↓reduceIte]; ring
     · simp only [hmV, ↓reduceIte]; ring
@@ -733,7 +733,7 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
         have hnot : ¬ U < m / k := by omega
         simp [hnot]
       rw [h0, add_zero, Finset.filter_filter]
-      refine Finset.sum_congr (by ext k; simp only [Finset.mem_filter]; omega) fun k hk => ?_
+      refine Finset.sum_congr (by ext k; simp only [Finset.mem_filter]; exact and_congr_right fun _ => by omega) fun k hk => ?_
       have hk_dvd : k ∣ m := Nat.dvd_of_mem_divisors (Finset.mem_filter.mp hk).1
       rw [Nat.mul_div_cancel' hk_dvd]
       by_cases hU_mk : U < m / k
@@ -835,7 +835,7 @@ lemma iteratedDeriv_sum_laurent (A : Finset ℕ) (hA : ∀ r ∈ A, 1 ≤ r) (c 
         Nat.descFactorial (r + k - 1) k * (r + k) := by
       rw [show r + (k + 1) - 1 = (r + k - 1) + 1 by omega, Nat.succ_descFactorial_succ, mul_comm]
       congr 1; omega
-    rw [hdesc, show -(r + (k + 1) : ℤ) = -(r + k : ℤ) - 1 by omega]
+    rw [hdesc, show -((r : ℤ) + ((k + 1 : ℕ) : ℤ)) = -((r : ℤ) + (k : ℤ)) - 1 by omega]
     push_cast
     ring
 
