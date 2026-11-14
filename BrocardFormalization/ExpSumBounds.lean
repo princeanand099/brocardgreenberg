@@ -4,7 +4,7 @@ import BrocardFormalization.ExternalAxiomsAnalytic
 import BrocardFormalization.ExpSumCore
 import BrocardFormalization.ExpSumMid
 
-open Real Complex Nat Finset
+open Real Complex Nat Finset Filter Topology
 
 namespace BrocardFormalization
 
@@ -122,8 +122,9 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               field_simp [hpos.ne']
             have hpow := (hsub.comp tendsto_natCast_atTop_atTop).pow (R + 2)
             simp only [zero_pow (by omega : R + 2 ≠ 0)] at hpow
-            exact (by simpa using (hpow.const_mul 3).const_mul
-              ((3 * (R + 2 : ℝ)) ^ (R + 2) * (R : ℝ) ^ 2 * (2 : ℝ) ^ (R + 1) * (8 : ℝ) ^ (K_max - 1))))
+            have hfin := (hpow.const_mul 3).const_mul
+              ((3 * (R + 2 : ℝ)) ^ (R + 2) * (R : ℝ) ^ 2 * (2 : ℝ) ^ (R + 1) * (8 : ℝ) ^ (K_max - 1))
+            simpa only [mul_zero] using hfin)
         filter_upwards [eventually_ge_atTop 3] with n hn3
         have hn_pos : (0 : ℝ) < n := by exact_mod_cast (by omega : 0 < n)
         have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast (by omega : 1 ≤ n)
@@ -496,7 +497,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       have h2 : Real.log ((U * U : ℕ) : ℝ) ≤ Real.log P := Real.log_le_log (by exact_mod_cast (by nlinarith [hU_pos]))
         (by push_cast; simpa [sq] using hU_sq_lt_P.le)
       linarith
-    -- Now bound `S2a` using `type_I_single_d_bound` and `S2b` using `type_I_no_log_single_d_bound`!
     have h_err_sum : ∀ d : ℕ, 1 ≤ d → d ≤ U * U →
         (2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp) ≤
           2 * (2 : ℝ) ^ (R + 1) * (P / d) * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) := by
@@ -1106,7 +1106,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                         linarith [Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Y₂) : (1 : ℝ) ≤ Y₂)]) hlog_bd 3)
                         (by positivity) (by positivity)
                   _ = 16 * (Y₁ : ℝ) * (Real.log P) ^ 3 := by ring
-            -- Helper for a single `(X₁, X_top, Y₁, Y₂)` sub-block
             have hsub_block : ∀ (X₁ X_top Y₁ Y₂ : ℕ) (a_c b_c : ℕ → ℂ) (A_n B_n : ℝ),
                 1 ≤ X₁ → M₀ ≤ (X₁ : ℝ) → P ^ (1 / 3 : ℝ) / 8 ≤ (X₁ : ℝ) → X_top ≤ 2 * X₁ →
                 (X₁ : ℝ) ≤ 2 * Real.sqrt P →
@@ -1203,7 +1202,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                   _ = (Real.sqrt C_II_sq * W₀ * P * (Real.log P) ^ 2 * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ))) ^ 2 := by
                       rw [mul_pow, mul_pow, mul_pow, mul_pow, Real.sq_sqrt (by positivity)]; ring
               exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq_le
-            -- Now apply `hsub_block` by splitting `[Y_lo, Y_hi]` into at most 3 dyadic pieces!
             set Y_lo := max (U + 1) (A₀ / (2 * K₁))
             set Y_hi := B₀ / K₁
             have hY_lo_hi : ∀ k ∈ Finset.Icc K₁ K₂,
@@ -1232,8 +1230,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 have hr_A : (A₀ - 1) / k + 1 ≤ r :=
                   Nat.succ_le_of_lt (Nat.div_lt_of_lt_mul (by rw [mul_comm]; omega))
                 exact ⟨max_le hr_A hr_U, (Nat.le_div_iff_mul_le (by omega)).mpr (by linarith)⟩
-            -- Split `[Y_lo, Y_hi]` into at most 3 dyadic intervals `[Y_lo, 2*Y_lo]`, `[2*Y_lo+1, 4*Y_lo]`, `[4*Y_lo+1, Y_hi]`
-            -- First check `Y_hi ≤ 8 * Y_lo` (when `Y_lo ≤ Y_hi`):
             by_cases hY_empty : Y_hi < Y_lo
             · have h0 : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                   ∑ r ∈ Finset.Icc (max ((A₀ - 1) / k + 1) (U + 1)) (B₀ / k), c_r r * g (k * r) = 0 := by
@@ -1243,7 +1239,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             · push_neg at hY_empty
               have hY_lo_pos : 1 ≤ Y_lo := le_trans (by omega : 1 ≤ U + 1) (le_max_left _ _)
               have hY_hi_8 : Y_hi ≤ 8 * Y_lo := by
-                -- `Y_hi = B₀ / K₁ ≤ 2 * P / K₁`, and `Y_lo ≥ A₀ / (2 * K₁) ≥ (P - 2 K₁) / (2 K₁)`
                 have h1 : (Y_hi : ℝ) ≤ 2 * P / K₁ := by
                   rw [le_div_iff₀ (by exact_mod_cast hK₁_pos)]
                   exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
@@ -1314,7 +1309,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
               have hY_hi_B0 : Y_hi ≤ B₀ := Nat.div_le_self B₀ K₁
               have hK₂_B0 : K₂ ≤ B₀ := le_trans (min_le_right _ _) (Nat.div_le_self B₀ U)
-              -- Split `Finset.Icc Y_lo Y_hi` into `[Y_lo, min Y_hi (2 * Y_lo)]`, `[2 * Y_lo + 1, min Y_hi (4 * Y_lo)]`, `[4 * Y_lo + 1, Y_hi]`
               have hpart_Y : Finset.Icc Y_lo Y_hi =
                   Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo)) ∪
@@ -1326,7 +1320,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               have hd123 : Disjoint (Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo))) (Finset.Icc (4 * Y_lo + 1) Y_hi) := by
                 rw [Finset.disjoint_left]; intro r h1 h2; simp only [Finset.mem_union, Finset.mem_Icc] at h1 h2; omega
-              -- Helper for one `(Y_a, Y_b)` piece
               have hpiece : ∀ (Y_a Y_b : ℕ), Y_lo ≤ Y_a → Y_b ≤ Y_hi → Y_b ≤ 2 * Y_a →
                   ‖∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                       ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
@@ -1362,7 +1355,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                       hK₁_pos hK₁_M0 (by linarith) hK₂_2K₁ hK_sq hYa_pos hYab hYb2 hKY_lo hKY_hi
                       hAn hBn (by positivity) (by positivity) hAB
                   · push_neg at hK_sq
-                    -- Swap `k` and `r`!
                     have hswap : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                           ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
                             c_r r * g (k * r) =
@@ -1783,5 +1775,7 @@ theorem lemma_2_4_ii_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           hlogP_cube (by positivity) (by positivity)
     _ = 2 * C_core * W₀ * P * ((n : ℝ) ^ (-2 * η_δ) * (n : ℝ) ^ η_δ) := by ring
     _ = C_δ * W₀ * P * (n : ℝ) ^ (-η_δ) := by rw [hprod]; dsimp only [C_δ]; ring
+
+end
 
 end BrocardFormalization
