@@ -19,7 +19,7 @@ lemma norm_ePhase (x : ℝ) : ‖ePhase x‖ = 1 := by
 lemma descFactorial_le_factorial : ∀ n k : ℕ, n.descFactorial k ≤ n.factorial
   | 0, 0 => by simp
   | 0, k + 1 => by simp
-  | n + 1, 0 => by simp [Nat.factorial_pos]
+  | n + 1, 0 => by rw [Nat.descFactorial_zero]; exact Nat.factorial_pos (n + 1)
   | n + 1, k + 1 => by
       rw [Nat.succ_descFactorial_succ, Nat.factorial_succ]
       exact Nat.mul_le_mul_left (n + 1) (descFactorial_le_factorial n k)
@@ -323,7 +323,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
                 have : r₀ ≤ Nat.descFactorial (r₀ + 3 - 1) 3 := by
                   rw [show r₀ + 3 - 1 = (r₀ + 1) + 1 by omega, Nat.succ_descFactorial_succ,
                     Nat.succ_descFactorial_succ, Nat.descFactorial_one]
-                  nlinarith
+                  exact le_trans (Nat.le_mul_of_pos_left r₀ (by omega)) (Nat.le_mul_of_pos_left _ (by omega))
                 exact_mod_cast this
               have hz : M₂ ^ (-((r₀ : ℤ) + ((3 : ℕ) : ℤ))) = M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3 := by
                 rw [show -((r₀ : ℤ) + ((3 : ℕ) : ℤ)) = -(r₀ : ℤ) + (-3 : ℤ) by omega,
