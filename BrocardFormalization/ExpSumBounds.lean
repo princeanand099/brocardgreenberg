@@ -375,14 +375,14 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             nlinarith
           have h_cancel_lhs : |(h r : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r)| * (P / d) ^ (-(r : ℤ)) =
               |(h r : ℝ)| * (n : ℝ) / 2 * P ^ (-(r : ℤ)) := by
-            rw [abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-              abs_of_pos (by positivity : (0 : ℝ) < 2 * (d : ℝ) ^ r),
+            rw [abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+              abs_of_pos (a := 2 * (d : ℝ) ^ r) (by positivity),
               zpow_neg, zpow_natCast, div_pow]
             field_simp [hd_pos.ne', hP_pos.ne']
           have h_cancel_rhs : |(h r₀ : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r₀)| * (2 * P / d) ^ (-(r₀ : ℤ)) =
               |(h r₀ : ℝ)| * (n : ℝ) / 2 * (2 : ℝ) ^ (-(r₀ : ℤ)) * P ^ (-(r₀ : ℤ)) := by
-            rw [abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-              abs_of_pos (by positivity : (0 : ℝ) < 2 * (d : ℝ) ^ r₀),
+            rw [abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+              abs_of_pos (a := 2 * (d : ℝ) ^ r₀) (by positivity),
               zpow_neg, zpow_neg, zpow_natCast, zpow_natCast, div_pow, mul_pow]
             field_simp [hd_pos.ne', hP_pos.ne']
           rw [mul_assoc _ (Nat.descFactorial _ _ : ℝ) _, mul_comm (Nat.descFactorial _ _ : ℝ) _,
@@ -446,8 +446,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                   _ = _ := by ring
       · have h_cancel : |(h r₀ : ℝ) * (n : ℝ) / (2 * (d : ℝ) ^ r₀)| * (r₀ : ℝ) * (P / d) ^ (-(r₀ : ℤ)) =
             |(h r₀ : ℝ)| * (n : ℝ) / 2 * (r₀ : ℝ) * P ^ (-(r₀ : ℤ)) := by
-          rw [abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-            abs_of_pos (by positivity : (0 : ℝ) < 2 * (d : ℝ) ^ r₀), zpow_neg, zpow_natCast, div_pow]
+          rw [abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+            abs_of_pos (a := 2 * (d : ℝ) ^ r₀) (by positivity), zpow_neg, zpow_natCast, div_pow]
           field_simp [hd_pos.ne', hP_pos.ne']
         rw [h_cancel]
         have hh_r0_le : |(h r₀ : ℝ)| ≤ 2 * (Real.log n) ^ (R + 2) + 1 := by
@@ -498,7 +498,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       have h2 : Real.log ((U * U : ℕ) : ℝ) ≤ Real.log P := Real.log_le_log (by exact_mod_cast (by nlinarith [hU_pos]))
         (by push_cast; simpa [sq] using hU_sq_lt_P.le)
       linarith
-    -- Now bound `S2a` using `type_I_single_d_bound` and `S2b` using `type_I_no_log_single_d_bound`!
     have h_err_sum : ∀ d : ℕ, 1 ≤ d → d ≤ U * U →
         (2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp) ≤
           2 * (2 : ℝ) ^ (R + 1) * (P / d) * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) := by
@@ -810,10 +809,12 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           have hXY_sub : (X₁ : ℝ) ^ (-(r : ℤ)) * (Y₁ : ℝ) ^ (-(r + 1 : ℤ)) ≤
               (4 / P) * ((X₁ : ℝ) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ))) := by
             have h1 : ((X₁ : ℝ) * (Y₁ : ℝ)) ^ (-(r - r₀ : ℤ)) ≤ (P / 4) ^ (-(r - r₀ : ℤ)) := by
-              rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
+              rw [show -(r - r₀ : ℤ) = -(((r - r₀ : ℕ) : ℤ)) by omega,
+                zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
               exact inv_anti₀ (pow_pos (by positivity) _) (pow_le_pow_left₀ (by positivity) hXY_lo _)
             have h2 : (P / 4) ^ (-(r - r₀ : ℤ)) ≤ (4 / P) := by
-              rw [zpow_neg, zpow_natCast, inv_div]
+              rw [show -(r - r₀ : ℤ) = -(((r - r₀ : ℕ) : ℤ)) by omega,
+                zpow_neg, zpow_natCast, inv_div]
               have hP4 : 1 ≤ P / 4 := by linarith
               calc (4 / P) ^ (r - r₀) ≤ (4 / P) ^ 1 := pow_le_pow_of_le_one (by positivity) (by rw [div_le_one hP_pos]; linarith) (by omega)
                 _ = 4 / P := pow_one _
@@ -851,8 +852,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 (Nat.descFactorial (r + k - 1) k : ℝ) * (X₁ : ℝ) ^ (-(r : ℤ))
               = (|(h r : ℝ)| * (n : ℝ) / 2) * |(y₁ : ℝ) ^ (-(r : ℤ)) - (y₂ : ℝ) ^ (-(r : ℤ))| *
                   (Nat.descFactorial (r + k - 1) k : ℝ) * (X₁ : ℝ) ^ (-(r : ℤ)) := by
-                  rw [abs_mul, abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-                    abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+                  rw [abs_mul, abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+                    abs_of_pos (a := (2 : ℝ)) (by norm_num)]
             _ ≤ ((2 * (Real.log n) ^ (R + 2) + 1) * (n : ℝ) / 2) *
                   ((r : ℝ) * |(y₁ : ℝ) - y₂| * (2 : ℝ) ^ (r - 1) * (Y₁ : ℝ) ^ (-(r + 1 : ℤ))) *
                   (K_fact * (Nat.descFactorial (r₀ + k - 1) k : ℝ)) * (X₁ : ℝ) ^ (-(r : ℤ)) := by
@@ -894,8 +895,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             _ ≤ (1 / (2 * max (A.card : ℝ) 1)) *
                   (|(h r₀ : ℝ) * (n : ℝ) / 2 * ((y₁ : ℝ) ^ (-(r₀ : ℤ)) - (y₂ : ℝ) ^ (-(r₀ : ℤ)))| *
                     (Nat.descFactorial (r₀ + k - 1) k : ℝ) * (2 * (X₁ : ℝ)) ^ (-(r₀ : ℤ))) := by
-                  rw [abs_mul, abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-                    abs_of_pos (by norm_num : (0 : ℝ) < 2), mul_zpow, zpow_neg (2 : ℝ), zpow_natCast]
+                  rw [abs_mul, abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+                    abs_of_pos (a := (2 : ℝ)) (by norm_num), mul_zpow, zpow_neg (2 : ℝ), zpow_natCast]
                   have h1 : (|(y₁ : ℝ) - y₂| * (2 : ℝ) ^ (-(2 * r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ))) ≤
                       |(y₁ : ℝ) ^ (-(r₀ : ℤ)) - (y₂ : ℝ) ^ (-(r₀ : ℤ))| := by
                     calc |(y₁ : ℝ) - y₂| * (2 : ℝ) ^ (-(2 * r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ))
@@ -951,8 +952,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               (r₀ : ℝ) * (X₁ : ℝ) ^ (-(r₀ : ℤ))
             = |(h r₀ : ℝ)| * (n : ℝ) / 2 * |(y₁ : ℝ) ^ (-(r₀ : ℤ)) - (y₂ : ℝ) ^ (-(r₀ : ℤ))| *
                 (r₀ : ℝ) * (X₁ : ℝ) ^ (-(r₀ : ℤ)) := by
-                rw [abs_mul, abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-                  abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+                rw [abs_mul, abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+                  abs_of_pos (a := (2 : ℝ)) (by norm_num)]
           _ ≤ (2 * (Real.log n) ^ (R + 2) + 1) * (n : ℝ) / 2 *
                 ((r₀ : ℝ) * (2 * (Y₁ : ℝ)) * (2 : ℝ) ^ (r₀ - 1) * (Y₁ : ℝ) ^ (-(r₀ + 1 : ℤ))) *
                 (r₀ : ℝ) * (X₁ : ℝ) ^ (-(r₀ : ℤ)) := by
@@ -1109,7 +1110,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                         linarith [Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Y₂) : (1 : ℝ) ≤ Y₂)]) hlog_bd 3)
                         (by positivity) (by positivity)
                   _ = 16 * (Y₁ : ℝ) * (Real.log P) ^ 3 := by ring
-            -- Helper for a single `(X₁, X_top, Y₁, Y₂)` sub-block
             have hsub_block : ∀ (X₁ X_top Y₁ Y₂ : ℕ) (a_c b_c : ℕ → ℂ) (A_n B_n : ℝ),
                 1 ≤ X₁ → M₀ ≤ (X₁ : ℝ) → P ^ (1 / 3 : ℝ) / 8 ≤ (X₁ : ℝ) → X_top ≤ 2 * X₁ →
                 (X₁ : ℝ) ≤ 2 * Real.sqrt P →
@@ -1204,7 +1204,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                   _ = (Real.sqrt C_II_sq * W₀ * P * (Real.log P) ^ 2 * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ))) ^ 2 := by
                       rw [mul_pow, mul_pow, mul_pow, mul_pow, Real.sq_sqrt (by positivity)]; ring
               exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq_le
-            -- Now apply `hsub_block` by splitting `[Y_lo, Y_hi]` into at most 3 dyadic pieces!
             set Y_lo := max (U + 1) (A₀ / (2 * K₁))
             set Y_hi := B₀ / K₁
             have hY_lo_hi : ∀ k ∈ Finset.Icc K₁ K₂,
@@ -1233,8 +1232,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 have hr_A : (A₀ - 1) / k + 1 ≤ r :=
                   Nat.succ_le_of_lt (Nat.div_lt_of_lt_mul (by rw [mul_comm]; omega))
                 exact ⟨max_le hr_A hr_U, (Nat.le_div_iff_mul_le (by omega)).mpr (by linarith)⟩
-            -- Split `[Y_lo, Y_hi]` into at most 3 dyadic intervals `[Y_lo, 2*Y_lo]`, `[2*Y_lo+1, 4*Y_lo]`, `[4*Y_lo+1, Y_hi]`
-            -- First check `Y_hi ≤ 8 * Y_lo` (when `Y_lo ≤ Y_hi`):
             by_cases hY_empty : Y_hi < Y_lo
             · have h0 : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                   ∑ r ∈ Finset.Icc (max ((A₀ - 1) / k + 1) (U + 1)) (B₀ / k), c_r r * g (k * r) = 0 := by
@@ -1244,7 +1241,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             · push_neg at hY_empty
               have hY_lo_pos : 1 ≤ Y_lo := le_trans (by omega : 1 ≤ U + 1) (le_max_left _ _)
               have hY_hi_8 : Y_hi ≤ 8 * Y_lo := by
-                -- `Y_hi = B₀ / K₁ ≤ 2 * P / K₁`, and `Y_lo ≥ A₀ / (2 * K₁) ≥ (P - 2 K₁) / (2 K₁)`
                 have h1 : (Y_hi : ℝ) ≤ 2 * P / K₁ := by
                   rw [le_div_iff₀ (by exact_mod_cast hK₁_pos)]
                   exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
@@ -1255,23 +1251,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                     have hPA : P ≤ (A₀ : ℝ) := le_trans hPa (Nat.le_ceil a)
                     exact lt_of_le_of_lt hPA (by exact_mod_cast (by linarith : A₀ < (A₀ / (2 * K₁) + 1) * (2 * K₁)))
                   push_cast at hlt; linarith
-                have h3 : (2 * K₁ : ℝ) ≤ P / 2 := by
-                  have hK2_BU : (K₁ : ℝ) ≤ B₀ / U := by exact_mod_cast le_trans hK₁₂ (min_le_right _ _)
-                  have hBU : (B₀ : ℝ) / U ≤ 2 * P / (P ^ (1 / 3 : ℝ) / 2) := by
-                    refine div_le_div₀ (by positivity) hB₀_le_2P (by positivity) ?_
-                    linarith [hU_ge_M0, le_max_left (8 * M₀ + 8) (Real.exp 2),
-                      show (8 * M₀ + 8 : ℝ) ≤ P ^ (1 / 3 : ℝ) from le_trans (le_max_left _ _) hP13_ge]
-                  have hP23 : 4 * P ^ (2 / 3 : ℝ) ≤ P / 2 := by
-                    have h1 : 8 ≤ P ^ (1 / 3 : ℝ) := by linarith [le_trans (le_max_left _ _) hP13_ge, hM₀]
-                    calc 4 * P ^ (2 / 3 : ℝ) ≤ (P ^ (1 / 3 : ℝ) / 2) * P ^ (2 / 3 : ℝ) := by
-                          refine mul_le_mul_of_nonneg_right (by linarith) (by positivity)
-                      _ = P / 2 := by rw [div_mul_eq_mul_div, ← Real.rpow_add hP_pos]; norm_num
-                  calc 2 * (K₁ : ℝ) ≤ 2 * (2 * P / (P ^ (1 / 3 : ℝ) / 2)) := by linarith
-                    _ = 8 * P ^ (2 / 3 : ℝ) := by
-                        rw [show P = P ^ (1 / 3 : ℝ) * P ^ (2 / 3 : ℝ) by rw [← Real.rpow_add hP_pos]; norm_num]
-                        field_simp [(Real.rpow_pos_of_pos hP_pos _).ne']; ring
-                    _ ≤ P := by linarith
-                    -- Wait: `8 * P^(2/3) ≤ P / 2` holds for `P^(1/3) ≥ 16`, which holds since `P^(1/3) ≥ 8*M₀+8 ≥ 136`!
                 have h2' : P / (4 * K₁) ≤ (Y_lo : ℝ) := by
                   have h1 : 2 * (K₁ : ℝ) ≤ P / 2 := by
                     have hK2_BU : (K₁ : ℝ) ≤ B₀ / U := by exact_mod_cast le_trans hK₁₂ (min_le_right _ _)
@@ -1332,7 +1311,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
               have hY_hi_B0 : Y_hi ≤ B₀ := Nat.div_le_self B₀ K₁
               have hK₂_B0 : K₂ ≤ B₀ := le_trans (min_le_right _ _) (Nat.div_le_self B₀ U)
-              -- Split `Finset.Icc Y_lo Y_hi` into `[Y_lo, min Y_hi (2 * Y_lo)]`, `[2 * Y_lo + 1, min Y_hi (4 * Y_lo)]`, `[4 * Y_lo + 1, Y_hi]`
               have hpart_Y : Finset.Icc Y_lo Y_hi =
                   Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo)) ∪
@@ -1344,7 +1322,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               have hd123 : Disjoint (Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo))) (Finset.Icc (4 * Y_lo + 1) Y_hi) := by
                 rw [Finset.disjoint_left]; intro r h1 h2; simp only [Finset.mem_union, Finset.mem_Icc] at h1 h2; omega
-              -- Helper for one `(Y_a, Y_b)` piece
               have hpiece : ∀ (Y_a Y_b : ℕ), Y_lo ≤ Y_a → Y_b ≤ Y_hi → Y_b ≤ 2 * Y_a →
                   ‖∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                       ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
@@ -1380,7 +1357,6 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                       hK₁_pos hK₁_M0 (by linarith) hK₂_2K₁ hK_sq hYa_pos hYab hYb2 hKY_lo hKY_hi
                       hAn hBn (by positivity) (by positivity) hAB
                   · push_neg at hK_sq
-                    -- Swap `k` and `r`!
                     have hswap : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                           ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
                             c_r r * g (k * r) =
@@ -1664,7 +1640,8 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
   -- Bound `P ^ (-η'_δ) * (log P)^3`
   have hP_pow : P ^ (-η'_δ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hP_rpow : P ^ (-η'_δ) ≤ (Real.log n) ^ (-(R + 5 : ℤ)) := by
-      rw [Real.rpow_neg hP_pos.le, zpow_neg, zpow_natCast]
+      rw [Real.rpow_neg hP_pos.le, show -(R + 5 : ℤ) = -(((R + 5 : ℕ) : ℤ)) by push_cast; rfl,
+        zpow_neg, zpow_natCast]
       refine inv_anti₀ (by positivity) (le_trans hlog_P ?_)
       exact Real.rpow_le_rpow (by positivity) hP_lo hη'_pos.le
     calc P ^ (-η'_δ) * (Real.log P) ^ 3
@@ -1676,7 +1653,7 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       _ ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) :=
           mul_le_mul_of_nonneg_right (one_le_pow₀ (by norm_num)) (by positivity)
   calc C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3
-       = C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) * (Real.log P) ^ 3 + P ^ (-η'_δ) * (Real.log P) ^ 3) := by ring
+      = C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) * (Real.log P) ^ 3 + P ^ (-η'_δ) * (Real.log P) ^ 3) := by ring
     _ ≤ C_δ * W₀ * P * ((2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) + (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ))) :=
         mul_le_mul_of_nonneg_left (add_le_add hT₀_pow hP_pow) (by positivity)
     _ = C'_δ * W₀ * P * (Real.log n) ^ (-(R + 2 : ℤ)) := by dsimp only [C'_δ]; ring
