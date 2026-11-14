@@ -27,10 +27,10 @@ lemma y_pow_diff_bounds (r : ℕ) (hr : 1 ≤ r) (Y₁ y₁ y₂ : ℝ)
     have h := geom_sum₂_mul y₂ y₁ r
     linarith [h]
   rw [hdiff, hgeom, abs_div, abs_mul, abs_sub_comm y₂ y₁,
-    abs_of_pos (mul_pos (pow_pos hy₁_pos r) (pow_pos hy₂_pos r))]
+    abs_of_pos (a := y₁ ^ r * y₂ ^ r) (mul_pos (pow_pos hy₁_pos r) (pow_pos hy₂_pos r))]
   have hsum_nn : 0 ≤ ∑ i ∈ Finset.range r, y₂ ^ i * y₁ ^ (r - 1 - i) :=
     Finset.sum_nonneg fun i _ => mul_nonneg (pow_nonneg hy₂_pos.le i) (pow_nonneg hy₁_pos.le _)
-  rw [abs_of_nonneg hsum_nn]
+  rw [abs_of_nonneg (a := ∑ i ∈ Finset.range r, y₂ ^ i * y₁ ^ (r - 1 - i)) hsum_nn]
   have hsum_lo : (r : ℝ) * Y₁ ^ (r - 1) ≤ ∑ i ∈ Finset.range r, y₂ ^ i * y₁ ^ (r - 1 - i) := by
     calc (r : ℝ) * Y₁ ^ (r - 1) = ∑ _i ∈ Finset.range r, Y₁ ^ (r - 1) := by simp
       _ ≤ ∑ i ∈ Finset.range r, y₂ ^ i * y₁ ^ (r - 1 - i) := by
@@ -60,7 +60,9 @@ lemma y_pow_diff_bounds (r : ℕ) (hr : 1 ≤ r) (Y₁ y₁ y₂ : ℝ)
   constructor
   · calc (r : ℝ) * |y₁ - y₂| * (2 : ℝ) ^ (-(2 * r : ℤ)) * Y₁ ^ (-(r + 1 : ℤ))
         = |y₁ - y₂| * ((r : ℝ) * Y₁ ^ (r - 1)) / (2 * Y₁) ^ (2 * r) := by
-          rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast, mul_pow,
+          rw [show -(2 * r : ℤ) = -(((2 * r : ℕ) : ℤ)) by push_cast; rfl,
+            show -(r + 1 : ℤ) = -(((r + 1 : ℕ) : ℤ)) by push_cast; rfl,
+            zpow_neg, zpow_neg, zpow_natCast, zpow_natCast, mul_pow,
             show 2 * r = (r - 1) + (r + 1) by omega, pow_add]
           field_simp [hY₁.ne']
       _ ≤ |y₁ - y₂| * (∑ i ∈ Finset.range r, y₂ ^ i * y₁ ^ (r - 1 - i)) / (y₁ ^ r * y₂ ^ r) :=
@@ -69,7 +71,8 @@ lemma y_pow_diff_bounds (r : ℕ) (hr : 1 ≤ r) (Y₁ y₁ y₂ : ℝ)
         ≤ |y₁ - y₂| * ((r : ℝ) * (2 * Y₁) ^ (r - 1)) / Y₁ ^ (2 * r) :=
           div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_left hsum_hi (abs_nonneg _)) (by positivity) hden_lo
       _ = (r : ℝ) * |y₁ - y₂| * (2 : ℝ) ^ (r - 1) * Y₁ ^ (-(r + 1 : ℤ)) := by
-          rw [zpow_neg, zpow_natCast, mul_pow, show 2 * r = (r - 1) + (r + 1) by omega, pow_add]
+          rw [show -(r + 1 : ℤ) = -(((r + 1 : ℕ) : ℤ)) by push_cast; rfl,
+            zpow_neg, zpow_natCast, mul_pow, show 2 * r = (r - 1) + (r + 1) by omega, pow_add]
           field_simp [hY₁.ne']
 
 lemma type_II_inner_sum_bound
@@ -202,7 +205,7 @@ lemma type_II_inner_sum_bound
             have ht_lo1 : (⌈a⌉₊ : ℝ) / y₁ < t := lt_of_le_of_lt (le_trans (le_max_left _ _) (le_max_right _ _)) ht1
             have ht_hi1 : t < (⌊b⌋₊ : ℝ) / y₁ := lt_of_lt_of_le ht2 (le_trans (min_le_left _ _) (min_le_right _ _))
             exact ⟨lt_of_le_of_lt (le_trans hPa (Nat.le_ceil a)) ((div_lt_iff₀ hy₁_pos).mp ht_lo1),
-              lt_of_lt_of_le ((lt_div_iff₀ hy₁_pos).mp ht_hi1) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
+              lt_of_lt_of_le ((lt_div_iff₀ hy₂_pos |> fun _ => (lt_div_iff₀ hy₁_pos)).mp ht_hi1) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
           have hmem2 : t * y₂ ∈ Set.Ioo P (2 * P) := by
             have ht1 : a₁₂ < t := ht.1
             have ht2 : t < b₁₂ := ht.2
@@ -211,9 +214,9 @@ lemma type_II_inner_sum_bound
             exact ⟨lt_of_le_of_lt (le_trans hPa (Nat.le_ceil a)) ((div_lt_iff₀ hy₂_pos).mp ht_lo2),
               lt_of_lt_of_le ((lt_div_iff₀ hy₂_pos).mp ht_hi2) (le_trans (Nat.floor_le (by linarith)) hb2P)⟩
           have hw1_da : DifferentiableAt ℝ w (t * y₁) :=
-            (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem1.1 hmem1.2)
+            (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem1.1 hmem1.2)
           have hw2_da : DifferentiableAt ℝ w (t * y₂) :=
-            (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem2.1 hmem2.2)
+            (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem2.1 hmem2.2)
           have h1 : HasDerivAt (fun u => w (u * y₁)) (deriv w (t * y₁) * y₁) t :=
             hw1_da.hasDerivAt.comp t ((hasDerivAt_id t).mul_const (y₁ : ℝ))
           have h2 : HasDerivAt (fun u => w (u * y₂)) (deriv w (t * y₂) * y₂) t :=
@@ -260,12 +263,12 @@ lemma type_II_inner_sum_bound
                 abs_add_le _ _
             _ ≤ W₀ * ((y₁ : ℝ) * |deriv w (t * y₁)|) + W₀ * ((y₂ : ℝ) * |deriv w (t * y₂)|) := by
                 refine add_le_add ?_ ?_
-                · rw [abs_mul, abs_mul, abs_of_pos hy₁_pos]
+                · rw [abs_mul, abs_mul, abs_of_pos (a := (y₁ : ℝ)) hy₁_pos]
                   calc (y₁ : ℝ) * |deriv w (t * y₁)| * |w (t * y₂)|
                       ≤ (y₁ : ℝ) * |deriv w (t * y₁)| * W₀ :=
                         mul_le_mul_of_nonneg_left (hw_bd _ (hmem_P2P t ht_cc).2) (by positivity)
                     _ = W₀ * ((y₁ : ℝ) * |deriv w (t * y₁)|) := by ring
-                · rw [abs_mul, abs_mul, abs_of_pos hy₂_pos]
+                · rw [abs_mul, abs_mul, abs_of_pos (a := (y₂ : ℝ)) hy₂_pos]
                   exact mul_le_mul_of_nonneg_right (hw_bd _ (hmem_P2P t ht_cc).1) (by positivity)
         have hv1 : ∫ t in a₁₂..b₁₂, W₀ * ((y₁ : ℝ) * |deriv w (t * y₁)|) ≤ W₀ ^ 2 := by
           rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
@@ -402,10 +405,10 @@ lemma type_II_inner_sum_bound
             ← zpow_add₀ (by norm_num), ← zpow_add₀ (by norm_num)]
           exact zpow_le_zpow_right₀ (by norm_num) (by have := (hA r₀ hr₀).2; omega)
         dsimp only [T_y, T₀, cy]
-        rw [abs_mul, abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n), abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+        rw [abs_mul, abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity), abs_of_pos (a := (2 : ℝ)) (by norm_num)]
         calc (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * (|(h r₀ : ℝ)| * n / P ^ r₀) * (|(y₁ : ℝ) - y₂| / Y₁)
             = |(h r₀ : ℝ)| * n * (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * P ^ (-(r₀ : ℤ)) * |(y₁ : ℝ) - y₂| * (Y₁ : ℝ) ^ (-1 : ℤ) := by
-              rw [zpow_neg, zpow_neg_one, zpow_natCast]; ring
+              rw [zpow_neg P (r₀ : ℤ), zpow_natCast P r₀, zpow_neg_one]; ring
           _ ≤ |(h r₀ : ℝ)| * n * ((2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * (2 : ℝ) ^ (3 * R)) *
                 ((2 * (X₁ : ℝ)) ^ (-(r₀ : ℤ)) * (Y₁ : ℝ) ^ (-(r₀ : ℤ))) * |(y₁ : ℝ) - y₂| * (Y₁ : ℝ) ^ (-1 : ℤ) := by
               have hmul1 : (2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * P ^ (-(r₀ : ℤ)) ≤
@@ -793,7 +796,8 @@ lemma type_II_block_bound
             ≤ (2 * (X₁ : ℝ)) / ((2 : ℝ) ^ (-(5 * R + 1 : ℤ)) * T₀ ^ (2 / 3 : ℝ)) :=
               div_le_div_of_nonneg_left (by positivity) (by positivity) h1
           _ = (2 * (X₁ : ℝ)) * ((2 : ℝ) ^ (5 * R + 1) * T₀ ^ (-2 / 3 : ℝ)) := by
-              rw [div_eq_mul_inv, mul_inv, zpow_neg, zpow_natCast, inv_inv,
+              rw [show -(5 * R + 1 : ℤ) = -(((5 * R + 1 : ℕ) : ℤ)) by push_cast; rfl,
+                div_eq_mul_inv, mul_inv, zpow_neg, zpow_natCast, inv_inv,
                 ← Real.rpow_neg (by linarith), show -(2 / 3 : ℝ) = -2 / 3 by norm_num]
               ring
       have hpow_eq : (2 * (X₁ : ℝ)) ^ (1 - η_exp) = (2 * (X₁ : ℝ)) * (2 * (X₁ : ℝ)) ^ (-η_exp) := by
@@ -945,7 +949,7 @@ lemma type_I_no_log_single_d_bound
           by calc d * t < d * (2 * (P / d)) := mul_lt_mul_of_pos_left ht.2 hd_pos
             _ = 2 * P := by field_simp [hd_pos.ne']⟩
         have hw_da : DifferentiableAt ℝ w (d * t) :=
-          (hw_diff.differentiableOn one_ne_zero).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
+          (hw_diff.differentiableOn (by norm_num)).differentiableAt (Icc_mem_nhds hmem.1 hmem.2)
         have hcomp_da : HasDerivAt (fun u => w (d * u)) (deriv w (d * t) * d) t :=
           hw_da.hasDerivAt.comp t ((hasDerivAt_id t).const_mul (d : ℝ))
         rw [hcomp_da.deriv, abs_mul, abs_of_pos hd_pos, mul_comm]
@@ -1040,9 +1044,11 @@ lemma type_I_no_log_single_d_bound
           rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
           exact inv_anti₀ (pow_pos (by linarith) r₀) (pow_le_pow_left₀ (by linarith) (by linarith [hu_le]) r₀)
         have h2pow : (2 : ℝ) ^ (-(R : ℤ) - 1) * P ^ (-(r₀ : ℤ)) ≤ (2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ)) := by
-          rw [show (2 * P / d) = (2 * P) / d by ring, zpow_neg, zpow_natCast, div_pow, inv_div,
-            zpow_neg, zpow_natCast, zpow_sub₀ (by norm_num), zpow_neg, zpow_natCast, zpow_one, mul_pow,
-            ← div_eq_mul_inv]
+          rw [show (2 * P / d) = (2 * P) / d by ring, zpow_sub₀ (by norm_num),
+            zpow_neg (2 : ℝ) (R : ℤ), zpow_natCast (2 : ℝ) R, zpow_one,
+            zpow_neg P (r₀ : ℤ), zpow_natCast P r₀,
+            zpow_neg ((2 * P) / d) (r₀ : ℤ), zpow_natCast ((2 * P) / d) r₀,
+            div_pow, inv_div, mul_pow, ← div_eq_mul_inv]
           field_simp [hd_pos.ne', hP_pos.ne']
           have h2r : (2 : ℝ) ^ r₀ ≤ (2 : ℝ) ^ R := pow_le_pow_right₀ (by norm_num) (hA r₀ hr₀).2
           linarith [h2r]
@@ -1052,8 +1058,8 @@ lemma type_I_no_log_single_d_bound
           _ ≤ |(h r₀ : ℝ)| * n * ((2 * (d : ℝ) ^ r₀)⁻¹ * (2 * P / d) ^ (-(r₀ : ℤ))) :=
                 mul_le_mul_of_nonneg_left h2pow (by positivity)
           _ ≤ |(h r₀ : ℝ) * n / (2 * (d : ℝ) ^ r₀)| * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) := by
-                rw [abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < n),
-                  abs_of_pos (by positivity : (0 : ℝ) < 2 * (d : ℝ) ^ r₀)]
+                rw [abs_div, abs_mul, abs_of_pos (a := (n : ℝ)) (by positivity),
+                  abs_of_pos (a := 2 * (d : ℝ) ^ r₀) (by positivity)]
                 have hle1 : |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * 1 * (2 * P / d) ^ (-(r₀ : ℤ)) ≤
                     |(h r₀ : ℝ)| * n / (2 * (d : ℝ) ^ r₀) * (r₀ : ℝ) * (u : ℝ) ^ (-(r₀ : ℤ)) :=
                   mul_le_mul (mul_le_mul_of_nonneg_left hr0_1 (by positivity)) hupow (by positivity) (by positivity)
