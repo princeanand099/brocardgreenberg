@@ -167,7 +167,7 @@ lemma partial_summation_Icc {P a b W₀ E : ℝ} {w : ℝ → ℝ} {f : ℕ → 
         induction k with
         | zero =>
           have hA0 : A₀ = 0 := by omega
-          subst hA0; simp
+          rw [hA0]; simp
         | succ k ih =>
           by_cases hk : A₀ ≤ k
           · rw [Finset.sum_Ico_succ_top hk, ih hk (by omega)]
@@ -182,9 +182,9 @@ lemma partial_summation_Icc {P a b W₀ E : ℝ} {w : ℝ → ℝ} {f : ℕ → 
                 have hk_ge : P ≤ (k : ℝ) := le_trans hA₀_ge (by exact_mod_cast hk)
                 have hk1_le : ((k + 1 : ℕ) : ℝ) ≤ 2 * P := le_trans (by exact_mod_cast hkB) hB₀_le
                 exact fun t ht => ⟨le_trans hk_ge ht.1, le_trans ht.2 hk1_le⟩)
-            exact (intervalIntegral.integral_add_adjacent_intervals h1 h2).symm
+            exact intervalIntegral.integral_add_adjacent_intervals h1 h2
           · have hA_eq : A₀ = k + 1 := by omega
-            subst hA_eq; simp
+            rw [hA_eq]; simp
       rw [h_adj B₀ h_le le_rfl]
       refine le_trans (intervalIntegral.integral_mono_interval hA₀_ge (by exact_mod_cast h_le)
         hB₀_le (Filter.Eventually.of_forall fun _ => abs_nonneg _) h_tv_abs_int) hw_tv
@@ -331,14 +331,15 @@ lemma sum_Icc_divisors_filter {A₀ B₀ L U : ℕ} (hA : 1 ≤ A₀) (hL : 1 �
     rw [Finset.mem_filter, Finset.mem_Icc] at hm
     rcases hm with ⟨⟨hmA, hmB⟩, hd_dvd⟩
     have hmul : d * (m / d) = m := Nat.mul_div_cancel' hd_dvd
-    rw [Finset.mem_coe, Finset.mem_Icc]
+    rw [Finset.mem_Icc]
     exact ⟨(div_succ_le_iff_le_mul hA hd_pos).mpr (by omega),
       (Nat.le_div_iff_mul_le hd_pos).mpr (by omega)⟩
   · intro k hk
     rw [Finset.mem_Icc] at hk
     have hA_dk : A₀ ≤ d * k := (div_succ_le_iff_le_mul hA hd_pos).mp hk.1
-    have hdk_B : d * k ≤ B₀ := (Nat.le_div_iff_mul_le hd_pos).mp (by simpa [mul_comm] using hk.2)
-    rw [Finset.mem_coe, Finset.mem_filter, Finset.mem_Icc]
+    have hkd_B : k * d ≤ B₀ := (Nat.le_div_iff_mul_le hd_pos).mp hk.2
+    have hdk_B : d * k ≤ B₀ := by nlinarith
+    rw [Finset.mem_filter, Finset.mem_Icc]
     exact ⟨⟨hA_dk, hdk_B⟩, dvd_mul_right d k⟩
   · intro m hm
     rw [Finset.mem_filter] at hm
@@ -378,9 +379,9 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
       intro n hn
       have h := congr_arg (fun f : ArithmeticFunction ℤ => f n) ArithmeticFunction.moebius_mul_coe_zeta
       rw [ArithmeticFunction.mul_apply, ArithmeticFunction.one_apply] at h
-      have hsum : (∑ x ∈ n.divisorsAntidiagonal, (ArithmeticFunction.moebius x.1 : ℤ) *
-          (ArithmeticFunction.zeta x.2 : ℤ)) = ∑ d ∈ n.divisors, ArithmeticFunction.moebius d := by
-        rw [Nat.sum_divisorsAntidiagonal']
+      rw [Nat.sum_divisorsAntidiagonal (fun a b => (ArithmeticFunction.moebius a : ℤ) * (ArithmeticFunction.zeta b : ℤ))] at h
+      have hsum : (∑ d ∈ n.divisors, (ArithmeticFunction.moebius d : ℤ) *
+          (ArithmeticFunction.zeta (n / d) : ℤ)) = ∑ d ∈ n.divisors, ArithmeticFunction.moebius d := by
         refine Finset.sum_congr rfl fun d hd => ?_
         have hd_pos : 0 < d := Nat.pos_of_mem_divisors hd
         have hnd_pos : 0 < n / d := Nat.div_pos (Nat.le_of_dvd (by omega) (Nat.dvd_of_mem_divisors hd)) hd_pos
@@ -524,7 +525,12 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
             exact Nat.div_self hk_pos
         rw [if_congr hkm_iff rfl rfl] at hsum_all
         exact eq_sub_of_add_eq' hsum_all
-      rw [Finset.sum_congr rfl h_inner]
+      have h_inner_mul : ∀ k ∈ m.divisors.filter (· ≤ V),
+          (ArithmeticFunction.vonMangoldt k : ℂ) * ∑ d ∈ (m / k).divisors.filter (U < ·), (ArithmeticFunction.moebius d : ℂ) =
+          (ArithmeticFunction.vonMangoldt k : ℂ) * ((if k = m then (1 : ℂ) else 0) -
+            ∑ d ∈ (m / k).divisors.filter (· ≤ U), (ArithmeticFunction.moebius d : ℂ)) :=
+        fun k hk => by rw [h_inner k hk]
+      rw [Finset.sum_congr rfl h_inner_mul]
       simp_rw [mul_sub, Finset.sum_sub_distrib]
       congr 1
       · by_cases hmV : m ≤ V
@@ -626,7 +632,6 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
           (if U < m / k then -∑ d ∈ (m / k).divisors.filter (· ≤ U), (ArithmeticFunction.moebius d : ℂ) else 0)) * g m) := by
     refine Finset.sum_congr rfl fun m hm => ?_
     have h1 := congr_arg (· * g m) (hpt m (le_trans hA (Finset.mem_Icc.mp hm).1))
-    dsimp only at h1
     rw [h1]
     by_cases hmV : m ≤ V <;> simp [hmV, add_mul, sub_mul]
   have hS1 : ∑ m ∈ Finset.Icc A₀ B₀, (if m ≤ V then (ArithmeticFunction.vonMangoldt m : ℂ) * g m else 0) =
@@ -694,16 +699,14 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
       refine Finset.sum_congr rfl fun k hk => ?_
       have hk_dvd : k ∣ q := Nat.dvd_of_mem_divisors (Finset.mem_filter.mp hk).1
       rw [mul_assoc, Nat.mul_div_cancel' hk_dvd]
-    rw [Finset.sum_congr rfl hflt2, sum_Icc_divisors_filter (by omega) (by norm_num)
+    rw [Finset.sum_congr rfl hflt2, sum_Icc_divisors_filter (Nat.succ_pos _) (by norm_num)
       (fun k m => (ArithmeticFunction.vonMangoldt k : ℂ) * g (d * k * m))]
     refine Finset.sum_congr rfl fun k hk => ?_
     rw [Finset.mul_sum]
-    refine Finset.sum_congr ?_ fun _ _ => rfl
-    congr 1
-    · rw [Nat.div_div_eq_div_mul]; congr 1
-      have : ((A₀ - 1) / d + 1 - 1) = (A₀ - 1) / d := by omega
-      rw [this, Nat.div_div_eq_div_mul]
-    · rw [Nat.div_div_eq_div_mul]
+    have hlo_eq : ((A₀ - 1) / d + 1 - 1) / k + 1 = (A₀ - 1) / (d * k) + 1 := by
+      rw [Nat.add_sub_cancel, Nat.div_div_eq_div_mul]
+    have hhi_eq : B₀ / d / k = B₀ / (d * k) := Nat.div_div_eq_div_mul B₀ d k
+    rw [hlo_eq, hhi_eq]
   have hS4 : ∑ m ∈ Finset.Icc A₀ B₀,
         (∑ k ∈ m.divisors.filter (V < ·), (ArithmeticFunction.vonMangoldt k : ℂ) *
           (if U < m / k then -∑ d ∈ (m / k).divisors.filter (· ≤ U), (ArithmeticFunction.moebius d : ℂ) else 0)) * g m =
@@ -741,7 +744,7 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
       rw [Nat.mul_div_cancel' hk_dvd]
       by_cases hU_mk : U < m / k
       · have hU1 : U + 1 ≤ m / k := by omega
-        simp only [hU_mk, hU1, ↓reduceIte]; ring
+        simp only [hU_mk, hU1, ↓reduceIte]
       · have hU1 : ¬ U + 1 ≤ m / k := by omega
         simp [hU_mk, hU1]
     rw [Finset.sum_congr rfl hflt3, sum_Icc_divisors_filter hA (by omega : 1 ≤ V + 1)
@@ -757,11 +760,11 @@ lemma vaughan_identity (U V : ℕ) (hU : 1 ≤ U) (hV : 1 ≤ V) {A₀ B₀ : �
         have hnot : ¬ U + 1 ≤ r := (Finset.mem_filter.mp hr).2
         simp [hnot]
     rw [h0, add_zero]
-    refine Finset.sum_nbij' id id ?_ ?_ (fun _ _ => rfl) (fun _ _ => rfl) ?_
-    · intro r hr; rw [Finset.mem_filter, Finset.mem_Icc] at hr; rw [Finset.mem_Icc]; omega
-    · intro r hr; rw [Finset.mem_Icc] at hr; rw [Finset.mem_filter, Finset.mem_Icc]; omega
-    · intro r hr
-      have hle : U + 1 ≤ r := (Finset.mem_filter.mp hr).2
+    refine Finset.sum_congr ?_ fun r hr => ?_
+    · ext r
+      simp only [Finset.mem_filter, Finset.mem_Icc]
+      omega
+    · have hle : U + 1 ≤ r := le_trans (le_max_left _ _) (Finset.mem_Icc.mp hr).1
       simp [hle]
   rw [hsum_pt, Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.sum_add_distrib,
     hS1, hS2, hS3, hS4]
@@ -784,11 +787,8 @@ lemma iteratedDeriv_zpow_neg (r : ℕ) (hr : 1 ≤ r) (k : ℕ) :
         (fun u : ℝ => (-1 : ℝ) ^ k * (Nat.descFactorial (r + k - 1) k : ℝ) * u ^ (-(r + k : ℤ)))
         (Set.Ioi 0) := fun u hu => ih u hu
     rw [Filter.EventuallyEq.deriv_eq (heq.eventuallyEq_of_mem (Ioi_mem_nhds ht))]
-    have hderiv : HasDerivAt
-        (fun u : ℝ => (-1 : ℝ) ^ k * (Nat.descFactorial (r + k - 1) k : ℝ) * u ^ (-(r + k : ℤ)))
-        ((-1 : ℝ) ^ k * (Nat.descFactorial (r + k - 1) k : ℝ) *
-          ((-(r + k : ℤ) : ℝ) * t ^ (-(r + k : ℤ) - 1))) t :=
-      (hasDerivAt_zpow (-(r + k : ℤ)) t (Or.inl ht.ne')).const_mul _
+    have hderiv := (hasDerivAt_zpow (-(r + k : ℤ)) t (Or.inl ht.ne')).const_mul
+      ((-1 : ℝ) ^ k * (Nat.descFactorial (r + k - 1) k : ℝ))
     rw [hderiv.deriv]
     have hdesc : Nat.descFactorial (r + (k + 1) - 1) (k + 1) =
         Nat.descFactorial (r + k - 1) k * (r + k) := by
@@ -798,6 +798,19 @@ lemma iteratedDeriv_zpow_neg (r : ℕ) (hr : 1 ≤ r) (k : ℕ) :
     push_cast
     rw [show -(r + (k + 1) : ℤ) = -(r + k : ℤ) - 1 by omega]
     ring
+
+lemma hasDerivAt_finset_sum {ι : Type*} [DecidableEq ι] (A : Finset ι)
+    (f : ι → ℝ → ℝ) (f' : ι → ℝ) (t : ℝ) (h : ∀ r ∈ A, HasDerivAt (f r) (f' r) t) :
+    HasDerivAt (fun u : ℝ => ∑ r ∈ A, f r u) (∑ r ∈ A, f' r) t := by
+  induction A using Finset.induction_on with
+  | empty => simpa using hasDerivAt_const t (0 : ℝ)
+  | @insert a s ha ih =>
+    have h_eq : (fun u : ℝ => ∑ r ∈ insert a s, f r u) =
+        fun u : ℝ => f a u + ∑ r ∈ s, f r u := by
+      ext u; exact Finset.sum_insert ha
+    rw [h_eq, Finset.sum_insert ha]
+    exact (h a (Finset.mem_insert_self a s)).add
+      (ih fun r hr => h r (Finset.mem_insert_of_mem hr))
 
 lemma iteratedDeriv_sum_laurent (A : Finset ℕ) (hA : ∀ r ∈ A, 1 ≤ r) (c : ℕ → ℝ) (k : ℕ) :
     ∀ t : ℝ, 0 < t →
@@ -814,12 +827,11 @@ lemma iteratedDeriv_sum_laurent (A : Finset ℕ) (hA : ∀ r ∈ A, 1 ≤ r) (c 
         (fun u : ℝ => (-1 : ℝ) ^ k * ∑ r ∈ A, c r * (Nat.descFactorial (r + k - 1) k : ℝ) * u ^ (-(r + k : ℤ)))
         (Set.Ioi 0) := fun u hu => ih u hu
     rw [Filter.EventuallyEq.deriv_eq (heq.eventuallyEq_of_mem (Ioi_mem_nhds ht))]
-    have hderiv : HasDerivAt
-        (fun u : ℝ => (-1 : ℝ) ^ k * ∑ r ∈ A, c r * (Nat.descFactorial (r + k - 1) k : ℝ) * u ^ (-(r + k : ℤ)))
-        ((-1 : ℝ) ^ k * ∑ r ∈ A, c r * (Nat.descFactorial (r + k - 1) k : ℝ) *
-          ((-(r + k : ℤ) : ℝ) * t ^ (-(r + k : ℤ) - 1))) t := by
-      refine HasDerivAt.const_mul _ (HasDerivAt.sum fun r _ => ?_)
-      exact (hasDerivAt_zpow (-(r + k : ℤ)) t (Or.inl ht.ne')).const_mul _
+    have hderiv := ((hasDerivAt_finset_sum A
+      (fun r u => c r * (Nat.descFactorial (r + k - 1) k : ℝ) * u ^ (-(r + k : ℤ)))
+      (fun r => c r * (Nat.descFactorial (r + k - 1) k : ℝ) *
+        ((((-(r + k : ℤ)) : ℤ) : ℝ) * t ^ (-(r + k : ℤ) - 1))) t
+      fun r _ => (hasDerivAt_zpow (-(r + k : ℤ)) t (Or.inl ht.ne')).const_mul _).const_mul ((-1 : ℝ) ^ k))
     rw [hderiv.deriv, pow_succ, mul_assoc, Finset.mul_sum]
     congr 1
     rw [Finset.mul_sum]
@@ -866,8 +878,8 @@ lemma laurent_sum_dom_bounds (A : Finset ℕ) (R k : ℕ) (hA : ∀ r ∈ A, 1 �
       |c s| * (Nat.descFactorial (s + k - 1) k : ℝ) * t ^ (-(s + k : ℤ)) := by
     intro s
     dsimp only [term]
-    rw [abs_mul, abs_mul, abs_of_nonneg (Nat.cast_nonneg (Nat.descFactorial _ _)),
-      abs_of_pos (zpow_pos ht_pos _)]
+    rw [abs_mul, abs_mul, abs_of_nonneg (a := (Nat.descFactorial _ _ : ℝ)) (Nat.cast_nonneg _),
+      abs_of_pos (a := t ^ _) (zpow_pos ht_pos _)]
   have htail : |∑ r ∈ A.erase r₀, term r| ≤ (1 / 2 : ℝ) * |term r₀| := by
     refine le_trans (Finset.abs_sum_le_sum_abs _ _) ?_
     have hpt : ∀ r ∈ A.erase r₀, |term r| ≤ (1 / (2 * max (A.card : ℝ) 1)) * |term r₀| := by
@@ -912,7 +924,8 @@ lemma laurent_sum_dom_bounds (A : Finset ℕ) (R k : ℕ) (hA : ∀ r ∈ A, 1 �
     rw [hterm_abs r₀]
     dsimp only [lam]
     have hz : M₂ ^ (-(r₀ + k : ℤ)) ≤ t ^ (-(r₀ + k : ℤ)) := by
-      rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
+      rw [show -(r₀ + k : ℤ) = -(((r₀ + k : ℕ) : ℤ)) by push_cast; rfl,
+        zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
       exact inv_anti₀ (pow_pos ht_pos _) (pow_le_pow_left₀ ht_pos.le ht.2 _)
     calc 2 * ((1 / 2 : ℝ) * |c r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * M₂ ^ (-(r₀ + k : ℤ)))
         = |c r₀| * (Nat.descFactorial (r₀ + k - 1) k : ℝ) * M₂ ^ (-(r₀ + k : ℤ)) := by ring
@@ -922,7 +935,8 @@ lemma laurent_sum_dom_bounds (A : Finset ℕ) (R k : ℕ) (hA : ∀ r ∈ A, 1 �
     rw [hterm_abs r₀]
     dsimp only [lam]
     have hz : t ^ (-(r₀ + k : ℤ)) ≤ (2 : ℝ) ^ (R + k) * M₂ ^ (-(r₀ + k : ℤ)) := by
-      rw [zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
+      rw [show -(r₀ + k : ℤ) = -(((r₀ + k : ℕ) : ℤ)) by push_cast; rfl,
+        zpow_neg, zpow_neg, zpow_natCast, zpow_natCast]
       have hpow_le : M₂ ^ (r₀ + k) ≤ (2 : ℝ) ^ (R + k) * t ^ (r₀ + k) := by
         calc M₂ ^ (r₀ + k) ≤ (2 * M₁) ^ (r₀ + k) := pow_le_pow_left₀ hM₂_pos.le hM₂ _
           _ ≤ (2 * t) ^ (r₀ + k) := pow_le_pow_left₀ (by positivity) (by linarith [ht.1]) _
@@ -964,12 +978,11 @@ lemma laurent_sum_deriv_mono_or_anti (A : Finset ℕ) (R : ℕ) (hA : ∀ r ∈ 
       intro u hu
       rw [← iteratedDeriv_one]
       exact iteratedDeriv_sum_laurent A (fun r hr => (hA r hr).1) c 1 u hu
-    have hda : HasDerivAt
-        (fun u : ℝ => (-1 : ℝ) ^ 1 * ∑ r ∈ A, c r * (Nat.descFactorial (r + 1 - 1) 1 : ℝ) * u ^ (-(r + 1 : ℤ)))
-        ((-1 : ℝ) ^ 1 * ∑ r ∈ A, c r * (Nat.descFactorial (r + 1 - 1) 1 : ℝ) *
-          ((-(r + 1 : ℤ) : ℝ) * t ^ (-(r + 1 : ℤ) - 1))) t := by
-      refine HasDerivAt.const_mul _ (HasDerivAt.sum fun r _ => ?_)
-      exact (hasDerivAt_zpow (-(r + 1 : ℤ)) t (Or.inl ht_pos.ne')).const_mul _
+    have hda := ((hasDerivAt_finset_sum A
+      (fun r u => c r * (Nat.descFactorial (r + 1 - 1) 1 : ℝ) * u ^ (-(r + 1 : ℤ)))
+      (fun r => c r * (Nat.descFactorial (r + 1 - 1) 1 : ℝ) *
+        ((((-(r + 1 : ℤ)) : ℤ) : ℝ) * t ^ (-(r + 1 : ℤ) - 1))) t
+      fun r _ => (hasDerivAt_zpow (-(r + 1 : ℤ)) t (Or.inl ht_pos.ne')).const_mul _).const_mul ((-1 : ℝ) ^ 1))
     exact (hda.differentiableAt.congr_of_eventuallyEq (heq.eventuallyEq_of_mem (Ioi_mem_nhds ht_pos))).differentiableWithinAt
   have hcont1 : ContinuousOn (deriv G) (Set.Icc M₁ M₂) := hdiff1.continuousOn
   have hderiv2_sign : ∀ t ∈ Set.Icc M₁ M₂,
@@ -988,8 +1001,8 @@ lemma laurent_sum_deriv_mono_or_anti (A : Finset ℕ) (R : ℕ) (hA : ∀ r ∈ 
         |c s| * (Nat.descFactorial (s + 2 - 1) 2 : ℝ) * t ^ (-(s + 2 : ℤ)) := by
       intro s
       dsimp only [term]
-      rw [abs_mul, abs_mul, abs_of_nonneg (Nat.cast_nonneg (Nat.descFactorial _ _)),
-        abs_of_pos (zpow_pos ht_pos _)]
+      rw [abs_mul, abs_mul, abs_of_nonneg (a := (Nat.descFactorial _ _ : ℝ)) (Nat.cast_nonneg _),
+        abs_of_pos (a := t ^ _) (zpow_pos ht_pos _)]
     have htail : |∑ r ∈ A.erase r₀, term r| ≤ (1 / 2 : ℝ) * |term r₀| := by
       refine le_trans (Finset.abs_sum_le_sum_abs _ _) ?_
       have hpt : ∀ r ∈ A.erase r₀, |term r| ≤ (1 / (2 * max (A.card : ℝ) 1)) * |term r₀| := by
