@@ -20,6 +20,8 @@ to the `2m`-th moment of the Jessen–Wintner Rademacher density `ρ`.
 
 noncomputable section
 
+set_option maxHeartbeats 800000
+
 open scoped BigOperators
 open Filter Topology BrocardFormalization.External
 
@@ -65,9 +67,10 @@ private lemma truncParitySign_mod_eq {p r n M : ℕ} (hp : 0 < p) (hdvd : p ^ (2
     truncParitySign p r (n % M) = truncParitySign p r n := by
   rcases hdvd with ⟨t, ht⟩
   have h1 : n % M + (n / M * t) * p ^ (2 * r + 1) = n := by
-    have := Nat.mod_add_div n M
-    rw [ht] at this ⊢
-    rw [← this]; ring
+    calc n % M + (n / M * t) * p ^ (2 * r + 1)
+        = n % M + (p ^ (2 * r + 1) * t) * (n / M) := by ring
+      _ = n % M + M * (n / M) := by rw [← ht]
+      _ = n := Nat.mod_add_div n M
   calc truncParitySign p r (n % M)
       = truncParitySign p r (n % M + (n / M * t) * p ^ (2 * r + 1)) :=
         (truncParitySign_periodic hp).symm
@@ -102,8 +105,9 @@ private lemma truncParitySign_sum_period {p : ℕ} (hp : p.Prime) (hp3 : 3 ≤ p
         (fun qa => qa.2 + p ^ (2 * r + 1) * qa.1) ?_ ?_ ?_ ?_ ?_
       · intro n hn
         rw [Finset.mem_range, hpow_eq] at hn
-        exact Finset.mem_product.mpr ⟨Nat.div_lt_of_lt_mul (by linarith),
-          Nat.mod_lt n (pow_pos hp.pos _)⟩
+        exact Finset.mem_product.mpr
+          ⟨Finset.mem_range.mpr (Nat.div_lt_of_lt_mul (by rw [mul_comm]; exact hn)),
+            Finset.mem_range.mpr (Nat.mod_lt n (pow_pos hp.pos _))⟩
       · intro ⟨q, a⟩ hqa
         rw [Finset.mem_product, Finset.mem_range, Finset.mem_range] at hqa
         rw [Finset.mem_range, hpow_eq]
@@ -152,8 +156,9 @@ private lemma truncParitySign_sum_period {p : ℕ} (hp : p.Prime) (hp3 : 3 ≤ p
           ?_ ?_ ?_ ?_ ?_
         · intro q hq
           rw [Finset.mem_range] at hq
-          exact Finset.mem_product.mpr ⟨Nat.div_lt_of_lt_mul (by linarith),
-            Nat.mod_lt q hp.pos⟩
+          exact Finset.mem_product.mpr
+            ⟨Finset.mem_range.mpr (Nat.div_lt_of_lt_mul hq),
+              Finset.mem_range.mpr (Nat.mod_lt q hp.pos)⟩
         · intro ⟨e, d⟩ hed
           rw [Finset.mem_product, Finset.mem_range, Finset.mem_range] at hed
           rw [Finset.mem_range]
@@ -225,25 +230,26 @@ private lemma crt_prod_sum (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime ∧ 3 ≤
         have hcopZ : IsCoprime (A : ℤ) (B₀ : ℤ) := Nat.isCoprime_iff_coprime.mpr hcop
         have hdvd : (A * B₀ : ℤ) ∣ (x : ℤ) - y := hcopZ.mul_dvd hdvd1 hdvd2
         rcases hdvd with ⟨k, hk⟩
-        have hlt : |(x : ℤ) - y| < (A * B₀ : ℤ) := by
+        have hlt : |(x : ℤ) - y| < (A : ℤ) * B₀ := by
           rw [abs_lt]; constructor <;> omega
         have hk0 : k = 0 := by
           by_contra hk_ne
           have h1 : (1 : ℤ) ≤ |k| := Int.one_le_abs hk_ne
-          have h2 : (A * B₀ : ℤ) ≤ (A * B₀ : ℤ) * |k| := le_mul_of_one_le_right (by positivity) h1
-          rw [← abs_of_pos (by positivity : (0 : ℤ) < A * B₀), ← abs_mul, ← hk] at h2
-          linarith
+          have h2 : (A : ℤ) * B₀ ≤ ((A : ℤ) * B₀) * |k| := le_mul_of_one_le_right (by positivity) h1
+          have h3 : ((A : ℤ) * B₀) * |k| = |(x : ℤ) - y| := by
+            rw [← abs_of_pos (by positivity : (0 : ℤ) < (A : ℤ) * B₀), ← abs_mul, ← hk]
+          omega
         rw [hk0, mul_zero] at hk
         omega
       have hmaps : Set.MapsTo (fun n => (n % A, n % B₀)) (Finset.range (A * B₀) : Set ℕ)
-          (Finset.range A ×ˢ Finset.range B₀ : Set (ℕ × ℕ)) := by
+          ((Finset.range A ×ˢ Finset.range B₀ : Finset (ℕ × ℕ)) : Set (ℕ × ℕ)) := by
         intro n _
         exact Finset.mem_coe.mpr (Finset.mem_product.mpr ⟨Finset.mem_range.mpr (Nat.mod_lt n hA_pos),
           Finset.mem_range.mpr (Nat.mod_lt n hB₀_pos)⟩)
       have hcard : (Finset.range A ×ˢ Finset.range B₀).card ≤ (Finset.range (A * B₀)).card := by
         simp [Finset.card_product]
       have hsurj : Set.SurjOn (fun n => (n % A, n % B₀)) (Finset.range (A * B₀) : Set ℕ)
-          (Finset.range A ×ˢ Finset.range B₀ : Set (ℕ × ℕ)) :=
+          ((Finset.range A ×ˢ Finset.range B₀ : Finset (ℕ × ℕ)) : Set (ℕ × ℕ)) :=
         Finset.surjOn_of_injOn_of_card_le _ hmaps hinj hcard
       refine Finset.sum_nbij (fun n => (n % A, n % B₀))
         (fun n _ => Finset.mem_product.mpr ⟨Finset.mem_range.mpr (Nat.mod_lt n hA_pos),
@@ -257,7 +263,7 @@ private lemma crt_prod_sum (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime ∧ 3 ≤
     simp_rw [Finset.prod_insert hp₀]
     rw [hbij, Finset.sum_product]
     dsimp only
-    rw [Finset.sum_mul_sum, ih hS']
+    rw [← Finset.sum_mul_sum, ih hS']
 
 private def rademacherMoment (S : Finset ℕ) (k : ℕ) : ℝ :=
   (1 / (2 : ℝ) ^ S.card) *
@@ -310,7 +316,10 @@ private lemma rademacherMoment_eq_even_sum (S : Finset ℕ) (m : ℕ) :
       ∏ p : S, (if σ p then (1 : ℝ) else -1) ^ (Finset.univ.filter fun i => g i = p).card =
       ∏ p : S, ((1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card +
         (-1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card) := by
-    rw [Fintype.prod_sum (fun p b => (if b then (1 : ℝ) else -1) ^ (Finset.univ.filter fun i => g i = p).card)]
+    rw [← Fintype.prod_sum (fun (p : S) (b : Bool) => (if b then (1 : ℝ) else -1) ^ (Finset.univ.filter fun i => g i = p).card)]
+    refine Finset.prod_congr rfl fun p _ => ?_
+    rw [Fintype.sum_bool]
+    simp only [Bool.false_eq_true, ↓reduceIte]
   rw [hprod_sum]
   by_cases hev : ∀ p : S, Even (Finset.univ.filter fun i => g i = p).card
   · rw [if_pos hev]
@@ -321,17 +330,20 @@ private lemma rademacherMoment_eq_even_sum (S : Finset ℕ) (m : ℕ) :
           = ∏ _p : S, (2 : ℝ) := by
             refine Finset.prod_congr rfl fun p _ => ?_
             rcases hev p with ⟨k, hk⟩
-            simp [hk, ← two_mul, pow_mul]; norm_num
+            simp [hk, ← two_mul, pow_mul]
         _ = (2 : ℝ) ^ S.card := by simp
     rw [h2, one_div_mul_cancel (by positivity)]
-  · rw [if_neg hev, zero_mul]
+  · rw [if_neg hev]
     push_neg at hev
     rcases hev with ⟨p₀, hp₀⟩
     have h0 : (1 : ℝ) ^ (Finset.univ.filter fun i => g i = p₀).card +
         (-1 : ℝ) ^ (Finset.univ.filter fun i => g i = p₀).card = 0 := by
       rcases Nat.not_even_iff_odd.mp hp₀ with ⟨k, hk⟩
-      simp [hk, pow_add, pow_mul]; norm_num
-    rw [Finset.prod_eq_zero (Finset.mem_univ p₀) h0, mul_zero]
+      simp [hk, pow_add, pow_mul]
+    have hprod0 : ∏ p : S, ((1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card +
+        (-1 : ℝ) ^ (Finset.univ.filter fun i => g i = p).card) = 0 :=
+      Finset.prod_eq_zero (Finset.mem_univ p₀) h0
+    rw [hprod0, mul_zero]
 
 private lemma two_pow_mul_fact_le_two_mul_fact (k : ℕ) :
     2 ^ k * k.factorial ≤ (2 * k).factorial := by
@@ -450,8 +462,6 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
       simp_rw [one_mul, neg_one_mul, hbin]
       rw [← Finset.mul_sum, Finset.sum_comm]
       simp_rw [Finset.mul_sum]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      rw [Finset.mul_sum]
     rw [show (if true then (1 : ℝ) else -1) = 1 from rfl,
         show (if false then (1 : ℝ) else -1) = -1 from rfl]
     rw [hsum_eq]
@@ -497,21 +507,16 @@ private lemma rademacherMoment_le_factorial (S : Finset ℕ) (a : ℕ → ℝ) (
               exact_mod_cast two_pow_mul_fact_le_two_mul_fact k
             rw [← mul_div_assoc, div_mul_eq_mul_div, div_le_div_iff₀ (by positivity) (by positivity)]
             calc (Nat.choose (2 * m) (2 * k) : ℝ) * ((2 * (m - k)).factorial : ℝ) * ((2 : ℝ) ^ m * (m.factorial : ℝ))
-                = ((Nat.choose (2 * m) (2 * k) : ℝ) * ((2 * (m - k)).factorial : ℝ)) *
-                    ((2 : ℝ) ^ k * (2 : ℝ) ^ (m - k) * (m.factorial : ℝ)) := by rw [hpow_m]
-              _ = (((2 * m).factorial : ℝ) / ((2 * k).factorial : ℝ)) *
-                    ((2 : ℝ) ^ k * (2 : ℝ) ^ (m - k) * (m.factorial : ℝ)) := by
-                  congr 1
-                  rw [eq_div_iff (by positivity : ((2 * k).factorial : ℝ) ≠ 0)]
-                  linarith
-              _ = ((2 * m).factorial : ℝ) * ((2 : ℝ) ^ k * (k.factorial : ℝ) / ((2 * k).factorial : ℝ)) *
-                    ((2 : ℝ) ^ (m - k) * ((m.factorial : ℝ) / (k.factorial : ℝ))) := by
-                  field_simp
-              _ ≤ ((2 * m).factorial : ℝ) * 1 * ((2 : ℝ) ^ (m - k) * ((m.factorial : ℝ) / (k.factorial : ℝ))) := by
-                  refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left ?_ (by positivity)) (by positivity)
-                  exact div_le_one_of_le₀ hfact_k (by positivity)
-              _ = ((2 * m).factorial : ℝ) * (Nat.choose m k : ℝ) * ((2 : ℝ) ^ (m - k) * ((m.factorial : ℝ) / (k.factorial : ℝ))) := by
-                  rw [← hch2]; field_simp
+                = ((Nat.choose (2 * m) (2 * k) : ℝ) * ((2 * (m - k)).factorial : ℝ) *
+                    (Nat.choose m k : ℝ) * (2 : ℝ) ^ (m - k) * ((m - k).factorial : ℝ)) *
+                    ((2 : ℝ) ^ k * (k.factorial : ℝ)) := by
+                  rw [hpow_m, ← hch2]; ring
+              _ ≤ ((Nat.choose (2 * m) (2 * k) : ℝ) * ((2 * (m - k)).factorial : ℝ) *
+                    (Nat.choose m k : ℝ) * (2 : ℝ) ^ (m - k) * ((m - k).factorial : ℝ)) *
+                    ((2 * k).factorial : ℝ) :=
+                  mul_le_mul_of_nonneg_left hfact_k (by positivity)
+              _ = ((2 * m).factorial : ℝ) * (Nat.choose m k : ℝ) * ((2 : ℝ) ^ (m - k) * ((m - k).factorial : ℝ)) := by
+                  rw [← hch1]; ring
           have hpow_nn : 0 ≤ ((a p₀) ^ 2) ^ k * (∑ p ∈ S', (a p) ^ 2) ^ (m - k) :=
             mul_nonneg (pow_nonneg (sq_nonneg _) _) (pow_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _) _)
           calc (Nat.choose (2 * m) (2 * k) : ℝ) * ((a p₀) ^ 2) ^ k *
@@ -552,11 +557,13 @@ private lemma summable_prime_log_div_sub_one_sq :
             div_le_div₀ (by positivity) hlog_le (by positivity) hp1
         _ = 8 / (p : ℝ) ^ (3 / 4 : ℝ) := by
             have hr34 : 0 < (p : ℝ) ^ (3 / 4 : ℝ) := Real.rpow_pos_of_pos hp_pos _
-            have hp_eq : (p : ℝ) = (p : ℝ) ^ (1 / 4 : ℝ) * (p : ℝ) ^ (3 / 4 : ℝ) := by
+            have hp_eq : (p : ℝ) ^ (1 / 4 : ℝ) * (p : ℝ) ^ (3 / 4 : ℝ) = (p : ℝ) := by
               rw [← Real.rpow_add hp_pos]; norm_num
-            rw [hp_eq]
-            field_simp [hr4.ne', hr34.ne']
-            ring
+            rw [div_eq_div_iff (by positivity) hr34.ne']
+            calc 4 * (p : ℝ) ^ (1 / 4 : ℝ) * (p : ℝ) ^ (3 / 4 : ℝ)
+                = 4 * ((p : ℝ) ^ (1 / 4 : ℝ) * (p : ℝ) ^ (3 / 4 : ℝ)) := by ring
+              _ = 4 * (p : ℝ) := by rw [hp_eq]
+              _ = 8 * (1 / 2 * (p : ℝ)) := by ring
     have hsq_le : (Real.log p / ((p : ℝ) - 1)) ^ 2 ≤ (8 / (p : ℝ) ^ (3 / 4 : ℝ)) ^ 2 :=
       pow_le_pow_left₀ (div_nonneg (Real.log_nonneg (by linarith)) (by linarith)) hdiv_le 2
     refine le_trans hsq_le (le_of_eq ?_)
@@ -586,15 +593,19 @@ private lemma rademacher_charfun (S : Finset ℕ) (a : ℕ → ℝ) (τ : ℝ) :
         2 * (Real.cos (τ * a p) : ℂ) := by
       intro p
       rw [Fintype.sum_bool]
-      simp only [↓reduceIte, one_mul, neg_one_mul]
-      rw [show Complex.I * τ * (a p : ℂ) = (τ * a p : ℝ) * Complex.I by push_cast; ring,
-          show Complex.I * τ * -(a p : ℂ) = -((τ * a p : ℝ) * Complex.I) by push_cast; ring,
-          Complex.cos_eq_exp_add_exp_neg]
+      simp only [Bool.false_eq_true, ↓reduceIte, one_mul, neg_one_mul]
+      rw [show Complex.I * τ * (a p : ℂ) = ((τ * a p : ℝ) : ℂ) * Complex.I by push_cast; ring,
+          show Complex.I * τ * -(a p : ℂ) = ((-(τ * a p) : ℝ) : ℂ) * Complex.I by push_cast; ring,
+          Complex.exp_mul_I, Complex.exp_mul_I,
+          ← Complex.ofReal_cos, ← Complex.ofReal_sin,
+          ← Complex.ofReal_cos, ← Complex.ofReal_sin,
+          Real.cos_neg, Real.sin_neg]
       push_cast; ring
     simp_rw [hterm, Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_coe]
     congr 1
     exact (Finset.prod_coe_sort S (fun p => (Real.cos (τ * a p) : ℂ)))
-  rw [hprod_cos, ← mul_assoc, one_div_mul_cancel (by positivity), one_mul]
+  have h2_ne : (2 : ℂ) ^ S.card ≠ 0 := pow_ne_zero S.card (by norm_num)
+  rw [hprod_cos, ← mul_assoc, one_div_mul_cancel h2_ne, one_mul]
 
 private def centralDiff (f : ℝ → ℂ) (h : ℝ) (m : ℕ) : ℂ :=
   ((-1 : ℂ) ^ m) * ((h : ℂ) ^ (-(2 * m : ℤ))) *
@@ -607,83 +618,101 @@ private lemma centralDiff_exp (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
   unfold centralDiff
   have hsum : ∑ j ∈ Finset.range (2 * m + 1),
       (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
-        Complex.exp (Complex.I * (((m : ℝ) - (j : ℝ)) * h) * x) =
+        Complex.exp (Complex.I * ((((m : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) * x) =
       (Complex.exp (Complex.I * (h * x / 2)) - Complex.exp (-Complex.I * (h * x / 2))) ^ (2 * m) := by
     have hpow : (Complex.exp (Complex.I * (h * x / 2)) - Complex.exp (-Complex.I * (h * x / 2))) ^ (2 * m) =
-        (Complex.exp (Complex.I * (h * x / 2)) * (1 - Complex.exp (-Complex.I * (h * x)))) ^ (2 * m) := by
+        (Complex.exp (Complex.I * (h * x / 2)) *
+          ((-1 : ℂ) * Complex.exp (-Complex.I * (h * x)) + 1)) ^ (2 * m) := by
       congr 1
-      rw [mul_sub, mul_one, ← Complex.exp_add]
-      congr 2; ring
-    rw [hpow, mul_pow, sub_eq_add_neg, add_pow]
+      rw [mul_add, mul_one, ← mul_assoc, mul_comm (Complex.exp _) (-1 : ℂ), mul_assoc, ← Complex.exp_add]
+      have hexp_arg : Complex.I * (h * x / 2) + -Complex.I * (h * x) = -Complex.I * (h * x / 2) := by ring
+      rw [hexp_arg]
+      ring
+    rw [hpow, mul_pow, add_pow]
     have hmul_exp : (Complex.exp (Complex.I * (h * x / 2))) ^ (2 * m) =
         Complex.exp (Complex.I * (m : ℝ) * h * x) := by
       rw [← Complex.exp_nat_mul]; congr 1; push_cast; ring
     rw [hmul_exp, Finset.mul_sum]
     refine Finset.sum_congr rfl fun j _ => ?_
-    simp only [one_pow, one_mul, neg_pow]
-    rw [← Complex.exp_nat_mul, ← Complex.exp_add]
-    have hexp_eq : Complex.I * (m : ℝ) * h * x + (j : ℂ) * (-Complex.I * (h * x)) =
-        Complex.I * (((m : ℝ) - (j : ℝ)) * h) * x := by push_cast; ring
-    rw [hexp_eq]; ring
+    rw [one_pow, mul_one, mul_pow, ← Complex.exp_nat_mul]
+    symm
+    calc Complex.exp (Complex.I * (m : ℝ) * h * x) *
+          ((-1 : ℂ) ^ j * Complex.exp ((j : ℂ) * (-Complex.I * (h * x))) * (Nat.choose (2 * m) j : ℂ))
+        = (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
+            (Complex.exp (Complex.I * (m : ℝ) * h * x) * Complex.exp ((j : ℂ) * (-Complex.I * (h * x)))) := by ring
+      _ = (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
+            Complex.exp (Complex.I * ((((m : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) * x) := by
+          rw [← Complex.exp_add]
+          congr 2
+          push_cast; ring
   dsimp only
   rw [hsum]
   have hsin : Complex.exp (Complex.I * (h * x / 2)) - Complex.exp (-Complex.I * (h * x / 2)) =
       2 * Complex.I * (Real.sin (h * x / 2) : ℂ) := by
-    rw [Complex.sin_eq_exp_sub_exp_neg]
-    push_cast
-    have : Complex.I * (h * x / 2) = (h * x / 2 : ℝ) * Complex.I := by ring
-    have : -Complex.I * (h * x / 2) = -((h * x / 2 : ℝ) * Complex.I) := by ring
-    field_simp
+    rw [show Complex.I * (h * x / 2) = ((h * x / 2 : ℝ) : ℂ) * Complex.I by push_cast; ring,
+        show -Complex.I * (h * x / 2) = ((-(h * x / 2) : ℝ) : ℂ) * Complex.I by push_cast; ring,
+        Complex.exp_mul_I, Complex.exp_mul_I,
+        ← Complex.ofReal_cos, ← Complex.ofReal_sin,
+        ← Complex.ofReal_cos, ← Complex.ofReal_sin,
+        Real.cos_neg, Real.sin_neg]
+    push_cast; ring
+  have hI_pow : (2 * Complex.I * (Real.sin (h * x / 2) : ℂ)) ^ (2 * m) =
+      (-1 : ℂ) ^ m * (2 : ℂ) ^ (2 * m) * ((Real.sin (h * x / 2) : ℂ) ^ (2 * m)) := by
+    rw [mul_pow, mul_pow, pow_mul Complex.I 2 m, Complex.I_sq]
     ring
-  rw [hsin, mul_pow, mul_pow, pow_mul, Complex.I_sq, pow_mul]
-  have h2m : (2 : ℂ) ^ (2 * m) = (4 : ℂ) ^ m := by rw [pow_mul]; norm_num
-  rw [h2m, zpow_neg, zpow_natCast]
-  have hhC : (h : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hh
-  push_cast
-  field_simp [hhC]
-  ring
+  have hdiv : ((Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) : ℂ) =
+      ((h : ℂ) ^ (2 * m))⁻¹ * ((2 : ℂ) ^ (2 * m) * (Real.sin (h * x / 2) : ℂ) ^ (2 * m)) := by
+    push_cast
+    rw [div_div_eq_mul_div, div_pow, mul_pow, div_eq_inv_mul]
+    ring
+  have hneg1 : (-1 : ℂ) ^ m * (-1 : ℂ) ^ m = 1 := by rw [← mul_pow]; norm_num
+  have hzpow : (h : ℂ) ^ (-(2 * (m : ℤ))) = ((h : ℂ) ^ (2 * m))⁻¹ := by
+    rw [zpow_neg, show (2 * (m : ℤ)) = ((2 * m : ℕ) : ℤ) by push_cast; ring, zpow_natCast]
+  rw [hsin, hI_pow, hzpow, hdiv]
+  calc (-1 : ℂ) ^ m * ((h : ℂ) ^ (2 * m))⁻¹ *
+        ((-1 : ℂ) ^ m * (2 : ℂ) ^ (2 * m) * (Real.sin (h * x / 2) : ℂ) ^ (2 * m))
+      = ((-1 : ℂ) ^ m * (-1 : ℂ) ^ m) *
+          (((h : ℂ) ^ (2 * m))⁻¹ * ((2 : ℂ) ^ (2 * m) * (Real.sin (h * x / 2) : ℂ) ^ (2 * m))) := by ring
+    _ = ((h : ℂ) ^ (2 * m))⁻¹ * ((2 : ℂ) ^ (2 * m) * (Real.sin (h * x / 2) : ℂ) ^ (2 * m)) := by
+        rw [hneg1, one_mul]
 
 private lemma sinc_sq_bound (u : ℝ) :
     0 ≤ u ^ 2 - (Real.sin u) ^ 2 ∧ u ^ 2 - (Real.sin u) ^ 2 ≤ u ^ 4 := by
   have h1 : |Real.sin u| ≤ |u| := Real.abs_sin_le_abs
-  have hsq : (Real.sin u) ^ 2 ≤ u ^ 2 := by nlinarith [sq_abs (Real.sin u), sq_abs u]
+  have hsq : (Real.sin u) ^ 2 ≤ u ^ 2 := by
+    rw [← sq_abs (Real.sin u), ← sq_abs u]
+    exact pow_le_pow_left₀ (abs_nonneg _) h1 2
   refine ⟨sub_nonneg.mpr hsq, ?_⟩
-  by_cases hu : 1 ≤ |u|
-  · have h1u : u ^ 2 ≤ u ^ 4 := by
-      have : 1 ≤ u ^ 2 := by nlinarith [sq_abs u]
-      nlinarith [sq_nonneg u]
-    linarith [sq_nonneg (Real.sin u)]
-  · push_neg at hu
-    have hsin_diff : |u - Real.sin u| ≤ |u| ^ 3 / 6 := by
-      rcases le_total 0 u with hu0 | hu0
-      · rcases eq_or_lt_of_le hu0 with rfl | hu0_pos
-        · simp
-        · have hlo : u - u ^ 3 / 6 ≤ Real.sin u := Real.sin_gt_sub_cube hu0_pos (by linarith [abs_of_nonneg hu0])
+  have hsin_diff : |u - Real.sin u| ≤ |u| ^ 3 / 6 := by
+    rcases le_total 0 u with hu0 | hu0
+    · rcases eq_or_lt_of_le hu0 with rfl | hu0_pos
+      · simp
+      · have hlo : u - u ^ 3 / 6 ≤ Real.sin u := (Real.sin_gt_sub_cube hu0_pos).le
         have hhi : Real.sin u ≤ u := Real.sin_le hu0
         rw [abs_of_nonneg (sub_nonneg.mpr hhi), abs_of_nonneg hu0]
         linarith
-      · rcases eq_or_lt_of_le hu0 with rfl | hu0_neg
-        · simp
-        · have hlo : (-u) - (-u) ^ 3 / 6 ≤ Real.sin (-u) :=
-            Real.sin_gt_sub_cube (neg_pos.mpr hu0_neg) (by linarith [abs_of_nonpos hu0])
-          have hhi : Real.sin (-u) ≤ -u := Real.sin_le (neg_nonneg.mpr hu0)
-          rw [Real.sin_neg] at hlo hhi
-          rw [abs_of_nonpos (by linarith), abs_of_nonpos hu0]
-          linarith
-    have hprod : u ^ 2 - (Real.sin u) ^ 2 = (u - Real.sin u) * (u + Real.sin u) := by ring
-    rw [hprod]
-    calc (u - Real.sin u) * (u + Real.sin u)
-        ≤ |(u - Real.sin u) * (u + Real.sin u)| := le_abs_self _
-      _ = |u - Real.sin u| * |u + Real.sin u| := abs_mul _ _
-      _ ≤ (|u| ^ 3 / 6) * (2 * |u|) := by
-          refine mul_le_mul hsin_diff ?_ (abs_nonneg _) (by positivity)
-          calc |u + Real.sin u| ≤ |u| + |Real.sin u| := abs_add_le _ _
-            _ ≤ |u| + |u| := add_le_add le_rfl h1
-            _ = 2 * |u| := by ring
-      _ = |u| ^ 4 / 3 := by ring
-      _ = u ^ 4 / 3 := by
-          congr 1; rw [show (4 : ℕ) = 2 * 2 by rfl, pow_mul, sq_abs, ← pow_mul]
-      _ ≤ u ^ 4 := by linarith [pow_nonneg (sq_nonneg u) 2, show u ^ 4 = (u ^ 2) ^ 2 by ring]
+    · rcases eq_or_lt_of_le hu0 with rfl | hu0_neg
+      · simp
+      · have hlo : (-u) - (-u) ^ 3 / 6 ≤ Real.sin (-u) :=
+          (Real.sin_gt_sub_cube (neg_pos.mpr hu0_neg)).le
+        have hhi : Real.sin (-u) ≤ -u := Real.sin_le (neg_nonneg.mpr hu0)
+        rw [Real.sin_neg] at hlo hhi
+        rw [abs_of_nonpos (by linarith), abs_of_nonpos hu0]
+        linarith
+  have hprod : u ^ 2 - (Real.sin u) ^ 2 = (u - Real.sin u) * (u + Real.sin u) := by ring
+  rw [hprod]
+  calc (u - Real.sin u) * (u + Real.sin u)
+      ≤ |(u - Real.sin u) * (u + Real.sin u)| := le_abs_self _
+    _ = |u - Real.sin u| * |u + Real.sin u| := abs_mul _ _
+    _ ≤ (|u| ^ 3 / 6) * (2 * |u|) := by
+        refine mul_le_mul hsin_diff ?_ (abs_nonneg _) (by positivity)
+        calc |u + Real.sin u| ≤ |u| + |Real.sin u| := abs_add_le _ _
+          _ ≤ |u| + |u| := add_le_add le_rfl h1
+          _ = 2 * |u| := by ring
+    _ = |u| ^ 4 / 3 := by ring
+    _ = u ^ 4 / 3 := by
+        congr 1; rw [show (4 : ℕ) = 2 * 2 by rfl, pow_mul, sq_abs, ← pow_mul]
+    _ ≤ u ^ 4 := by linarith [pow_nonneg (sq_nonneg u) 2, show u ^ 4 = (u ^ 2) ^ 2 by ring]
 
 private lemma sinc_pow_diff_bound (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
     0 ≤ x ^ (2 * m) - (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) ∧
@@ -698,7 +727,9 @@ private lemma sinc_pow_diff_bound (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
       rw [abs_div, div_le_iff₀ (abs_pos.mpr (by positivity : h / 2 ≠ 0))]
       calc |Real.sin (h * x / 2)| ≤ |h * x / 2| := h1
         _ = |x| * |h / 2| := by rw [show h * x / 2 = x * (h / 2) by ring, abs_mul]
-    nlinarith [sq_abs (Real.sin (h * x / 2) / (h / 2)), sq_abs x]
+    dsimp only [A, B]
+    rw [← sq_abs (Real.sin (h * x / 2) / (h / 2)), ← sq_abs x]
+    exact pow_le_pow_left₀ (abs_nonneg _) h2 2
   have hdiff_AB : A - B ≤ h ^ 2 * x ^ 4 := by
     have hs := (sinc_sq_bound (h * x / 2)).2
     have hAB_eq : A - B = ((h * x / 2) ^ 2 - (Real.sin (h * x / 2)) ^ 2) / (h / 2) ^ 2 := by
@@ -724,11 +755,11 @@ private lemma sinc_pow_diff_bound (h x : ℝ) (hh : h ≠ 0) (m : ℕ) :
       · simp
       · have hB_le_A : B ≤ A := hBA
         calc (A - B) * A ^ (k + 1) + B * (A ^ (k + 1) - B ^ (k + 1))
-            ≤ (A - B) * A ^ (k + 1) + A * ((k + 1 : ℝ) * A ^ k * (A - B)) := by
+            ≤ (A - B) * A ^ (k + 1) + A * (((k + 1 : ℕ) : ℝ) * A ^ (k + 1 - 1) * (A - B)) := by
               refine add_le_add le_rfl (le_trans (mul_le_mul_of_nonneg_left ih.2 hB_nn) ?_)
               refine mul_le_mul_of_nonneg_right hB_le_A ?_
               exact mul_nonneg (mul_nonneg (by positivity) (pow_nonneg (sq_nonneg x) _)) (sub_nonneg.mpr hBA)
-          _ = ((k + 1 : ℕ) + 1 : ℝ) * A ^ ((k + 1) + 1 - 1) * (A - B) := by
+          _ = (((k + 1 + 1 : ℕ) : ℝ)) * A ^ ((k + 1) + 1 - 1) * (A - B) := by
               simp only [Nat.add_sub_cancel]; push_cast; ring
   have hpowA : A ^ m = x ^ (2 * m) := by dsimp only [A]; rw [← pow_mul]
   have hpowB : B ^ m = (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) := by dsimp only [B]; rw [← pow_mul]
@@ -795,34 +826,38 @@ theorem prop_2_6 :
     have h_int_fin : ∀ j ∈ Finset.range (2 * k + 1),
         MeasureTheory.Integrable (fun x : ℝ =>
           (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
-            Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) * x) * (ρ x : ℂ)) := by
+            Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) * x) * (ρ x : ℂ)) := by
       intro j _
-      refine MeasureTheory.Integrable.mono' (hρ_int.norm.const_mul _) ?_ ?_
+      refine MeasureTheory.Integrable.mono' (hρ_int.const_mul (Nat.choose (2 * k) j : ℝ)) ?_ ?_
       · exact ((Continuous.mul (continuous_const.mul (Complex.continuous_exp.comp (by continuity)))
           (Complex.continuous_ofReal.comp hρ_smooth.continuous)).aestronglyMeasurable)
       · filter_upwards with x
+        have hexp_norm : ‖Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) * x)‖ = 1 := by
+          rw [show Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) * (x : ℂ) =
+              ((((k : ℝ) - (j : ℝ)) * h * x : ℝ) : ℂ) * Complex.I by push_cast; ring,
+              Complex.norm_exp_ofReal_mul_I]
         rw [norm_mul, norm_mul, norm_mul, norm_pow, norm_neg, norm_one, one_pow, one_mul,
-          Complex.norm_natCast, Complex.norm_exp_ofReal_mul_I, mul_one, Complex.norm_real,
-          Real.norm_of_nonneg (hρ_pos x).1.le, mul_comm]
-        exact mul_le_mul_of_nonneg_right (Nat.cast_nonneg _) (hρ_pos x).1.le
+          Complex.norm_natCast, hexp_norm, mul_one, Complex.norm_real,
+          Real.norm_of_nonneg (hρ_pos x).1.le]
     have hsum_int : ((-1 : ℂ) ^ k) * ((h : ℂ) ^ (-(2 * k : ℤ))) *
         ∑ j ∈ Finset.range (2 * k + 1),
           (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) * (Φ (((k : ℝ) - (j : ℝ)) * h) : ℂ) =
         ∫ x : ℝ, centralDiff (fun τ => Complex.exp (Complex.I * τ * x)) h k * (ρ x : ℂ) := by
-      simp_rw [← hρ_cf, Finset.mul_sum]
+      simp_rw [← hρ_cf]
       have h1 : ∀ j ∈ Finset.range (2 * k + 1),
           (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
-            ∫ x : ℝ, Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) * x) * (ρ x : ℂ) =
+            ∫ x : ℝ, Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) * x) * (ρ x : ℂ) =
           ∫ x : ℝ, ((-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
-            Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) * x) * (ρ x : ℂ)) := by
+            Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) * x) * (ρ x : ℂ)) := by
         intro j _
         rw [← MeasureTheory.integral_const_mul]
         congr 1; ext x; ring
-      rw [Finset.sum_congr rfl h1, ← MeasureTheory.integral_finset_sum _ h_int_fin,
+      rw [Finset.sum_congr rfl h1, ← MeasureTheory.integral_finsetSum _ h_int_fin,
         ← MeasureTheory.integral_const_mul]
       congr 1; ext x
       unfold centralDiff
-      rw [Finset.sum_mul, Finset.mul_sum]
+      dsimp only []
+      rw [← Finset.sum_mul]
       ring
     rw [hsum_int]
     have hcd_re : ∀ x : ℝ,
@@ -831,84 +866,123 @@ theorem prop_2_6 :
       intro x
       rw [centralDiff_exp h x hh k]
       push_cast; ring
-    simp_rw [hcd_re, integral_ofReal, Complex.ofReal_re]
+    have hint_cd : MeasureTheory.Integrable
+        (fun x : ℝ => (((Real.sin (h * x / 2) / (h / 2)) ^ (2 * k) * ρ x : ℝ) : ℂ)) := by
+      refine ((MeasureTheory.integrable_finsetSum _ h_int_fin).const_mul
+        (((-1 : ℂ) ^ k) * ((h : ℂ) ^ (-(2 * k : ℤ))))).congr ?_
+      filter_upwards with x
+      rw [← hcd_re x]
+      unfold centralDiff
+      dsimp only []
+      rw [← Finset.sum_mul]
+      ring
+    simp_rw [hcd_re]
+    rw [← Complex.reCLM_apply, ← Complex.reCLM.integral_comp_comm hint_cd]
+    simp only [Complex.reCLM_apply, Complex.ofReal_re]
+  let Φ_B (B : ℕ) (τ : ℝ) : ℝ :=
+    ∏ p ∈ (Finset.Icc 3 B).filter Nat.Prime, Real.cos (τ * Real.log p / ((p : ℝ) - 1))
+  have hcd_B_eq : ∀ (h : ℝ) (hh : h ≠ 0) (B k : ℕ),
+      (centralDiff (fun τ => (Φ_B B τ : ℂ)) h k).re =
+        (1 / (2 : ℝ) ^ ((Finset.Icc 3 B).filter Nat.Prime).card) *
+          ∑ σ : ((Finset.Icc 3 B).filter Nat.Prime) → Bool,
+            (Real.sin (h * (∑ p : ((Finset.Icc 3 B).filter Nat.Prime), (if σ p then (1 : ℝ) else -1) *
+              (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * k) := by
+    intro h hh B k
+    set P_B := (Finset.Icc 3 B).filter Nat.Prime
+    have h_cf_B : ∀ τ : ℝ, (Φ_B B τ : ℂ) =
+        (1 / (2 : ℂ) ^ P_B.card) *
+          ∑ σ : P_B → Bool, Complex.exp (Complex.I * τ *
+            ∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+              ((Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1) : ℝ) : ℂ)) := by
+      intro τ
+      have h1 : (Φ_B B τ : ℂ) = ∏ p ∈ P_B, (Real.cos (τ * (Real.log p / ((p : ℝ) - 1))) : ℂ) := by
+        unfold Φ_B
+        rw [Complex.ofReal_prod]
+        refine Finset.prod_congr rfl fun p _ => by congr 2; ring
+      rw [h1, rademacher_charfun P_B (fun p => Real.log p / ((p : ℝ) - 1)) τ]
+    have hcd_eq : centralDiff (fun τ => (Φ_B B τ : ℂ)) h k =
+        (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
+          ((Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
+            (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * k) : ℂ) := by
+      unfold centralDiff
+      simp_rw [h_cf_B]
+      have hswap : ∑ j ∈ Finset.range (2 * k + 1),
+          (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
+            ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
+              Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) *
+                (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                  ((Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1) : ℝ) : ℂ)))) =
+          (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
+            ∑ j ∈ Finset.range (2 * k + 1),
+              (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
+                Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) *
+                  (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
+                    (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1)))) := by
+        have h1 : ∀ j ∈ Finset.range (2 * k + 1),
+            (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
+              ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
+                Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) *
+                  (∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
+                    ((Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1) : ℝ) : ℂ)))) =
+            ∑ σ : P_B → Bool, (1 / (2 : ℂ) ^ P_B.card) *
+              ((-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
+                Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) *
+                  (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
+                    (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) := by
+          intro j _
+          rw [Finset.mul_sum, Finset.mul_sum]
+          refine Finset.sum_congr rfl fun σ _ => by
+            rw [mul_left_comm ((-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ)) (1 / (2 : ℂ) ^ P_B.card)]
+            congr 2
+            congr 1
+            congr 1
+            push_cast
+            refine Finset.sum_congr rfl fun p _ => by split_ifs <;> push_cast <;> ring
+        rw [Finset.sum_congr rfl h1, Finset.sum_comm, Finset.mul_sum]
+        refine Finset.sum_congr rfl fun σ _ => (Finset.mul_sum _ _ _).symm
+      rw [hswap]
+      have hmul : (-1 : ℂ) ^ k * (h : ℂ) ^ (-(2 * k : ℤ)) *
+          ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
+            ∑ j ∈ Finset.range (2 * k + 1),
+              (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
+                Complex.exp (Complex.I * ((((k : ℝ) - (j : ℝ)) * h : ℝ) : ℂ) *
+                  (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
+                    (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
+          (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
+            centralDiff (fun τ => Complex.exp (Complex.I * τ *
+              (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
+                (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) h k := by
+        unfold centralDiff
+        rw [← Finset.mul_sum]
+        ring
+      rw [hmul]
+      congr 1
+      refine Finset.sum_congr rfl fun σ _ => centralDiff_exp h _ hh k
+    rw [hcd_eq]
+    have hcast : (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
+        ((Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
+          (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * k) : ℂ) =
+        (((1 / (2 : ℝ) ^ P_B.card) * ∑ σ : P_B → Bool,
+          (Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
+            (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * k) : ℝ) : ℂ) := by
+      rw [Complex.ofReal_mul, Complex.ofReal_sum]; simp
+    rw [hcast, Complex.ofReal_re]
   have hcd_Φ_bd : ∀ (h : ℝ) (hh : h ≠ 0) (k : ℕ),
       (centralDiff (fun τ => (Φ τ : ℂ)) h k).re ≤ M_const k := by
     intro h hh k
-    let Φ_B (B : ℕ) (τ : ℝ) : ℝ :=
-      ∏ p ∈ (Finset.Icc 3 B).filter Nat.Prime, Real.cos (τ * Real.log p / ((p : ℝ) - 1))
     have hcd_B_bd : ∀ B : ℕ, (centralDiff (fun τ => (Φ_B B τ : ℂ)) h k).re ≤ M_const k := by
       intro B
       set P_B := (Finset.Icc 3 B).filter Nat.Prime
-      have h_cf_B : ∀ τ : ℝ, (Φ_B B τ : ℂ) =
-          (1 / (2 : ℂ) ^ P_B.card) *
-            ∑ σ : P_B → Bool, Complex.exp (Complex.I * τ *
-              ∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
-                (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) := by
-        intro τ
-        rw [rademacher_charfun]
-        unfold Φ_B
-        push_cast
-        refine Finset.prod_congr rfl fun p _ => by ring_nf
-      have hcd_eq : centralDiff (fun τ => (Φ_B B τ : ℂ)) h k =
-          (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-            ((Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-              (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * k) : ℂ) := by
-        unfold centralDiff
-        simp_rw [h_cf_B]
-        rw [Finset.sum_comm]
-        have hswap : ∑ j ∈ Finset.range (2 * k + 1),
-            (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
-              ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-                Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) *
-                  (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                    (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
-            (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-              ∑ j ∈ Finset.range (2 * k + 1),
-                (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
-                  Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                      (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1)))) := by
-          rw [Finset.mul_sum, Finset.sum_comm]
-          refine Finset.sum_congr rfl fun j _ => ?_
-          rw [Finset.mul_sum, Finset.mul_sum]
-          refine Finset.sum_congr rfl fun σ _ => by push_cast; ring
-        rw [hswap]
-        have hmul : (-1 : ℂ) ^ k * (h : ℂ) ^ (-(2 * k : ℤ)) *
-            ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-              ∑ j ∈ Finset.range (2 * k + 1),
-                (-1 : ℂ) ^ j * (Nat.choose (2 * k) j : ℂ) *
-                  Complex.exp (Complex.I * (((k : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                      (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
-            (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-              centralDiff (fun τ => Complex.exp (Complex.I * τ *
-                (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                  (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) h k := by
-          rw [Finset.mul_sum, Finset.mul_sum]
-          refine Finset.sum_congr rfl fun σ _ => ?_
-          unfold centralDiff; ring
-        rw [hmul]
-        congr 1
-        refine Finset.sum_congr rfl fun σ _ => centralDiff_exp h _ hh k
-      rw [hcd_eq]
-      have hre : ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-          ((Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-            (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * k) : ℂ)).re =
-          (1 / (2 : ℝ) ^ P_B.card) * ∑ σ : P_B → Bool,
-            (Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-              (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * k) := by
-        push_cast; simp
-      rw [hre]
+      rw [hcd_B_eq h hh B k]
       refine le_trans (mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun σ _ => ?_) (by positivity)) (hrad_bd B k)
       have hs := (sinc_pow_diff_bound h (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
         (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) hh k).1
-      linarith
+      linarith only [hs]
     have hlim : Tendsto (fun B : ℕ => (centralDiff (fun τ => (Φ_B B τ : ℂ)) h k).re) atTop
         (𝓝 (centralDiff (fun τ => (Φ τ : ℂ)) h k).re) := by
       refine Complex.continuous_re.continuousAt.tendsto.comp ?_
       unfold centralDiff
-      refine tendsto_const_nhds.mul (tendsto_finset_sum _ fun j _ => tendsto_const_nhds.mul ?_)
+      refine tendsto_const_nhds.mul (tendsto_finsetSum _ fun j _ => tendsto_const_nhds.mul ?_)
       refine Complex.continuous_ofReal.continuousAt.tendsto.comp ?_
       exact hΦ_lim (((k : ℝ) - (j : ℝ)) * h)
     exact le_of_tendsto hlim (Eventually.of_forall hcd_B_bd)
@@ -925,10 +999,12 @@ theorem prop_2_6 :
       by_cases hx : x = 0
       · subst hx; simp
       · have h0 : Tendsto (fun N : ℕ => (1 / ((N : ℝ) + 1)) * x / 2) atTop (𝓝 0) := by
-          simpa using ((tendsto_const_nhds.div_atTop
+          simpa using (((tendsto_const_nhds (x := (1 : ℝ))).div_atTop
             (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop)).mul_const x).div_const 2
         have hsinc : Tendsto (fun u : ℝ => Real.sin u / u) (𝓝[≠] 0) (𝓝 1) := by
-          simpa using Real.tendsto_sin_div_self
+          have h1 : Tendsto (fun u : ℝ => slope Real.sin 0 u) (𝓝[≠] 0) (𝓝 (Real.cos 0)) :=
+            (Real.hasDerivAt_sin 0).tendsto_slope
+          simpa [slope_def_field] using h1
         have hcomp : Tendsto (fun N : ℕ =>
             Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) * x / 2)) atTop (𝓝 1) := by
           refine hsinc.comp (tendsto_nhdsWithin_iff.mpr ⟨h0, Eventually.of_forall fun N => ?_⟩)
@@ -940,60 +1016,61 @@ theorem prop_2_6 :
         rw [one_mul] at hmul
         refine hmul.congr fun N => ?_
         have hN : (1 / ((N : ℝ) + 1)) / 2 ≠ 0 := by positivity
-        field_simp [hN, hx]; ring
+        field_simp [hN, hx]
     have hfatou : ∫⁻ x : ℝ, ENNReal.ofReal (x ^ (2 * k) * ρ x) ≤ ENNReal.ofReal (M_const k) := by
       have hliminf : (∫⁻ x : ℝ, ENNReal.ofReal (x ^ (2 * k) * ρ x)) ≤
           Filter.liminf (fun N : ℕ => ∫⁻ x : ℝ,
             ENNReal.ofReal ((Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)) ^ (2 * k) * ρ x)) atTop := by
         refine le_trans (le_of_eq (MeasureTheory.lintegral_congr fun x => (hseq x).liminf_eq.symm)) ?_
         refine MeasureTheory.lintegral_liminf_le fun N => ?_
-        exact (ENNReal.continuous_ofReal.comp (by continuity)).measurable
-      refine le_trans hliminf (Filter.liminf_le_of_le (by isBoundedDefault) (Eventually.of_forall fun N => ?_))
+        exact (ENNReal.continuous_ofReal.comp
+          ((Continuous.pow (by continuity) (2 * k)).mul hρ_smooth.continuous)).measurable
+      refine le_trans hliminf (Filter.liminf_le_of_frequently_le (Eventually.of_forall fun N => ?_).frequently)
       have hN_ne : (1 / ((N : ℝ) + 1)) ≠ 0 := by positivity
       have hbd := hcd_Φ_bd (1 / ((N : ℝ) + 1)) hN_ne k
       rw [hcd_Φ_eq (1 / ((N : ℝ) + 1)) hN_ne k] at hbd
       have hintN : MeasureTheory.Integrable (fun x : ℝ =>
           (Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)) ^ (2 * k) * ρ x) := by
-        -- Bounded by `(2(N+1))^{2k} * ρ x`
         refine MeasureTheory.Integrable.mono' (hρ_int.const_mul (((2 : ℝ) * ((N : ℝ) + 1)) ^ (2 * k))) ?_ ?_
         · exact (Continuous.mul (by continuity) hρ_smooth.continuous).aestronglyMeasurable
         · filter_upwards with x
-          have hnn : 0 ≤ (Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)) ^ (2 * k) := by positivity
+          have hnn : 0 ≤ (Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)) ^ (2 * k) := by
+            rw [pow_mul]; positivity
           rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg hnn (hρ_pos x).1.le)]
           refine mul_le_mul_of_nonneg_right ?_ (hρ_pos x).1.le
           have hs1 : |Real.sin ((1 / ((N : ℝ) + 1)) * x / 2)| ≤ 1 := Real.abs_sin_le_one _
           have hdiv : |Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)| ≤ 2 * ((N : ℝ) + 1) := by
             rw [abs_div, show |(1 / ((N : ℝ) + 1)) / 2| = (2 * ((N : ℝ) + 1))⁻¹ by
-              rw [abs_of_pos (by positivity)]; ring]
+              rw [abs_of_pos (by positivity)]; field_simp]
             rw [div_inv_eq_mul]
             exact mul_le_of_le_one_left (by positivity) hs1
           calc (Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)) ^ (2 * k)
               = |Real.sin ((1 / ((N : ℝ) + 1)) * x / 2) / ((1 / ((N : ℝ) + 1)) / 2)| ^ (2 * k) := by
-                rw [show 2 * k = k * 2 by ring, pow_mul, ← sq_abs, ← pow_mul]
-                ring_nf
+                rw [show 2 * k = k * 2 by ring, pow_mul, ← sq_abs, abs_pow, ← pow_mul,
+                  show k * 2 = 2 * k by ring]
             _ ≤ (2 * ((N : ℝ) + 1)) ^ (2 * k) := pow_le_pow_left₀ (abs_nonneg _) hdiv _
       rw [← MeasureTheory.ofReal_integral_eq_lintegral_ofReal hintN (Eventually.of_forall fun x =>
-        mul_nonneg (by positivity) (hρ_pos x).1.le)]
+        mul_nonneg (by rw [pow_mul]; positivity) (hρ_pos x).1.le)]
       exact ENNReal.ofReal_le_ofReal hbd
     refine ⟨(Continuous.mul (continuous_pow (2 * k)) hρ_smooth.continuous).aestronglyMeasurable, ?_⟩
     rw [MeasureTheory.hasFiniteIntegral_iff_norm]
     have hcon : (∫⁻ x : ℝ, ENNReal.ofReal ‖x ^ (2 * k) * ρ x‖) =
         ∫⁻ x : ℝ, ENNReal.ofReal (x ^ (2 * k) * ρ x) := by
       refine MeasureTheory.lintegral_congr fun x => ?_
-      have hnn : 0 ≤ x ^ (2 * k) * ρ x := mul_nonneg (by positivity) (hρ_pos x).1.le
+      have hnn : 0 ≤ x ^ (2 * k) * ρ x := mul_nonneg (by rw [pow_mul]; positivity) (hρ_pos x).1.le
       rw [Real.norm_of_nonneg hnn]
     rw [hcon]
     exact lt_of_le_of_lt hfatou ENNReal.ofReal_lt_top
   -- Now choose `h > 0` small enough that truncation error is `≤ ε / 6` for both `Φ` and `Φ_B`
   set I_m1 : ℝ := ∫ x : ℝ, x ^ (2 * (m + 1)) * ρ x
   have hI_m1_nn : 0 ≤ I_m1 :=
-    MeasureTheory.integral_nonneg fun x => mul_nonneg (by positivity) (hρ_pos x).1.le
+    MeasureTheory.integral_nonneg fun x => mul_nonneg (by rw [pow_mul]; positivity) (hρ_pos x).1.le
   set K_tail : ℝ := (m : ℝ) * max I_m1 (M_const (m + 1)) + 1
   have hK_pos : 0 < K_tail := by positivity
   set h : ℝ := Real.sqrt (ε / (6 * K_tail))
   have hh_pos : 0 < h := Real.sqrt_pos.mpr (by positivity)
   have hh_sq : h ^ 2 = ε / (6 * K_tail) := Real.sq_sqrt (by positivity)
-  have h_err_Φ : |∫ x : ℝ, x ^ (2 * m) * ρ x - (centralDiff (fun τ => (Φ τ : ℂ)) h m).re| ≤ ε / 6 := by
+  have h_err_Φ : |(∫ x : ℝ, x ^ (2 * m) * ρ x) - (centralDiff (fun τ => (Φ τ : ℂ)) h m).re| ≤ ε / 6 := by
     rw [hcd_Φ_eq h hh_pos.ne' m]
     have hint_diff : MeasureTheory.Integrable (fun x : ℝ =>
         x ^ (2 * m) * ρ x - (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) * ρ x) := by
@@ -1001,9 +1078,8 @@ theorem prop_2_6 :
       refine MeasureTheory.Integrable.mono' (hint_pow m) ?_ ?_
       · exact (Continuous.mul (by continuity) hρ_smooth.continuous).aestronglyMeasurable
       · filter_upwards with x
-        have hnn : 0 ≤ (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) := by positivity
-        rw [Real.norm_of_nonneg (mul_nonneg hnn (hρ_pos x).1.le),
-          Real.norm_of_nonneg (mul_nonneg (by positivity) (hρ_pos x).1.le)]
+        have hnn : 0 ≤ (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) := by rw [pow_mul]; positivity
+        rw [Real.norm_of_nonneg (mul_nonneg hnn (hρ_pos x).1.le)]
         exact mul_le_mul_of_nonneg_right
           (sub_nonneg.mp (sinc_pow_diff_bound h x hh_pos.ne' m).1) (hρ_pos x).1.le
     have hint_sin : MeasureTheory.Integrable (fun x : ℝ =>
@@ -1011,9 +1087,8 @@ theorem prop_2_6 :
       refine MeasureTheory.Integrable.mono' (hint_pow m) ?_ ?_
       · exact (Continuous.mul (by continuity) hρ_smooth.continuous).aestronglyMeasurable
       · filter_upwards with x
-        have hnn : 0 ≤ (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) := by positivity
-        rw [Real.norm_of_nonneg (mul_nonneg hnn (hρ_pos x).1.le),
-          Real.norm_of_nonneg (mul_nonneg (by positivity) (hρ_pos x).1.le)]
+        have hnn : 0 ≤ (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) := by rw [pow_mul]; positivity
+        rw [Real.norm_of_nonneg (mul_nonneg hnn (hρ_pos x).1.le)]
         exact mul_le_mul_of_nonneg_right
           (sub_nonneg.mp (sinc_pow_diff_bound h x hh_pos.ne' m).1) (hρ_pos x).1.le
     rw [← MeasureTheory.integral_sub (hint_pow m) hint_sin]
@@ -1025,87 +1100,29 @@ theorem prop_2_6 :
     calc ∫ x : ℝ, (x ^ (2 * m) * ρ x - (Real.sin (h * x / 2) / (h / 2)) ^ (2 * m) * ρ x)
         ≤ ∫ x : ℝ, ((m : ℝ) * h ^ 2) * (x ^ (2 * (m + 1)) * ρ x) := by
           refine MeasureTheory.integral_mono hint_diff ((hint_pow (m + 1)).const_mul _) fun x => ?_
-          rw [← sub_mul, mul_assoc]
+          rw [← sub_mul, ← mul_assoc]
           exact mul_le_mul_of_nonneg_right (sinc_pow_diff_bound h x hh_pos.ne' m).2 (hρ_pos x).1.le
       _ = (m : ℝ) * h ^ 2 * I_m1 := MeasureTheory.integral_const_mul _ _
+      _ = ((m : ℝ) * I_m1) * h ^ 2 := by ring
       _ ≤ K_tail * h ^ 2 := by
           refine mul_le_mul_of_nonneg_right ?_ (sq_nonneg h)
           calc (m : ℝ) * I_m1 ≤ (m : ℝ) * max I_m1 (M_const (m + 1)) :=
                 mul_le_mul_of_nonneg_left (le_max_left _ _) (Nat.cast_nonneg m)
-            _ ≤ K_tail := by linarith
+            _ ≤ K_tail := by dsimp only [K_tail]; linarith only []
       _ = ε / 6 := by rw [hh_sq]; field_simp [hK_pos.ne']
   -- Choose `B₀` such that `|(centralDiff Φ_B h m).re - (centralDiff Φ h m).re| ≤ ε / 6` for `B ≥ B₀`
-  let Φ_B (B : ℕ) (τ : ℝ) : ℝ :=
-    ∏ p ∈ (Finset.Icc 3 B).filter Nat.Prime, Real.cos (τ * Real.log p / ((p : ℝ) - 1))
   have hlim_cd : Tendsto (fun B : ℕ => (centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re) atTop
       (𝓝 (centralDiff (fun τ => (Φ τ : ℂ)) h m).re) := by
     refine Complex.continuous_re.continuousAt.tendsto.comp ?_
     unfold centralDiff
-    refine tendsto_const_nhds.mul (tendsto_finset_sum _ fun j _ => tendsto_const_nhds.mul ?_)
+    refine tendsto_const_nhds.mul (tendsto_finsetSum _ fun j _ => tendsto_const_nhds.mul ?_)
     exact Complex.continuous_ofReal.continuousAt.tendsto.comp (hΦ_lim (((m : ℝ) - (j : ℝ)) * h))
   obtain ⟨B₀, hB₀⟩ := Metric.tendsto_atTop.mp hlim_cd (ε / 6) (by positivity)
   refine ⟨B₀, fun B hB => ?_⟩
   set P_B := (Finset.Icc 3 B).filter Nat.Prime
   have h_err_B_rad : |rademacherMoment P_B (2 * m) - ∫ x : ℝ, x ^ (2 * m) * ρ x| ≤ ε / 2 := by
-    -- First `|rademacherMoment P_B (2 * m) - (centralDiff Φ_B h m).re| ≤ ε / 6`
-    have h_cf_B : ∀ τ : ℝ, (Φ_B B τ : ℂ) =
-        (1 / (2 : ℂ) ^ P_B.card) *
-          ∑ σ : P_B → Bool, Complex.exp (Complex.I * τ *
-            ∑ p : P_B, (if σ p then (1 : ℂ) else -1) *
-              (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) := by
-      intro τ
-      rw [rademacher_charfun]
-      unfold Φ_B
-      push_cast
-      refine Finset.prod_congr rfl fun p _ => by ring_nf
-    have hcd_eq : (centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re =
-        (1 / (2 : ℝ) ^ P_B.card) * ∑ σ : P_B → Bool,
-          (Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-            (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * m) := by
-      have hcdC : centralDiff (fun τ => (Φ_B B τ : ℂ)) h m =
-          (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-            ((Real.sin (h * (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-              (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))) / 2) / (h / 2)) ^ (2 * m) : ℂ) := by
-        unfold centralDiff
-        simp_rw [h_cf_B]
-        rw [Finset.sum_comm]
-        have hswap : ∑ j ∈ Finset.range (2 * m + 1),
-            (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
-              ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-                Complex.exp (Complex.I * (((m : ℝ) - (j : ℝ)) * h) *
-                  (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                    (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
-            (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-              ∑ j ∈ Finset.range (2 * m + 1),
-                (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
-                  Complex.exp (Complex.I * (((m : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                      (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1)))) := by
-          rw [Finset.mul_sum, Finset.sum_comm]
-          refine Finset.sum_congr rfl fun j _ => ?_
-          rw [Finset.mul_sum, Finset.mul_sum]
-          refine Finset.sum_congr rfl fun σ _ => by push_cast; ring
-        rw [hswap]
-        have hmul : (-1 : ℂ) ^ m * (h : ℂ) ^ (-(2 * m : ℤ)) *
-            ((1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-              ∑ j ∈ Finset.range (2 * m + 1),
-                (-1 : ℂ) ^ j * (Nat.choose (2 * m) j : ℂ) *
-                  Complex.exp (Complex.I * (((m : ℝ) - (j : ℝ)) * h) *
-                    (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                      (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) =
-            (1 / (2 : ℂ) ^ P_B.card) * ∑ σ : P_B → Bool,
-              centralDiff (fun τ => Complex.exp (Complex.I * τ *
-                (∑ p : P_B, (if σ p then (1 : ℝ) else -1) *
-                  (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1))))) h m := by
-          rw [Finset.mul_sum, Finset.mul_sum]
-          refine Finset.sum_congr rfl fun σ _ => ?_
-          unfold centralDiff; ring
-        rw [hmul]
-        congr 1
-        refine Finset.sum_congr rfl fun σ _ => centralDiff_exp h _ hh_pos.ne' m
-      rw [hcdC]; push_cast; simp
     have h_err_B1 : |rademacherMoment P_B (2 * m) - (centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re| ≤ ε / 6 := by
-      rw [hcd_eq]
+      rw [hcd_B_eq h hh_pos.ne' B m]
       unfold rademacherMoment
       rw [← mul_sub, ← Finset.sum_sub_distrib]
       have hnn : 0 ≤ (1 / (2 : ℝ) ^ P_B.card) * ∑ σ : P_B → Bool,
@@ -1130,28 +1147,31 @@ theorem prop_2_6 :
             rw [← Finset.mul_sum]; unfold rademacherMoment; ring
         _ ≤ (m : ℝ) * h ^ 2 * M_const (m + 1) :=
             mul_le_mul_of_nonneg_left (hrad_bd B (m + 1)) (by positivity)
+        _ = (m : ℝ) * M_const (m + 1) * h ^ 2 := by ring
         _ ≤ K_tail * h ^ 2 := by
             refine mul_le_mul_of_nonneg_right ?_ (sq_nonneg h)
             calc (m : ℝ) * M_const (m + 1) ≤ (m : ℝ) * max I_m1 (M_const (m + 1)) :=
                   mul_le_mul_of_nonneg_left (le_max_right _ _) (Nat.cast_nonneg m)
-              _ ≤ K_tail := by linarith
+              _ ≤ K_tail := by dsimp only [K_tail]; linarith only []
         _ = ε / 6 := by rw [hh_sq]; field_simp [hK_pos.ne']
     have h_err_B2 : |(centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re -
         (centralDiff (fun τ => (Φ τ : ℂ)) h m).re| ≤ ε / 6 :=
       le_of_lt (by simpa [Real.dist_eq] using hB₀ B hB)
-    linarith [abs_add_le
-      (rademacherMoment P_B (2 * m) - (centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re)
-      ((centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re - (centralDiff (fun τ => (Φ τ : ℂ)) h m).re),
-      abs_add_le
-      (rademacherMoment P_B (2 * m) - (centralDiff (fun τ => (Φ τ : ℂ)) h m).re)
-      ((centralDiff (fun τ => (Φ τ : ℂ)) h m).re - ∫ x : ℝ, x ^ (2 * m) * ρ x),
-      abs_sub_comm (∫ x : ℝ, x ^ (2 * m) * ρ x) (centralDiff (fun τ => (Φ τ : ℂ)) h m).re]
+    have htri1 := abs_sub_le (rademacherMoment P_B (2 * m))
+      ((centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re)
+      (∫ x : ℝ, x ^ (2 * m) * ρ x)
+    have htri2 := abs_sub_le ((centralDiff (fun τ => (Φ_B B τ : ℂ)) h m).re)
+      ((centralDiff (fun τ => (Φ τ : ℂ)) h m).re)
+      (∫ x : ℝ, x ^ (2 * m) * ρ x)
+    have hcomm := abs_sub_comm (∫ x : ℝ, x ^ (2 * m) * ρ x) ((centralDiff (fun τ => (Φ τ : ℂ)) h m).re)
+    linarith only [h_err_B1, h_err_B2, h_err_Φ, htri1, htri2, hcomm]
   -- Now choose `r₀` for `B`
   set A_B : ℝ := ∑ p ∈ P_B, Real.log p / ((p : ℝ) - 1)
   have hA_B_nn : 0 ≤ A_B := Finset.sum_nonneg fun p hp => by
     have hp3 : 3 ≤ p := (Finset.mem_Icc.mp (Finset.mem_filter.mp hp).1).1
     exact div_nonneg (Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ p))) (by
-      have : (3 : ℝ) ≤ p := by exact_mod_cast hp3; linarith)
+      have h3p : (3 : ℝ) ≤ p := by exact_mod_cast hp3
+      linarith only [h3p])
   have hr_lim : Tendsto (fun r : ℕ => A_B ^ (2 * m) * (1 / 3 : ℝ) ^ r) atTop (𝓝 0) := by
     simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num : (1 / 3 : ℝ) < 1)).const_mul (A_B ^ (2 * m))
   obtain ⟨r₀, hr₀⟩ := Metric.tendsto_atTop.mp hr_lim (ε / 4) (by positivity)
@@ -1182,6 +1202,7 @@ theorem prop_2_6 :
         rw [← Finset.prod_biUnion]
         · congr 1; ext i; simp
         · intro p _ q _ hpq
+          dsimp only [Function.onFun]
           rw [Finset.disjoint_left]
           intro i hi1 hi2
           simp only [Finset.mem_filter] at hi1 hi2
@@ -1208,7 +1229,8 @@ theorem prop_2_6 :
         Finset.prod_nonneg fun i _ => by
           have hp3 : 3 ≤ (g i : ℕ) := (hP_B_pr _ (g i).2).2
           exact div_nonneg (Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ (g i : ℕ)))) (by
-            have : (3 : ℝ) ≤ (g i : ℕ) := by exact_mod_cast hp3; linarith)
+            have h3p : (3 : ℝ) ≤ (g i : ℕ) := by exact_mod_cast hp3
+            linarith only [h3p])
       rw [abs_of_nonneg hprod_nn]
       refine mul_le_mul_of_nonneg_right ?_ hprod_nn
       let c : ℕ → ℕ := fun p => if hp : p ∈ P_B then
@@ -1221,7 +1243,7 @@ theorem prop_2_6 :
       simp_rw [hprod_eq]
       rw [crt_prod_sum P_B hP_B_pr r c]
       by_cases hev : ∀ p : P_B, Even (Finset.univ.filter fun i => g i = p).card
-      · simp only [hev, ↓reduceIte]
+      · rw [if_pos hev]
         have hsum1 : ∏ p ∈ P_B, ∑ n ∈ Finset.range (p ^ (2 * r + 1)), (truncParitySign p r n) ^ (c p) =
             (M_B : ℝ) := by
           have h1 : ∀ p ∈ P_B, ∑ n ∈ Finset.range (p ^ (2 * r + 1)), (truncParitySign p r n) ^ (c p) =
@@ -1236,54 +1258,92 @@ theorem prop_2_6 :
           push_cast [M_B]; rfl
         rw [hsum1, one_div_mul_cancel (by positivity), sub_self, abs_zero]
         positivity
-      · simp only [hev, ↓reduceIte, sub_zero]
-        push_neg at hev
+      · rw [if_neg hev, sub_zero]
+        push Not at hev
         rcases hev with ⟨p₀, hp₀⟩
         have hM_cast : (M_B : ℝ) = ∏ p ∈ P_B, ((p ^ (2 * r + 1) : ℕ) : ℝ) := by
           push_cast [M_B]; rfl
-        rw [hM_cast, one_div, abs_mul, abs_of_pos (by positivity), abs_prod, ← Finset.prod_div_distrib]
-        have hle_prod : ∏ p ∈ P_B,
+        have hM_prod_pos : (0 : ℝ) < ∏ p ∈ P_B, ((p ^ (2 * r + 1) : ℕ) : ℝ) :=
+          Finset.prod_pos fun p hp => by exact_mod_cast pow_pos (hP_B_pr p hp).1.pos (2 * r + 1)
+        rw [hM_cast, one_div, abs_mul, abs_of_pos (inv_pos.mpr hM_prod_pos),
+          Finset.abs_prod, ← div_eq_inv_mul, ← Finset.prod_div_distrib]
+        rw [← Finset.mul_prod_erase P_B _ p₀.2]
+        have hp₀_le : |∑ n ∈ Finset.range (p₀.1 ^ (2 * r + 1)), (truncParitySign p₀.1 r n) ^ (c p₀.1)| /
+            ((p₀.1 ^ (2 * r + 1) : ℕ) : ℝ) ≤ (1 / 3 : ℝ) ^ r := by
+          have hp_pr := hP_B_pr p₀.1 p₀.2
+          have havg := truncParitySign_pow_avg hp_pr.1 hp_pr.2 r (c p₀.1)
+          have hc_odd : ¬ Even (c p₀.1) := by simpa [c, p₀.2] using hp₀
+          simp only [hc_odd, ↓reduceIte] at havg
+          have hp₀_pow_pos : (0 : ℝ) < ((p₀.1 ^ (2 * r + 1) : ℕ) : ℝ) := by
+            exact_mod_cast pow_pos hp_pr.1.pos (2 * r + 1)
+          rw [div_le_iff₀ hp₀_pow_pos]
+          calc |∑ n ∈ Finset.range (p₀.1 ^ (2 * r + 1)), (truncParitySign p₀.1 r n) ^ (c p₀.1)|
+              ≤ (p₀.1 : ℝ) ^ (r + 1) := havg
+            _ = (1 / (p₀.1 : ℝ)) ^ r * (p₀.1 : ℝ) ^ (2 * r + 1) := by
+                have hp0_ne : (p₀.1 : ℝ) ≠ 0 := by exact_mod_cast hp_pr.1.ne_zero
+                rw [show 2 * r + 1 = (r + 1) + r by omega, pow_add (p₀.1 : ℝ) (r + 1) r,
+                  one_div, inv_pow, mul_comm ((p₀.1 : ℝ) ^ (r + 1)), ← mul_assoc,
+                  inv_mul_cancel₀ (pow_ne_zero r hp0_ne), one_mul]
+            _ ≤ (1 / 3 : ℝ) ^ r * ((p₀.1 ^ (2 * r + 1) : ℕ) : ℝ) := by
+                push_cast
+                have hp0_pos : (0 : ℝ) < (p₀.1 : ℝ) := by exact_mod_cast hp_pr.1.pos
+                refine mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) ?_ r) (by positivity)
+                rw [one_div_le_one_div hp0_pos (by norm_num)]
+                exact_mod_cast hp_pr.2
+        have herase_le : ∏ p ∈ P_B.erase p₀.1,
             |∑ n ∈ Finset.range (p ^ (2 * r + 1)), (truncParitySign p r n) ^ (c p)| /
-              ((p ^ (2 * r + 1) : ℕ) : ℝ) ≤
-            ∏ p ∈ P_B, (if p = p₀.1 then (1 / 3 : ℝ) ^ r else 1) := by
-          refine Finset.prod_le_prod (fun _ _ => by positivity) fun p hp => ?_
-          have hp_pr := hP_B_pr p hp
-          have havg := truncParitySign_pow_avg hp_pr.1 hp_pr.2 r (c p)
-          by_cases hpp : p = p₀.1
-          · subst hpp
-            have hc_odd : ¬ Even (c p₀.1) := by simpa [c, p₀.2] using hp₀
-            simp only [hc_odd, ↓reduceIte] at havg ⊢
-            rw [div_le_iff₀ (by positivity)]
-            calc |∑ n ∈ Finset.range (p₀.1 ^ (2 * r + 1)), (truncParitySign p₀.1 r n) ^ (c p₀.1)|
-                ≤ (p₀.1 : ℝ) ^ (r + 1) := havg
-              _ = (1 / (p₀.1 : ℝ)) ^ r * (p₀.1 : ℝ) ^ (2 * r + 1) := by
-                  rw [one_div, inv_pow]; field_simp; ring
-              _ ≤ (1 / 3 : ℝ) ^ r * ((p₀.1 ^ (2 * r + 1) : ℕ) : ℝ) := by
-                  push_cast
-                  refine mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) ?_ r) (by positivity)
-                  rw [one_div_le_one_div (by exact_mod_cast hp_pr.1.pos) (by norm_num)]
-                  exact_mod_cast hp_pr.2
-          · simp only [hpp, ↓reduceIte]
-            rw [div_le_one (by positivity)]
-            refine le_trans havg ?_
-            split_ifs
-            · push_cast; rfl
-            · push_cast
-              exact pow_le_pow_right₀ (by exact_mod_cast hp_pr.1.one_lt.le) (by omega)
-        refine le_trans hle_prod ?_
-        rw [Finset.prod_ite_eq', if_pos p₀.2]
+              ((p ^ (2 * r + 1) : ℕ) : ℝ) ≤ 1 := by
+          have hsub : P_B.erase p₀.1 ⊆ P_B := Finset.erase_subset _ _
+          generalize P_B.erase p₀.1 = S at hsub
+          induction S using Finset.induction with
+          | empty => simp
+          | @insert p s hps ih =>
+            rw [Finset.prod_insert hps]
+            have hp_mem : p ∈ P_B := hsub (Finset.mem_insert_self p s)
+            have hs_sub : s ⊆ P_B := fun q hq => hsub (Finset.mem_insert_of_mem hq)
+            have hp_pr := hP_B_pr p hp_mem
+            have havg := truncParitySign_pow_avg hp_pr.1 hp_pr.2 r (c p)
+            have hp_pow_pos : (0 : ℝ) < ((p ^ (2 * r + 1) : ℕ) : ℝ) := by
+              exact_mod_cast pow_pos hp_pr.1.pos (2 * r + 1)
+            have hp1 : |∑ n ∈ Finset.range (p ^ (2 * r + 1)), (truncParitySign p r n) ^ (c p)| /
+                ((p ^ (2 * r + 1) : ℕ) : ℝ) ≤ 1 := by
+              rw [div_le_one hp_pow_pos]
+              refine le_trans havg ?_
+              split_ifs
+              · push_cast; rfl
+              · push_cast
+                exact pow_le_pow_right₀ (by exact_mod_cast hp_pr.1.one_lt.le) (by omega)
+            calc (|∑ n ∈ Finset.range (p ^ (2 * r + 1)), (truncParitySign p r n) ^ (c p)| /
+                    ((p ^ (2 * r + 1) : ℕ) : ℝ)) *
+                  ∏ x ∈ s, |∑ n ∈ Finset.range (x ^ (2 * r + 1)), (truncParitySign x r n) ^ (c x)| /
+                    ((x ^ (2 * r + 1) : ℕ) : ℝ)
+                ≤ 1 * 1 := mul_le_mul hp1 (ih hs_sub)
+                  (Finset.prod_nonneg fun x _ => div_nonneg (abs_nonneg _) (Nat.cast_nonneg _)) (by norm_num)
+              _ = 1 := mul_one 1
+        calc (|∑ n ∈ Finset.range (p₀.1 ^ (2 * r + 1)), (truncParitySign p₀.1 r n) ^ (c p₀.1)| /
+                ((p₀.1 ^ (2 * r + 1) : ℕ) : ℝ)) *
+              ∏ p ∈ P_B.erase p₀.1,
+                |∑ n ∈ Finset.range (p ^ (2 * r + 1)), (truncParitySign p r n) ^ (c p)| /
+                  ((p ^ (2 * r + 1) : ℕ) : ℝ)
+            ≤ (1 / 3 : ℝ) ^ r * 1 :=
+              mul_le_mul hp₀_le herase_le
+                (Finset.prod_nonneg fun p _ => div_nonneg (abs_nonneg _) (Nat.cast_nonneg _)) (by positivity)
+          _ = (1 / 3 : ℝ) ^ r := mul_one _
     refine le_trans (Finset.sum_le_sum fun g _ => hterm_bd g) ?_
     rw [← Finset.mul_sum]
     have hsum_A : ∑ g : Fin (2 * m) → P_B,
         ∏ i : Fin (2 * m), (Real.log (g i : ℕ) / (((g i : ℕ) : ℝ) - 1)) = A_B ^ (2 * m) := by
-      rw [← Finset.sum_pow' (Finset.univ : Finset P_B)
-        (fun p => Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1)) (2 * m)]
+      have hA_eq : A_B = ∑ p ∈ (Finset.univ : Finset P_B), (Real.log (p : ℕ) / (((p : ℕ) : ℝ) - 1)) := by
+        dsimp only [A_B]
+        exact (Finset.sum_coe_sort P_B (fun p => Real.log (p : ℝ) / ((p : ℝ) - 1))).symm
+      rw [hA_eq, Finset.sum_pow']
       have hpi : (Fintype.piFinset fun _ : Fin (2 * m) => (Finset.univ : Finset P_B)) = Finset.univ := by
         ext g; simp
-      rw [hpi, Finset.sum_coe_sort P_B (fun p => Real.log (p : ℝ) / ((p : ℝ) - 1))]
-      rfl
+      rw [hpi]
     rw [hsum_A, mul_comm]
-    exact le_of_lt (by simpa [Real.dist_eq, abs_of_nonneg (mul_nonneg (pow_nonneg hA_B_nn _) (by positivity))] using hr₀ r hr)
+    have hhr₀ := hr₀ r hr
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (mul_nonneg (pow_nonneg hA_B_nn _) (by positivity))] at hhr₀
+    exact le_of_lt hhr₀
   -- Finally choose `N₀` for `B` and `r`
   have hN_lim : Tendsto (fun N : ℕ =>
       (2 * (M_B : ℝ) * A_B ^ (2 * m)) / (N : ℝ)) atTop (𝓝 0) :=
@@ -1316,10 +1376,13 @@ theorem prop_2_6 :
       rw [abs_mul, abs_truncParitySign, one_mul, abs_of_nonneg]
       have hp3 : 3 ≤ p := (hP_B_pr p hp).2
       exact div_nonneg (Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ p))) (by
-        have : (3 : ℝ) ≤ p := by exact_mod_cast hp3; linarith)
+        have h3p : (3 : ℝ) ≤ p := by exact_mod_cast hp3
+        linarith only [h3p])
     set Q := N / M_B
     set R := N % M_B
-    have hN_eq : N = Q * M_B + R := (Nat.div_add_mod N M_B).symm
+    have hN_eq : N = Q * M_B + R := by
+      calc N = M_B * Q + R := (Nat.div_add_mod N M_B).symm
+        _ = Q * M_B + R := by ring
     let f : ℕ → ℝ := fun n => (SigmaParityTrunc r n B) ^ (2 * m)
     have hf_range_QM : ∑ n ∈ Finset.range (Q * M_B), f n =
         (Q : ℝ) * ∑ n ∈ Finset.range M_B, f n := by
@@ -1334,12 +1397,15 @@ theorem prop_2_6 :
     have hdiff_Icc : ∑ n ∈ Finset.Icc 1 N, f n =
         ∑ n ∈ Finset.range (Q * M_B), f n - f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n) := by
       have h1 : ∑ n ∈ Finset.range (N + 1), f n = f 0 + ∑ n ∈ Finset.Icc 1 N, f n := by
-        rw [Finset.range_eq_Ico, ← Finset.Ico_insert_succ_left (by omega : 0 ≤ N),
-          Finset.sum_insert (by simp), Nat.Ico_succ_right_eq_Icc]
+        have h_ico : Finset.Ico 1 (N + 1) = Finset.Icc 1 N := by ext k; simp
+        rw [Finset.sum_range_succ', add_comm, ← h_ico, Finset.sum_Ico_eq_sum_range]
+        simp only [Nat.add_sub_cancel]
+        congr 1
+        refine Finset.sum_congr rfl fun k _ => by rw [add_comm]
       have h2 : ∑ n ∈ Finset.range (N + 1), f n =
           ∑ n ∈ Finset.range (Q * M_B), f n + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n) := by
         rw [show N + 1 = Q * M_B + (R + 1) by omega, Finset.sum_range_add]
-      linarith
+      linarith only [h1, h2]
     have hS_avg_bd : |∑ n ∈ Finset.range M_B, f n| ≤ (M_B : ℝ) * A_B ^ (2 * m) := by
       refine le_trans (Finset.abs_sum_le_sum_abs _ _) ?_
       calc ∑ n ∈ Finset.range M_B, |f n| ≤ ∑ _n ∈ Finset.range M_B, A_B ^ (2 * m) :=
@@ -1361,20 +1427,6 @@ theorem prop_2_6 :
     rw [hQM_diff]
     have hR_lt : (R : ℝ) + 1 ≤ (M_B : ℝ) := by
       exact_mod_cast (Nat.mod_lt N hM_B_pos)
-    have h_part1 : |(1 / (N : ℝ)) * (-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n))| ≤
-        ((M_B : ℝ) * A_B ^ (2 * m)) / (N : ℝ) := by
-      rw [abs_mul, abs_of_nonneg (by positivity : 0 ≤ 1 / (N : ℝ)), one_div_mul_eq_div]
-      refine div_le_div_of_nonneg_right ?_ (by positivity)
-      calc |-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n)|
-          ≤ |f 0| + |∑ n ∈ Finset.range (R + 1), f (Q * M_B + n)| := by
-            simpa [abs_neg] using abs_add_le (-f 0) (∑ n ∈ Finset.range (R + 1), f (Q * M_B + n))
-        _ ≤ A_B ^ (2 * m) + ((R + 1 : ℕ) : ℝ) * A_B ^ (2 * m) := add_le_add (hbd_val 0) hR_bd
-        _ = ((R : ℝ) + 2) * A_B ^ (2 * m) := by push_cast; ring
-        _ ≤ ((M_B : ℝ) + 1) * A_B ^ (2 * m) :=
-            mul_le_mul_of_nonneg_right (by linarith) (pow_nonneg hA_B_nn _)
-        _ ≤ (2 * (M_B : ℝ)) * A_B ^ (2 * m) :=
-            mul_le_mul_of_nonneg_right (by linarith [show (1 : ℝ) ≤ M_B by exact_mod_cast hM_B_pos])
-              (pow_nonneg hA_B_nn _)
     have h_part1' : |(1 / (N : ℝ)) * (-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n))| ≤
         (((M_B : ℝ) + 1) * A_B ^ (2 * m)) / (N : ℝ) := by
       rw [abs_mul, abs_of_nonneg (by positivity : 0 ≤ 1 / (N : ℝ)), one_div_mul_eq_div]
@@ -1385,7 +1437,7 @@ theorem prop_2_6 :
         _ ≤ A_B ^ (2 * m) + ((R + 1 : ℕ) : ℝ) * A_B ^ (2 * m) := add_le_add (hbd_val 0) hR_bd
         _ = ((R : ℝ) + 2) * A_B ^ (2 * m) := by push_cast; ring
         _ ≤ ((M_B : ℝ) + 1) * A_B ^ (2 * m) :=
-            mul_le_mul_of_nonneg_right (by linarith) (pow_nonneg hA_B_nn _)
+            mul_le_mul_of_nonneg_right (by linarith only [hR_lt]) (pow_nonneg hA_B_nn _)
     have h_part2 : |((R : ℝ) / ((N : ℝ) * (M_B : ℝ))) * ∑ n ∈ Finset.range M_B, f n| ≤
         (((M_B : ℝ) - 1) * A_B ^ (2 * m)) / (N : ℝ) := by
       rw [abs_mul, abs_of_nonneg (by positivity : 0 ≤ (R : ℝ) / ((N : ℝ) * (M_B : ℝ)))]
@@ -1395,24 +1447,25 @@ theorem prop_2_6 :
         _ = ((R : ℝ) * A_B ^ (2 * m)) / (N : ℝ) := by
             field_simp [show (M_B : ℝ) ≠ 0 by positivity]
         _ ≤ (((M_B : ℝ) - 1) * A_B ^ (2 * m)) / (N : ℝ) :=
-            div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right (by linarith) (pow_nonneg hA_B_nn _))
+            div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right (by linarith only [hR_lt]) (pow_nonneg hA_B_nn _))
               (by positivity)
     calc |(1 / (N : ℝ)) * (-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n)) -
           ((R : ℝ) / ((N : ℝ) * (M_B : ℝ))) * ∑ n ∈ Finset.range M_B, f n|
         ≤ |(1 / (N : ℝ)) * (-f 0 + ∑ n ∈ Finset.range (R + 1), f (Q * M_B + n))| +
           |((R : ℝ) / ((N : ℝ) * (M_B : ℝ))) * ∑ n ∈ Finset.range M_B, f n| := abs_sub _ _
-      _ ≤ (((M_B : ℝ) + 1) * A_B ^ (2 * m)) / (N : ℝ) +
+        _ ≤ (((M_B : ℝ) + 1) * A_B ^ (2 * m)) / (N : ℝ) +
           (((M_B : ℝ) - 1) * A_B ^ (2 * m)) / (N : ℝ) := add_le_add h_part1' h_part2
-      _ = (2 * (M_B : ℝ) * A_B ^ (2 * m)) / (N : ℝ) := by ring
-      _ ≤ ε / 4 := le_of_lt (by simpa [Real.dist_eq, abs_of_nonneg (by positivity : 0 ≤ (2 * (M_B : ℝ) * A_B ^ (2 * m)) / (N : ℝ))] using hN₀_raw N (le_trans (le_max_left _ _) hN))
-  linarith [abs_add_le
-    ((1 / (N : ℝ)) * ∑ n ∈ Finset.Icc 1 N, (SigmaParityTrunc r n B) ^ (2 * m) -
-      (1 / (M_B : ℝ)) * ∑ n ∈ Finset.range M_B, (SigmaParityTrunc r n B) ^ (2 * m))
-    ((1 / (M_B : ℝ)) * ∑ n ∈ Finset.range M_B, (SigmaParityTrunc r n B) ^ (2 * m) -
-      rademacherMoment P_B (2 * m)),
-    abs_add_le
-    ((1 / (N : ℝ)) * ∑ n ∈ Finset.Icc 1 N, (SigmaParityTrunc r n B) ^ (2 * m) -
-      rademacherMoment P_B (2 * m))
-    (rademacherMoment P_B (2 * m) - ∫ x : ℝ, x ^ (2 * m) * ρ x)]
+        _ = (2 * (M_B : ℝ) * A_B ^ (2 * m)) / (N : ℝ) := by ring
+        _ ≤ ε / 4 := by
+          have hN0 := hN₀_raw N (le_trans (le_max_left _ _) hN)
+          rw [Real.dist_eq, sub_zero, abs_of_nonneg (by positivity)] at hN0
+          exact le_of_lt hN0
+  have htri3 := abs_sub_le ((1 / (N : ℝ)) * ∑ n ∈ Finset.Icc 1 N, (SigmaParityTrunc r n B) ^ (2 * m))
+    ((1 / (M_B : ℝ)) * ∑ n ∈ Finset.range M_B, (SigmaParityTrunc r n B) ^ (2 * m))
+    (∫ x : ℝ, x ^ (2 * m) * ρ x)
+  have htri4 := abs_sub_le ((1 / (M_B : ℝ)) * ∑ n ∈ Finset.range M_B, (SigmaParityTrunc r n B) ^ (2 * m))
+    (rademacherMoment P_B (2 * m))
+    (∫ x : ℝ, x ^ (2 * m) * ρ x)
+  linarith only [h_err_N, h_err_r, h_err_B_rad, htri3, htri4]
 
 end BrocardFormalization

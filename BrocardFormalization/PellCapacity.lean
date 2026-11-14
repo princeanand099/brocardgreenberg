@@ -193,9 +193,9 @@ theorem theorem_1_1 :
           ∏ p ∈ (qn n * (Y1 n (by omega) hn6) ^ 2).primeFactors,
             p ^ padicValNat p (qn n * (Y1 n (by omega) hn6) ^ 2) :=
         (Nat.prod_primeFactors_pow_factorization (mul_ne_zero (qn_pos n).ne' (pow_ne_zero 2 (Y1_pos (by omega) hn6).ne'))).symm
-      have hsub : (Podd n).erase 3 ⊆ (qn n * (Y1 n (by omega) hn6) ^ 2).primeFactors := by
+      have hsub : ((Podd n).filter (3 ≤ ·)).erase 3 ⊆ (qn n * (Y1 n (by omega) hn6) ^ 2).primeFactors := by
         intro p hp
-        have hp_mem := (Finset.mem_erase.mp hp).2
+        have hp_mem := (Finset.mem_filter.mp (Finset.mem_erase.mp hp).2).1
         have hp_prime : p.Prime := (Finset.mem_filter.mp hp_mem).2.1
         have hp_qn : p ∣ qn n := by rw [qn_eq_prod_Podd]; exact Finset.dvd_prod_of_mem _ hp_mem
         exact Nat.mem_primeFactors.mpr ⟨hp_prime, dvd_mul_of_dvd_left hp_qn _, mul_ne_zero (qn_pos n).ne' (pow_ne_zero 2 (Y1_pos (by omega) hn6).ne')⟩
@@ -214,18 +214,18 @@ theorem theorem_1_1 :
         · intro p hp
           have hp_prime : p.Prime := (Nat.mem_primeFactors.mp hp).1
           exact pow_ne_zero _ (Nat.cast_ne_zero.mpr hp_prime.ne_zero)
-      have hsum_ge : ∑ p ∈ (Podd n).erase 3, (padicValNat p (qn n * (Y1 n (by omega) hn6) ^ 2) : ℝ) * Real.log p ≤
+      have hsum_ge : ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3, (padicValNat p (qn n * (Y1 n (by omega) hn6) ^ 2) : ℝ) * Real.log p ≤
           Real.log ((qn n : ℝ) * (Y1 n (by omega) hn6 : ℝ) ^ 2) := by
         rw [hlog_M]
         refine Finset.sum_le_sum_of_subset_of_nonneg hsub fun p hp _ => ?_
-        have hp_prime : p.Prime := (Finset.mem_primeFactors.mp hp).1
+        have hp_prime : p.Prime := (Nat.mem_primeFactors.mp hp).1
         exact mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg (by exact_mod_cast hp_prime.one_lt.le))
-      have hterm_eq : ∀ p ∈ (Podd n).erase 3,
+      have hterm_eq : ∀ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3,
           (padicValNat p (qn n * (Y1 n (by omega) hn6) ^ 2) : ℝ) * Real.log p =
           ((padicValNat p n.factorial : ℝ) - 2 * (padicValNat p k : ℝ)) * Real.log p := by
         intro p hp
         have hp_ne3 : p ≠ 3 := (Finset.mem_erase.mp hp).1
-        have hp_mem := (Finset.mem_erase.mp hp).2
+        have hp_mem := (Finset.mem_filter.mp (Finset.mem_erase.mp hp).2).1
         have hv := (lemma_3_2_i n (by omega) hn6 k hk1).2.2.2.2.2 (by omega) m hsol rfl p hp_mem (Or.inl hp_ne3)
         have hle : 2 * padicValNat p k ≤ padicValNat p n.factorial := by
           have hp_prime : p.Prime := (Finset.mem_filter.mp hp_mem).2.1
@@ -254,16 +254,16 @@ theorem theorem_1_1 :
             (padicValNat_dvd_iff_le (sn_pos n).ne').mp hp_dvd_sn
           omega
         rw [hv, Nat.cast_sub hle, Nat.cast_mul, Nat.cast_ofNat]
-      have hsum_eq : ∑ p ∈ (Podd n).erase 3, (padicValNat p (qn n * (Y1 n (by omega) hn6) ^ 2) : ℝ) * Real.log p =
-          (∑ p ∈ (Podd n).erase 3, (padicValNat p n.factorial : ℝ) * Real.log p) -
-          2 * ∑ p ∈ (Podd n).erase 3, (padicValNat p k : ℝ) * Real.log p := by
+      have hsum_eq : ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3, (padicValNat p (qn n * (Y1 n (by omega) hn6) ^ 2) : ℝ) * Real.log p =
+          (∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3, (padicValNat p n.factorial : ℝ) * Real.log p) -
+          2 * ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3, (padicValNat p k : ℝ) * Real.log p := by
         rw [Finset.sum_congr rfl hterm_eq]
         simp_rw [sub_mul, mul_assoc]
         rw [Finset.sum_sub_distrib, ← Finset.mul_sum]
       have hSodd_diff : Sodd n - (n : ℝ) * Real.log 3 ≤
-          ∑ p ∈ (Podd n).erase 3, (padicValNat p n.factorial : ℝ) * Real.log p := by
+          ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3, (padicValNat p n.factorial : ℝ) * Real.log p := by
         unfold Sodd
-        by_cases h3 : 3 ∈ Podd n
+        by_cases h3 : 3 ∈ (Podd n).filter (3 ≤ ·)
         · rw [← Finset.add_sum_erase _ _ h3]
           have h3_le : padicValNat 3 n.factorial ≤ n := by
             haveI : Fact (Nat.Prime 3) := ⟨by decide⟩
@@ -274,20 +274,20 @@ theorem theorem_1_1 :
           linarith
         · rw [Finset.erase_eq_of_notMem h3]
           linarith [mul_nonneg (Nat.cast_nonneg n) (Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 3))]
-      have hk_sum_le : ∑ p ∈ (Podd n).erase 3, (padicValNat p k : ℝ) * Real.log p ≤ Real.log k := by
-        have hsub_k : (Podd n).erase 3 ∩ k.primeFactors ⊆ k.primeFactors := Finset.inter_subset_right
-        have h1 : ∑ p ∈ (Podd n).erase 3, (padicValNat p k : ℝ) * Real.log p =
-            ∑ p ∈ (Podd n).erase 3 ∩ k.primeFactors, (padicValNat p k : ℝ) * Real.log p := by
-          rw [← Finset.sum_inter_add_sum_diff ((Podd n).erase 3) k.primeFactors]
-          have hz : ∑ p ∈ (Podd n).erase 3 \ k.primeFactors, (padicValNat p k : ℝ) * Real.log p = 0 := by
+      have hk_sum_le : ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3, (padicValNat p k : ℝ) * Real.log p ≤ Real.log k := by
+        have hsub_k : ((Podd n).filter (3 ≤ ·)).erase 3 ∩ k.primeFactors ⊆ k.primeFactors := Finset.inter_subset_right
+        have h1 : ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3, (padicValNat p k : ℝ) * Real.log p =
+            ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3 ∩ k.primeFactors, (padicValNat p k : ℝ) * Real.log p := by
+          rw [← Finset.sum_inter_add_sum_diff (((Podd n).filter (3 ≤ ·)).erase 3) k.primeFactors]
+          have hz : ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3 \ k.primeFactors, (padicValNat p k : ℝ) * Real.log p = 0 := by
             refine Finset.sum_eq_zero fun p hp => ?_
             have hmem := Finset.mem_sdiff.mp hp
-            have hp_prime : p.Prime := (Finset.mem_filter.mp (Finset.mem_erase.mp hmem.1).2).2.1
+            have hp_prime : p.Prime := (Finset.mem_filter.mp (Finset.mem_filter.mp (Finset.mem_erase.mp hmem.1).2).1).2.1
             have hndvd : ¬ p ∣ k := fun hd => hmem.2 (Nat.mem_primeFactors.mpr ⟨hp_prime, hd, by omega⟩)
             simp [padicValNat.eq_zero_of_not_dvd hndvd]
           linarith
         rw [h1]
-        have hle_k : ∑ p ∈ (Podd n).erase 3 ∩ k.primeFactors, (padicValNat p k : ℝ) * Real.log p ≤
+        have hle_k : ∑ p ∈ ((Podd n).filter (3 ≤ ·)).erase 3 ∩ k.primeFactors, (padicValNat p k : ℝ) * Real.log p ≤
             ∑ p ∈ k.primeFactors, (padicValNat p k : ℝ) * Real.log p :=
           Finset.sum_le_sum_of_subset_of_nonneg hsub_k fun p hp _ =>
             mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg (by exact_mod_cast (Nat.mem_primeFactors.mp hp).1.one_lt.le))

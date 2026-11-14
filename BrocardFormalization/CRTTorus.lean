@@ -89,9 +89,9 @@ theorem theorem_8_1_i (n : ℕ) (hn : 4 ≤ n) :
       ¬ (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = 1) →
       ¬ (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = -1) →
       2 * Real.sqrt (n.factorial + 1) / (n.factorial : ℝ) ≤ crtTorusDist (crtSum n ε)) ∧
-      ((∃ ε : ℕ → ℤ, (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = 1 ∨ ε p = -1) →
-        ¬ (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = 1) →
-        ¬ (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = -1) →
+      ((∃ ε : ℕ → ℤ, (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = 1 ∨ ε p = -1) ∧
+        ¬ (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = 1) ∧
+        ¬ (∀ p ∈ (Finset.Icc 2 n).filter Nat.Prime, ε p = -1) ∧
         crtTorusDist (crtSum n ε) = 2 * Real.sqrt (n.factorial + 1) / (n.factorial : ℝ)) ↔
       ∃ m : ℕ, IsBrocardSol n m)) := by
   sorry
@@ -232,7 +232,18 @@ theorem theorem_8_3_ii (n H k : ℕ) (hn : 5 ≤ n) (hH : 1 ≤ H) (hH_Mn : H < 
       2 * (2 * δn + 1 / ((H : ℝ) + 1)) * (H : ℝ) ^ (1 - 1 / (2 * (k : ℝ))) *
         (crtModMn n : ℝ) ^ (1 / (2 * (k : ℝ))) *
         (((Nat.choose (2 * k) k : ℝ) ^ (1 / (2 * (k : ℝ)))) ^ Nat.primeCounting n) ∧
-    (∀ h : ℤ, 2 * Real.pi * |(2 : ℝ) * h / (n.factorial : ℝ)| ≥ 0 → True) ∧
+    ((2 : ℝ) ^ Nat.primeCounting n * (2 * δn + 1 / ((H : ℝ) + 1)) < 4 →
+      (2 : ℝ) ^ (Nat.primeCounting n - 2) < (H : ℝ) + 1) ∧
+    crtTorusDist (crtSum n (fun _ => 1)) ≤ δn ∧
+    crtTorusDist (crtSum n (fun _ => -1)) ≤ δn ∧
+    (∀ h : ℤ,
+      (2 : ℝ) ^ (-(Nat.primeCounting n : ℤ)) *
+        (Real.cos (2 * Real.pi * (h : ℝ) * crtSum n (fun _ => 1)) +
+         Real.cos (2 * Real.pi * (h : ℝ) * crtSum n (fun _ => -1))) =
+      (2 : ℝ) ^ (1 - (Nat.primeCounting n : ℤ)) *
+        Real.cos (4 * Real.pi * (h : ℝ) / (n.factorial : ℝ))) ∧
+    ((1 / (crtModMn n : ℝ)) * ∑ h ∈ Finset.range (crtModMn n), (rieszCosine n h) ^ 2 =
+      (2 : ℝ) ^ (-(Nat.primeCounting n : ℤ))) ∧
     ((crtArcCount n δn : ℝ) ≤
       (2 : ℝ) ^ Nat.primeCounting n *
         ((2 * δn + 1 / ((H : ℝ) + 1)) +

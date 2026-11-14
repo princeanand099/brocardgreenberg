@@ -3,6 +3,8 @@ version = "0.1.0"
 keywords = ["math"]
 defaultTargets = ["BrocardFormalization"]
 
+moreLeanArgs = ["-j1", "-M", "6144"]
+
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false

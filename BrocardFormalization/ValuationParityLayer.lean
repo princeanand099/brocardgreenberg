@@ -138,7 +138,7 @@ theorem lemma_2_1_i (n j : ℕ) (hn : 4 ≤ n) (hj1 : 1 ≤ j) (hj2 : j ≤ Nat.
     have h2r : 2 * padicValNat p (sn n) = 2 * r := by omega
     exact ⟨hp_Peven, hvq, Nat.eq_of_mul_eq_mul_left (by norm_num) h2r⟩
 
-private lemma alternating_harmonic_sum_bound (K : ℕ) :
+lemma alternating_harmonic_sum_bound (K : ℕ) :
     |∑ r ∈ Finset.Icc 1 K, ((1 : ℝ) / (2 * (r : ℝ) - 1) - 1 / (2 * (r : ℝ))) - Real.log 2| ≤
       1 / (2 * (K : ℝ) + 1) := by
   have hsum_eq :
