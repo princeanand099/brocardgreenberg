@@ -4,3 +4,4 @@ import BrocardFormalization.ExpSumMod
 import BrocardFormalization.ValuationParity
 import BrocardFormalization.PellAndIwasawa
 import BrocardFormalization.CriticalRegimeK2
+import BrocardFormalization.FundamentalRegimeK1

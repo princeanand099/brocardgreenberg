@@ -231,3 +231,33 @@ This file documents every substantive mathematical correction discovered during 
 4. **Classification**: **Missing hypothesis**.
 5. **Replacement argument**: Add `2 * r < p` to the window clause of Theorem 4.4(i) (which is satisfied whenever `p > √n` and `n / (2r + 1) < p`, since `2r < n / p < √n < p`).
 6. **Lean declarations**: `theorem_4_4_i` (`BrocardFormalization/CriticalRegimeK2.lean`).
+
+---
+
+### Audit Item 19: Theorem 5.2(i) — `k_n ∈ {1, 2}` Scope for `δ₂ = 1 ↔ k_n = 2` (Section 5.1, p. 22)
+1. **Affected manuscript result**: Section 5.1, Theorem 5.2(i), p. 22.
+2. **Original statement and proof**: States `δ₂ = 1 ↔ k_n = 2` and `1 < δ₂ ↔ k_n = 1` for all Brocard solutions `n ≥ 8`, whereas on `10^9 < n < N₀` (where `N₀` from `deLaValleePoussin_pnt` is non-effective), `k_n = 4` is not excluded without the asymptotic threshold `N₀ ≤ n`.
+3. **Exact defect**: Same non-effective `k_n ∈ {1, 2}` scope issue as Audit Item 15 (`theorem_3_6`).
+4. **Classification**: **Missing hypothesis**.
+5. **Replacement argument**: Add `(hk : pellIndex hn hsol = 1 ∨ pellIndex hn hsol = 2)` to `theorem_5_2_i` conjunct 1 (which holds for all `n ≥ N₀` by `theorem_3_3`).
+6. **Lean declarations**: `theorem_5_2_i` (`BrocardFormalization/FundamentalRegimeK1.lean`).
+
+---
+
+### Audit Item 20: Theorem 5.2(i) — Exact 2-adic Correction Term in `log B⁽ⁱ⁾ - log(Z_{3-i}*²)` (Section 5.1, p. 22)
+1. **Affected manuscript result**: Section 5.1, Theorem 5.2(i), p. 22.
+2. **Original statement and proof**: Writes `(2 w₁ - v₂(n!)) log 2` for the 2-adic discrepancy in `log B⁽²⁾ - log(Z₁*²) - ½ Δ_par(n)`.
+3. **Exact defect**: Since `n! = 4 u₁ u₂` gives `w₁ + w₂ = v₂(n!) - 2` (not `v₂(n!)`) and `S_odd(n), S_even(n)` include `p = 2` while `B⁽ⁱ⁾, Zᵢ*` sum over odd primes `p ≥ 3` only, the exact 2-adic term is `((w₂ - w₁ + s₂) * log 2)` where `s₂ = -v₂(n!)` if `2 ∣ v₂(n!)` and `s₂ = v₂(n!)` if `2 ∤ v₂(n!)` (and symmetrically `w₁ - w₂ + s₂` for `B⁽¹⁾, Z₂*`).
+4. **Classification**: **False algebraic formula** (off by `2 log 2` and `2`-parity sign in `Δ_par(n)`).
+5. **Replacement argument**: Replace `(2 w₁ - v₂(n!)) log 2` with `(w₂ - w₁ + s₂) log 2` (and `(w₁ - w₂ + s₂) log 2` in the symmetric bound).
+6. **Lean declarations**: `theorem_5_2_i` (`BrocardFormalization/FundamentalRegimeK1.lean`).
+
+---
+
+### Audit Item 21: Lemma 5.3(ii) — Sign of Fermat Quotient `q_p(N_p)` in Bipartition Identity (Section 5.2, p. 23)
+1. **Affected manuscript result**: Section 5.2, Lemma 5.3(ii), p. 23.
+2. **Original statement and proof**: Writes `q_p(A(y)) + q_p(B(y)/p^{v_p}) + q_p(N_p) · y_p ≡ 0 (mod p)`.
+3. **Exact defect**: Since `A(y) · B(y) = N_p` and `q_p` is a homomorphism to `(𝔽_p, +)`, we have `q_p(A(y)/p^{v_p(A)}) + q_p(B(y)/p^{v_p(B)}) = q_p(N_p/p^{v_p(n!)})`, so the term `q_p(N_p/p^{v_p(n!)})` appears with a **minus** sign (verified numerically at `n = 7, m = 71, p = 3`: `2 - 2 = 0 ≠ 2 + 2`).
+4. **Classification**: **False statement** (sign error).
+5. **Replacement argument**: Use `- fermatQuot p (Np / p ^ padicValNat p Np)` in `lemma_5_3_ii`.
+6. **Lean declarations**: `lemma_5_3_ii` (`BrocardFormalization/FundamentalRegimeK1.lean`).
