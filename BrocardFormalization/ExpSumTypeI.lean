@@ -16,6 +16,14 @@ lemma norm_ePhase (x : ℝ) : ‖ePhase x‖ = 1 := by
   rw [show (2 * Real.pi * Complex.I * (x : ℂ)) = (((2 * Real.pi * x : ℝ) : ℂ) * Complex.I) by push_cast; ring]
   exact Complex.norm_exp_ofReal_mul_I _
 
+lemma descFactorial_le_factorial : ∀ n k : ℕ, n.descFactorial k ≤ n.factorial
+  | 0, 0 => by simp
+  | 0, k + 1 => by simp
+  | n + 1, 0 => by simp [Nat.factorial_pos]
+  | n + 1, k + 1 => by
+      rw [Nat.succ_descFactorial_succ, Nat.factorial_succ]
+      exact Nat.mul_le_mul_left (n + 1) (descFactorial_le_factorial n k)
+
 lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
     ∃ (C_exp η_exp : ℝ) (M₀ : ℝ), 0 < C_exp ∧ 0 < η_exp ∧ η_exp ≤ 1 / 4 ∧ 16 ≤ M₀ ∧
       ∀ (A : Finset ℕ) (r₀ : ℕ) (hr₀ : r₀ ∈ A) (hA : ∀ r ∈ A, 1 ≤ r ∧ r ≤ R)
@@ -51,7 +59,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
   have hC_max_pos : 0 < C_max_j := by
     have hmem : (3 : ℕ) ∈ Finset.Icc 3 K_max := Finset.mem_Icc.mpr ⟨le_rfl, hK_max⟩
     have hle := Finset.le_sup' (fun j => if hj : j ∈ Finset.Icc 3 K_max then 2 * Cj_fn j hj else 0) hmem
-    rw [dif_pos hmem] at hle
+    simp only [hmem, ↓reduceDIte] at hle
     linarith [hCj_pos 3 hmem]
   let η_exp : ℝ := min (1 / 4 : ℝ) ((1 : ℝ) / (2 * ((2 ^ K_max - 2 : ℕ) : ℝ)))
   have hη_pos : 0 < η_exp := by
@@ -178,7 +186,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
           have hdesc2 : Nat.descFactorial (r₀ + 2 - 1) 2 = (r₀ + 1) * r₀ := by
             rw [show r₀ + 2 - 1 = r₀ + 1 by omega, Nat.succ_descFactorial_succ, Nat.descFactorial_one]
           rw [hdesc2, show -((r₀ : ℤ) + ((2 : ℕ) : ℤ)) = -(r₀ : ℤ) + (-2 : ℤ) by omega,
-            zpow_add₀ hM₂_pos.ne', show M₂ ^ (-2 : ℤ) = (M₂ ^ 2)⁻¹ by rw [zpow_neg]]
+            zpow_add₀ hM₂_pos.ne', show M₂ ^ (-2 : ℤ) = (M₂ ^ 2)⁻¹ from rfl]
           push_cast; ring
         have hlam2_ge : T / (2 * M₂ ^ 2) ≤ lam2 := by
           rw [hlam2_eq, show T / (2 * M₂ ^ 2) = (1 / 2 : ℝ) * (T / M₂ ^ 2) by ring]
@@ -207,12 +215,13 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
               nlinarith
             rw [h2] at h1
             exact le_trans h1 (mul_le_mul_of_nonneg_right hR1 (by positivity))
-          have hpow : lam2 ^ ((1 : ℝ) / (2 : ℕ)) ≤ (R + 1 : ℝ) * M₂ ^ (-(1 / 4 : ℝ)) := by
-            have h1 := Real.rpow_le_rpow (by positivity) hlam2_ub (by norm_num : (0 : ℝ) ≤ (1 : ℝ) / (2 : ℕ))
+          have hrhs1 : (((R + 1 : ℝ) ^ 2 * M₂ ^ (-(1 / 2 : ℝ))) ^ ((1 : ℝ) / (2 : ℕ))) =
+              (R + 1 : ℝ) * M₂ ^ (-(1 / 4 : ℝ)) := by
             rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_natCast (R + 1 : ℝ) 2,
-              ← Real.rpow_mul (by positivity), ← Real.rpow_mul hM₂_pos.le] at h1
-            norm_num at h1
-            exact h1
+              ← Real.rpow_mul (by positivity), ← Real.rpow_mul hM₂_pos.le]
+            norm_num
+          have hpow : lam2 ^ ((1 : ℝ) / (2 : ℕ)) ≤ (R + 1 : ℝ) * M₂ ^ (-(1 / 4 : ℝ)) :=
+            hrhs1 ▸ Real.rpow_le_rpow (by positivity) hlam2_ub (by norm_num)
           calc L * lam2 ^ ((1 : ℝ) / (2 : ℕ))
               ≤ M₂ * ((R + 1 : ℝ) * M₂ ^ (-(1 / 4 : ℝ))) := mul_le_mul hL_le_M2 hpow (by positivity) hM₂_pos.le
             _ = (R + 1 : ℝ) * (M₂ ^ (1 : ℝ) * M₂ ^ (-(1 / 4 : ℝ))) := by rw [Real.rpow_one]; ring
@@ -225,12 +234,14 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
             have h2 : (M₂ / (6 * (2 : ℝ) ^ R)) / (2 * M₂ ^ 2) = (12 * (2 : ℝ) ^ R)⁻¹ * M₂ ^ (-(1 : ℝ)) := by
               rw [Real.rpow_neg_one]; field_simp [hM₂_pos.ne']; ring
             linarith
-          have hneg : (-(1 : ℝ) / (2 : ℕ)) ≤ 0 := by norm_num
-          have hpow := Real.rpow_le_rpow_of_nonpos (by positivity) hlam2_lb hneg
-          rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_mul hM₂_pos.le,
-            show (-(1 : ℝ) * (-(1 : ℝ) / (2 : ℕ))) = 1 / 2 by norm_num,
-            show (-(1 : ℝ) / (2 : ℕ)) = -(1 / 2 : ℝ) by norm_num, Real.inv_rpow (by positivity),
-            Real.rpow_neg (by positivity), inv_inv] at hpow
+          have hrhs2 : (((12 * (2 : ℝ) ^ R)⁻¹ * M₂ ^ (-(1 : ℝ))) ^ (-(1 : ℝ) / (2 : ℕ))) =
+              (12 * (2 : ℝ) ^ R) ^ (1 / 2 : ℝ) * M₂ ^ (1 / 2 : ℝ) := by
+            rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_mul hM₂_pos.le,
+              show (-(1 : ℝ) * (-(1 : ℝ) / (2 : ℕ))) = 1 / 2 by norm_num,
+              show (-(1 : ℝ) / (2 : ℕ)) = -(1 / 2 : ℝ) by norm_num, Real.inv_rpow (by positivity),
+              Real.rpow_neg (by positivity), inv_inv]
+          have hpow : lam2 ^ (-(1 : ℝ) / (2 : ℕ)) ≤ (12 * (2 : ℝ) ^ R) ^ (1 / 2 : ℝ) * M₂ ^ (1 / 2 : ℝ) :=
+            hrhs2 ▸ Real.rpow_le_rpow_of_nonpos (by positivity) hlam2_lb (by norm_num)
           have hM_le : M₂ ^ (1 / 2 : ℝ) ≤ M₂ ^ (3 / 4 : ℝ) :=
             Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
           exact le_trans hpow (mul_le_mul_of_nonneg_left hM_le (by positivity))
@@ -255,7 +266,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
           dsimp only [lam_fn]
           have hdesc_le : (Nat.descFactorial (r₀ + K_max - 1) K_max : ℝ) ≤ K_fact * (r₀ : ℝ) := by
             have h1 : Nat.descFactorial (r₀ + K_max - 1) K_max ≤ (R + K_max).factorial :=
-              le_trans (Nat.descFactorial_le_factorial _ _) (Nat.factorial_le (by omega))
+              le_trans (descFactorial_le_factorial (r₀ + K_max - 1) K_max) (Nat.factorial_le (by omega))
             have h1R : (Nat.descFactorial (r₀ + K_max - 1) K_max : ℝ) ≤ K_fact := by
               dsimp only [K_fact]; exact_mod_cast h1
             have hr0_1 : (1 : ℝ) ≤ r₀ := by exact_mod_cast hr₀_1
@@ -307,27 +318,30 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
           by_cases h3 : j₀ = 3
           · rw [h3]
             have hlam3 : T / (2 * M₂ ^ 3) ≤ lam_fn 3 := by
-              dsimp only [lam_fn, T]
+              dsimp only [lam_fn]
               have hdesc3 : (r₀ : ℝ) ≤ (Nat.descFactorial (r₀ + 3 - 1) 3 : ℝ) := by
                 have : r₀ ≤ Nat.descFactorial (r₀ + 3 - 1) 3 := by
-                  rw [show r₀ + 3 - 1 = r₀ + 2 by omega, Nat.descFactorial_succ, Nat.descFactorial_succ,
-                    Nat.descFactorial_one]
+                  rw [show r₀ + 3 - 1 = (r₀ + 1) + 1 by omega, Nat.succ_descFactorial_succ,
+                    Nat.succ_descFactorial_succ, Nat.descFactorial_one]
                   nlinarith
                 exact_mod_cast this
               have hz : M₂ ^ (-((r₀ : ℤ) + ((3 : ℕ) : ℤ))) = M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3 := by
-                rw [show -((r₀ : ℤ) + ((3 : ℕ) : ℤ)) = -(r₀ : ℤ) + -(3 : ℤ) by omega,
-                  zpow_add₀ hM₂_pos.ne', zpow_neg M₂ (3 : ℤ), zpow_natCast M₂ 3, div_eq_mul_inv]
+                rw [show -((r₀ : ℤ) + ((3 : ℕ) : ℤ)) = -(r₀ : ℤ) + (-3 : ℤ) by omega,
+                  zpow_add₀ hM₂_pos.ne', show M₂ ^ (-3 : ℤ) = (M₂ ^ 3)⁻¹ from rfl, div_eq_mul_inv]
               rw [hz]
-              have : (1 / 2 : ℝ) * |c r₀| * (r₀ : ℝ) * (M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3) ≤
-                  (1 / 2 : ℝ) * |c r₀| * (Nat.descFactorial (r₀ + 3 - 1) 3 : ℝ) * (M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3) := by
-                refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hdesc3 (by positivity)) (by positivity)
-              linarith
+              have hstep : (1 / 2 : ℝ) * |c r₀| * (r₀ : ℝ) * (M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3) ≤
+                  (1 / 2 : ℝ) * |c r₀| * (Nat.descFactorial (r₀ + 3 - 1) 3 : ℝ) * (M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3) :=
+                mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hdesc3 (by positivity)) (by positivity)
+              calc T / (2 * M₂ ^ 3)
+                  = (1 / 2 : ℝ) * |c r₀| * (r₀ : ℝ) * (M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3) := by dsimp only [T]; ring
+                _ ≤ (1 / 2 : ℝ) * |c r₀| * (Nat.descFactorial (r₀ + 3 - 1) 3 : ℝ) * (M₂ ^ (-(r₀ : ℤ)) / M₂ ^ 3) := hstep
             have hT_bd : M₂ ^ (-(3 / 2 : ℝ)) / 2 ≤ T / (2 * M₂ ^ 3) := by
               have h1 : M₂ ^ (3 / 2 : ℝ) / (2 * M₂ ^ 3) ≤ T / (2 * M₂ ^ 3) :=
                 div_le_div_of_nonneg_right hT_vd2' (by positivity)
               have h2 : M₂ ^ (3 / 2 : ℝ) / (2 * M₂ ^ 3) = M₂ ^ (-(3 / 2 : ℝ)) / 2 := by
-                rw [div_mul_eq_div_div, ← Real.rpow_natCast M₂ 3, ← Real.rpow_sub hM₂_pos]
-                norm_num; ring
+                rw [show M₂ ^ (3 / 2 : ℝ) / (2 * M₂ ^ 3) = (M₂ ^ (3 / 2 : ℝ) / M₂ ^ 3) / 2 by ring,
+                  ← Real.rpow_natCast M₂ 3, ← Real.rpow_sub hM₂_pos]
+                norm_num
               linarith
             have hL_bd : L ^ (-(5 / 2 : ℝ)) ≤ M₂ ^ (-(3 / 2 : ℝ)) / 2 := by
               have h1 : L ^ (-(5 / 2 : ℝ)) ≤ (M₂ ^ (3 / 4 : ℝ)) ^ (-(5 / 2 : ℝ)) :=
@@ -361,9 +375,13 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
                   (Nat.descFactorial (r₀ + j₀ - 1) j₀ : ℝ) := by
                 have h1 : Nat.descFactorial (r₀ + j₀ - 1) j₀ =
                     (r₀ + j₀ - 1) * Nat.descFactorial (r₀ + (j₀ - 1) - 1) (j₀ - 1) := by
-                  conv_lhs => rw [show r₀ + j₀ - 1 = (r₀ + (j₀ - 1) - 1) + 1 by omega,
-                    show j₀ = (j₀ - 1) + 1 by omega]
-                  rw [Nat.succ_descFactorial_succ]
+                  have h_eq1 : r₀ + j₀ - 1 = (r₀ + (j₀ - 1) - 1) + 1 := by omega
+                  have h_eq2 : j₀ = (j₀ - 1) + 1 := by omega
+                  calc Nat.descFactorial (r₀ + j₀ - 1) j₀
+                      = Nat.descFactorial ((r₀ + (j₀ - 1) - 1) + 1) ((j₀ - 1) + 1) := by congr 1
+                    _ = ((r₀ + (j₀ - 1) - 1) + 1) * Nat.descFactorial (r₀ + (j₀ - 1) - 1) (j₀ - 1) :=
+                          Nat.succ_descFactorial_succ _ _
+                    _ = (r₀ + j₀ - 1) * Nat.descFactorial (r₀ + (j₀ - 1) - 1) (j₀ - 1) := by rw [← h_eq1]
                 rw [h1]
                 exact_mod_cast Nat.le_mul_of_pos_left _ (by omega : 0 < r₀ + j₀ - 1)
               have hz : M₂ ^ (-((r₀ : ℤ) + (j₀ : ℤ))) = M₂ ^ (-((r₀ : ℤ) + ((j₀ - 1 : ℕ) : ℤ))) / M₂ := by
@@ -398,7 +416,7 @@ lemma exp_sum_laurent_bound (R K_max : ℕ) (hK_max : 3 ≤ K_max) :
         have hC_le : 2 * Cj_fn j₀ hj₀_mem ≤ C_exp := by
           have h1 : 2 * Cj_fn j₀ hj₀_mem ≤ C_max_j := by
             have hle := Finset.le_sup' (fun j => if hj : j ∈ Finset.Icc 3 K_max then 2 * Cj_fn j hj else 0) hj₀_mem
-            rw [dif_pos hj₀_mem] at hle
+            simp only [hj₀_mem, ↓reduceDIte] at hle
             exact hle
           exact le_trans h1 (le_trans (le_max_left _ _) (le_trans (le_max_right _ _) (le_max_right _ _)))
         have hpow_le : L ^ (1 - (1 : ℝ) / (2 * ((2 ^ j₀ - 2 : ℕ) : ℝ))) ≤ M₂ ^ (1 - η_exp) := by
