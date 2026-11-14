@@ -60,8 +60,10 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           have hsub : Tendsto (fun x : ℝ => Real.log x / x ^ (δ / (R + 2 : ℝ))) atTop (𝓝 0) := by
             have hpos : 0 < δ / (R + 2 : ℝ) := by positivity
             have h1 : Tendsto (fun u : ℝ => Real.log u / u) atTop (𝓝 0) := by
-              have := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1
-              simpa [Real.exp_neg] using this.comp Real.tendsto_log_atTop
+              have h0 := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1).comp Real.tendsto_log_atTop
+              refine h0.congr' ?_
+              filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
+              simp [Function.comp_def, Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
             have hcomp := h1.comp (tendsto_rpow_atTop hpos)
             refine hcomp.congr' ?_
             filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
@@ -74,7 +76,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           simp only [mul_zero] at hmul
           refine hmul.congr' ?_
           filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
-          rw [div_pow, ← Real.rpow_natCast (x ^ _), ← Real.rpow_mul hx.le]
+          dsimp only [Function.comp_def]
+          rw [div_pow, div_pow, ← Real.rpow_natCast (x ^ (δ / (R + 2 : ℝ))), ← Real.rpow_mul hx.le]
           have hexp : δ / (R + 2 : ℝ) * ((R + 2 : ℕ) : ℝ) = δ := by
             push_cast; field_simp [show (R + 2 : ℝ) ≠ 0 by positivity]
           rw [hexp]; ring
@@ -86,6 +89,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         simp only [mul_zero] at hfin
         refine hfin.congr' ?_
         filter_upwards [eventually_ge_atTop 1] with n _
+        dsimp only [Function.comp_def]
         ring
       filter_upwards [hlim.eventually (ge_mem_nhds (by norm_num : (0 : ℝ) < 1)),
         eventually_ge_atTop 1] with n hn hn1
@@ -94,16 +98,13 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     have h4 : ∀ᶠ n : ℕ in atTop,
         (2 * (Real.log n) ^ (R + 2) + 1) * (R : ℝ) ^ 2 * (n : ℝ) * (2 : ℝ) ^ (R + 1) ≤
           ((n : ℝ) ^ (δ / 3) / 8) ^ (K_max - 1) := by
-      have hexp_ge : 4 / 3 ≤ (δ / 3) * (K_max - 1 : ℝ) := by
-        have hK1 : 4 / δ ≤ (K_max - 1 : ℝ) := by
+      have hexp_ge : 4 / 3 ≤ (δ / 3) * ((K_max - 1 : ℕ) : ℝ) := by
+        have hK1 : 4 / δ ≤ ((K_max - 1 : ℕ) : ℝ) := by
           have h1 : 4 / δ ≤ (Nat.ceil (4 / δ) : ℝ) := Nat.le_ceil _
-          have h2 : (Nat.ceil (4 / δ) : ℝ) ≤ (K_max - 1 : ℝ) := by
-            dsimp only [K_max]
-            have : Nat.ceil (4 / δ) ≤ Nat.ceil (4 / δ) + 3 - 1 := by omega
-            exact_mod_cast this
-          linarith
+          have h2 : Nat.ceil (4 / δ) ≤ K_max - 1 := by dsimp only [K_max]; omega
+          exact le_trans h1 (by exact_mod_cast h2)
         calc (4 / 3 : ℝ) = (δ / 3) * (4 / δ) := by field_simp [hδ0.ne']
-          _ ≤ (δ / 3) * (K_max - 1 : ℝ) := mul_le_mul_of_nonneg_left hK1 (by positivity)
+          _ ≤ (δ / 3) * ((K_max - 1 : ℕ) : ℝ) := mul_le_mul_of_nonneg_left hK1 (by positivity)
       have hlim : Tendsto (fun n : ℕ =>
           ((2 * (Real.log n) ^ (R + 2) + 1) * (R : ℝ) ^ 2 * (n : ℝ) * (2 : ℝ) ^ (R + 1)) /
             ((n : ℝ) ^ (δ / 3) / 8) ^ (K_max - 1)) atTop (𝓝 0) := by
@@ -112,8 +113,10 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             have hsub : Tendsto (fun x : ℝ => Real.log x / x ^ (1 / (3 * (R + 2 : ℝ)))) atTop (𝓝 0) := by
               have hpos : 0 < (1 : ℝ) / (3 * (R + 2 : ℝ)) := by positivity
               have h1 : Tendsto (fun u : ℝ => Real.log u / u) atTop (𝓝 0) := by
-                have := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1
-                simpa [Real.exp_neg] using this.comp Real.tendsto_log_atTop
+                have h0 := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1).comp Real.tendsto_log_atTop
+                refine h0.congr' ?_
+                filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
+                simp [Function.comp_def, Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
               have hcomp := h1.comp (tendsto_rpow_atTop hpos)
               refine hcomp.congr' ?_
               filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
@@ -132,7 +135,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           rw [div_pow, ← Real.rpow_natCast ((n : ℝ) ^ (δ / 3)), ← Real.rpow_mul hn_pos.le]
           exact div_le_div_of_nonneg_right (Real.rpow_le_rpow_of_exponent_le hn1 hexp_ge) (by positivity)
         have hlog1 : 1 ≤ Real.log n := by
-          have : Real.exp 1 ≤ (n : ℝ) := le_trans (by linarith [Real.exp_one_lt_d9]) (by exact_mod_cast hn3)
+          have : Real.exp 1 ≤ (n : ℝ) := le_trans (by linarith [Real.exp_one_lt_d9] : Real.exp 1 ≤ (3 : ℝ)) (by exact_mod_cast hn3)
           simpa using Real.log_le_log (Real.exp_pos 1) this
         have hnum_le : 2 * (Real.log n) ^ (R + 2) + 1 ≤ 3 * (Real.log n) ^ (R + 2) := by
           have : 1 ≤ (Real.log n) ^ (R + 2) := one_le_pow₀ hlog1
@@ -155,10 +158,13 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           _ = ((3 * (R + 2 : ℝ)) ^ (R + 2) * (R : ℝ) ^ 2 * (2 : ℝ) ^ (R + 1) * (8 : ℝ) ^ (K_max - 1)) *
                 (3 * ((Real.log n / (n : ℝ) ^ (1 / (3 * (R + 2 : ℝ)))) ^ (R + 2))) := by
               rw [hpow_eq, show (n : ℝ) ^ (4 / 3 : ℝ) = (n : ℝ) * (n : ℝ) ^ (1 / 3 : ℝ) by
-                rw [← Real.rpow_one (n : ℝ), ← Real.rpow_add hn_pos]; norm_num; rw [Real.rpow_one]]
+                conv_rhs => rw [← Real.rpow_one (n : ℝ)]
+                rw [← Real.rpow_add hn_pos]; norm_num]
               field_simp [hn_pos.ne', show (3 * (R + 2 : ℝ)) ^ (R + 2) ≠ 0 by positivity]
               ring
-      filter_upwards [hlim.eventually (ge_mem_nhds (by norm_num : (0 : ℝ) < 1))] with n hn
+      filter_upwards [hlim.eventually (ge_mem_nhds (by norm_num : (0 : ℝ) < 1)),
+        eventually_ge_atTop 1] with n hn hn1
+      have hn_pos : (0 : ℝ) < n := by exact_mod_cast hn1
       rwa [div_le_one (by positivity)] at hn
     exact h1.and (h2.and (h3.and h4))
   obtain ⟨N₀, hN₀⟩ := eventually_atTop.mp h_ev
@@ -181,8 +187,10 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
   have hP_pos : 0 < P := lt_of_lt_of_le (Real.exp_pos 6) hP_ge_e6
   have hP_ge1 : 1 ≤ P := by linarith [show (1 : ℝ) ≤ Real.exp 6 by exact_mod_cast Real.one_le_exp (by norm_num)]
   have hA_bd : ∀ r ∈ A, 1 ≤ r ∧ r ≤ R := fun r hr => Finset.mem_Icc.mp (hA_sub hr)
-  have hr₀_mem : r₀ ∈ A := (Finset.mem_filter.mp (Finset.min'_mem _ _)).1
-  have hh₀ : h r₀ ≠ 0 := (Finset.mem_filter.mp (Finset.min'_mem _ _)).2
+  have hr₀_mem : r₀ ∈ A := (Finset.mem_filter.mp (Finset.min'_mem (A.filter (fun r => h r ≠ 0))
+    (let ⟨r, hr, hhr⟩ := hnonzero; ⟨r, Finset.mem_filter.mpr ⟨hr, hhr⟩⟩))).1
+  have hh₀ : h r₀ ≠ 0 := (Finset.mem_filter.mp (Finset.min'_mem (A.filter (fun r => h r ≠ 0))
+    (let ⟨r, hr, hhr⟩ := hnonzero; ⟨r, Finset.mem_filter.mpr ⟨hr, hhr⟩⟩))).2
   have h_min_r₀ : ∀ r ∈ A, h r ≠ 0 → r₀ ≤ r := fun r hr hhr =>
     Finset.min'_le _ r (Finset.mem_filter.mpr ⟨hr, hhr⟩)
   set U : ℕ := ⌊P ^ (1 / 3 : ℝ)⌋₊
@@ -497,6 +505,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       have h2 : Real.log ((U * U : ℕ) : ℝ) ≤ Real.log P := Real.log_le_log (by exact_mod_cast (by nlinarith [hU_pos]))
         (by push_cast; simpa [sq] using hU_sq_lt_P.le)
       linarith
+    -- Now bound `S2a` using `type_I_single_d_bound` and `S2b` using `type_I_no_log_single_d_bound`!
     have h_err_sum : ∀ d : ℕ, 1 ≤ d → d ≤ U * U →
         (2 * P / d) / max ((2 : ℝ) ^ (-(R : ℤ) - 1) * T₀) 1 + (2 * P / d) ^ (1 - η_exp) ≤
           2 * (2 : ℝ) ^ (R + 1) * (P / d) * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) := by
@@ -1106,6 +1115,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                         linarith [Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Y₂) : (1 : ℝ) ≤ Y₂)]) hlog_bd 3)
                         (by positivity) (by positivity)
                   _ = 16 * (Y₁ : ℝ) * (Real.log P) ^ 3 := by ring
+            -- Helper for a single `(X₁, X_top, Y₁, Y₂)` sub-block
             have hsub_block : ∀ (X₁ X_top Y₁ Y₂ : ℕ) (a_c b_c : ℕ → ℂ) (A_n B_n : ℝ),
                 1 ≤ X₁ → M₀ ≤ (X₁ : ℝ) → P ^ (1 / 3 : ℝ) / 8 ≤ (X₁ : ℝ) → X_top ≤ 2 * X₁ →
                 (X₁ : ℝ) ≤ 2 * Real.sqrt P →
@@ -1202,6 +1212,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                   _ = (Real.sqrt C_II_sq * W₀ * P * (Real.log P) ^ 2 * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ))) ^ 2 := by
                       rw [mul_pow, mul_pow, mul_pow, mul_pow, Real.sq_sqrt (by positivity)]; ring
               exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq_le
+            -- Now apply `hsub_block` by splitting `[Y_lo, Y_hi]` into at most 3 dyadic pieces!
             set Y_lo := max (U + 1) (A₀ / (2 * K₁))
             set Y_hi := B₀ / K₁
             have hY_lo_hi : ∀ k ∈ Finset.Icc K₁ K₂,
@@ -1230,6 +1241,8 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 have hr_A : (A₀ - 1) / k + 1 ≤ r :=
                   Nat.succ_le_of_lt (Nat.div_lt_of_lt_mul (by rw [mul_comm]; omega))
                 exact ⟨max_le hr_A hr_U, (Nat.le_div_iff_mul_le (by omega)).mpr (by linarith)⟩
+            -- Split `[Y_lo, Y_hi]` into at most 3 dyadic intervals `[Y_lo, 2*Y_lo]`, `[2*Y_lo+1, 4*Y_lo]`, `[4*Y_lo+1, Y_hi]`
+            -- First check `Y_hi ≤ 8 * Y_lo` (when `Y_lo ≤ Y_hi`):
             by_cases hY_empty : Y_hi < Y_lo
             · have h0 : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                   ∑ r ∈ Finset.Icc (max ((A₀ - 1) / k + 1) (U + 1)) (B₀ / k), c_r r * g (k * r) = 0 := by
@@ -1239,6 +1252,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
             · push_neg at hY_empty
               have hY_lo_pos : 1 ≤ Y_lo := le_trans (by omega : 1 ≤ U + 1) (le_max_left _ _)
               have hY_hi_8 : Y_hi ≤ 8 * Y_lo := by
+                -- `Y_hi = B₀ / K₁ ≤ 2 * P / K₁`, and `Y_lo ≥ A₀ / (2 * K₁) ≥ (P - 2 K₁) / (2 K₁)`
                 have h1 : (Y_hi : ℝ) ≤ 2 * P / K₁ := by
                   rw [le_div_iff₀ (by exact_mod_cast hK₁_pos)]
                   exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
@@ -1309,6 +1323,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                 exact le_trans (by exact_mod_cast Nat.div_mul_le_self B₀ K₁) hB₀_le_2P
               have hY_hi_B0 : Y_hi ≤ B₀ := Nat.div_le_self B₀ K₁
               have hK₂_B0 : K₂ ≤ B₀ := le_trans (min_le_right _ _) (Nat.div_le_self B₀ U)
+              -- Split `Finset.Icc Y_lo Y_hi` into `[Y_lo, min Y_hi (2 * Y_lo)]`, `[2 * Y_lo + 1, min Y_hi (4 * Y_lo)]`, `[4 * Y_lo + 1, Y_hi]`
               have hpart_Y : Finset.Icc Y_lo Y_hi =
                   Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo)) ∪
@@ -1320,6 +1335,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
               have hd123 : Disjoint (Finset.Icc Y_lo (min Y_hi (2 * Y_lo)) ∪
                   Finset.Icc (2 * Y_lo + 1) (min Y_hi (4 * Y_lo))) (Finset.Icc (4 * Y_lo + 1) Y_hi) := by
                 rw [Finset.disjoint_left]; intro r h1 h2; simp only [Finset.mem_union, Finset.mem_Icc] at h1 h2; omega
+              -- Helper for one `(Y_a, Y_b)` piece
               have hpiece : ∀ (Y_a Y_b : ℕ), Y_lo ≤ Y_a → Y_b ≤ Y_hi → Y_b ≤ 2 * Y_a →
                   ‖∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                       ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
@@ -1355,6 +1371,7 @@ private lemma lemma_2_4_core (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
                       hK₁_pos hK₁_M0 (by linarith) hK₂_2K₁ hK_sq hYa_pos hYab hYb2 hKY_lo hKY_hi
                       hAn hBn (by positivity) (by positivity) hAB
                   · push_neg at hK_sq
+                    -- Swap `k` and `r`!
                     have hswap : ∑ k ∈ Finset.Icc K₁ K₂, (ArithmeticFunction.vonMangoldt k : ℂ) *
                           ∑ r ∈ (Finset.Icc Y_a Y_b).filter (fun r => A₀ ≤ k * r ∧ k * r ≤ B₀),
                             c_r r * g (k * r) =
@@ -1572,8 +1589,10 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         have hpos : 0 < (δ * η'_δ) / (R + 5 : ℝ) := by positivity
         have hsub : Tendsto (fun x : ℝ => Real.log x / x ^ ((δ * η'_δ) / (R + 5 : ℝ))) atTop (𝓝 0) := by
           have h0 : Tendsto (fun u : ℝ => Real.log u / u) atTop (𝓝 0) := by
-            have := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1
-            simpa [Real.exp_neg] using this.comp Real.tendsto_log_atTop
+            have h0' := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1).comp Real.tendsto_log_atTop
+            refine h0'.congr' ?_
+            filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
+            simp [Function.comp_def, Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
           refine (h0.comp (tendsto_rpow_atTop hpos)).congr' ?_
           filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
           dsimp only [Function.comp_def]
@@ -1586,8 +1605,9 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         refine hmul.congr' ?_
         filter_upwards [eventually_ge_atTop 1] with n hn1
         have hn_pos : (0 : ℝ) < n := by exact_mod_cast hn1
-        rw [div_pow, ← Real.rpow_natCast ((n : ℝ) ^ _), ← Real.rpow_mul hn_pos.le,
-          ← Real.rpow_mul hn_pos.le]
+        dsimp only [Function.comp_def]
+        rw [div_pow, div_pow, ← Real.rpow_natCast ((n : ℝ) ^ ((δ * η'_δ) / (R + 5 : ℝ))),
+          ← Real.rpow_mul hn_pos.le, ← Real.rpow_mul hn_pos.le]
         have hexp : (δ * η'_δ) / (R + 5 : ℝ) * ((R + 5 : ℕ) : ℝ) = δ * η'_δ := by
           push_cast; field_simp [show (R + 5 : ℝ) ≠ 0 by positivity]
         rw [hexp]; ring
@@ -1615,7 +1635,7 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     hnonzero hh_bd hW₀ hw_bd hw_diff hw_tv hT₀_ge1
   refine ⟨hbd1, ?_⟩
   have hlog1 : 1 ≤ Real.log n := by
-    have : Real.exp 1 ≤ (n : ℝ) := le_trans (by linarith [Real.exp_one_lt_d9]) (by exact_mod_cast hn16)
+    have : Real.exp 1 ≤ (n : ℝ) := le_trans (by linarith [Real.exp_one_lt_d9] : Real.exp 1 ≤ (16 : ℝ)) (by exact_mod_cast hn16)
     simpa using Real.log_le_log (Real.exp_pos 1) this
   have hP_le_n : P ≤ n := by
     have : (1 : ℝ) ≤ (Real.log n) ^ 12 := one_le_pow₀ hlog1
@@ -1636,12 +1656,12 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
       rw [Real.mul_rpow (by positivity) (by positivity),
         ← Real.rpow_natCast (Real.log n), ← Real.rpow_mul hlog_pos.le]
       congr 1
-      have hexp : (AR : ℝ) * (-1 / 6 : ℝ) = (-(R + 5 : ℤ) : ℝ) := by
+      have hexp : (AR : ℝ) * (-1 / 6 : ℝ) = ((-(R + 5 : ℤ) : ℤ) : ℝ) := by
         dsimp only [AR]; push_cast; ring
       rw [hexp, Real.rpow_intCast]
     have h2_le : ((2 : ℝ) ^ (-(R : ℤ))) ^ (-1 / 6 : ℝ) ≤ (2 : ℝ) ^ R := by
-      rw [← Real.rpow_intCast (2 : ℝ), ← Real.rpow_mul (by norm_num),
-        ← Real.rpow_natCast (2 : ℝ)]
+      rw [← Real.rpow_intCast (2 : ℝ) (-(R : ℤ)), ← Real.rpow_mul (by norm_num),
+        ← Real.rpow_natCast (2 : ℝ) R]
       exact Real.rpow_le_rpow_of_exponent_le (by norm_num) (by push_cast; linarith)
     calc T₀ ^ (-1 / 6 : ℝ) * (Real.log P) ^ 3
         ≤ ((2 : ℝ) ^ R * (Real.log n) ^ (-(R + 5 : ℤ))) * (Real.log n) ^ 3 := by
@@ -1649,10 +1669,9 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
           rw [h_rhs_eq]
           exact mul_le_mul_of_nonneg_right h2_le (by positivity)
       _ = (2 : ℝ) ^ R * ((Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ (3 : ℤ)) := by
-          rw [zpow_natCast]; ring
+          rw [zpow_natCast]
       _ = (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [← zpow_add₀ hlog_pos.ne']
-          congr 2; omega
+          rw [← zpow_add₀ hlog_pos.ne', show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
   -- Bound `P ^ (-η'_δ) * (log P)^3`
   have hP_pow : P ^ (-η'_δ) * (Real.log P) ^ 3 ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) := by
     have hP_rpow : P ^ (-η'_δ) ≤ (Real.log n) ^ (-(R + 5 : ℤ)) := by
@@ -1663,9 +1682,9 @@ theorem lemma_2_4_i_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     calc P ^ (-η'_δ) * (Real.log P) ^ 3
         ≤ (Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ 3 :=
           mul_le_mul hP_rpow hlogP_cube (by positivity) (by positivity)
-      _ = 1 * ((Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ (3 : ℤ)) := by rw [zpow_natCast]; ring
+      _ = 1 * ((Real.log n) ^ (-(R + 5 : ℤ)) * (Real.log n) ^ (3 : ℤ)) := by rw [zpow_natCast, one_mul]
       _ = 1 * (Real.log n) ^ (-(R + 2 : ℤ)) := by
-          rw [← zpow_add₀ hlog_pos.ne']; congr 2; omega
+          rw [← zpow_add₀ hlog_pos.ne', show -(R + 5 : ℤ) + 3 = -(R + 2 : ℤ) by omega]
       _ ≤ (2 : ℝ) ^ R * (Real.log n) ^ (-(R + 2 : ℤ)) :=
           mul_le_mul_of_nonneg_right (one_le_pow₀ (by norm_num)) (by positivity)
   calc C_δ * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3
@@ -1707,8 +1726,10 @@ theorem lemma_2_4_ii_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         have hpos : 0 < η_δ / 3 := by positivity
         have hsub : Tendsto (fun x : ℝ => Real.log x / x ^ (η_δ / 3)) atTop (𝓝 0) := by
           have h0 : Tendsto (fun u : ℝ => Real.log u / u) atTop (𝓝 0) := by
-            have := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1
-            simpa [Real.exp_neg] using this.comp Real.tendsto_log_atTop
+            have h0' := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1).comp Real.tendsto_log_atTop
+            refine h0'.congr' ?_
+            filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
+            simp [Function.comp_def, Real.exp_neg, Real.exp_log hu, div_eq_mul_inv]
           refine (h0.comp (tendsto_rpow_atTop hpos)).congr' ?_
           filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
           dsimp only [Function.comp_def]
@@ -1721,8 +1742,9 @@ theorem lemma_2_4_ii_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
         refine hmul.congr' ?_
         filter_upwards [eventually_ge_atTop 1] with n hn1
         have hn_pos : (0 : ℝ) < n := by exact_mod_cast hn1
-        rw [div_pow, ← Real.rpow_natCast ((n : ℝ) ^ _), ← Real.rpow_mul hn_pos.le]
-        have hexp : (η_δ / 3) * (3 : ℝ) = η_δ := by ring
+        dsimp only [Function.comp_def]
+        rw [div_pow, div_pow, ← Real.rpow_natCast ((n : ℝ) ^ (η_δ / 3)), ← Real.rpow_mul hn_pos.le]
+        have hexp : (η_δ / 3) * ((3 : ℕ) : ℝ) = η_δ := by push_cast; ring
         rw [hexp]; ring
       filter_upwards [hlim.eventually (ge_mem_nhds (by norm_num : (0 : ℝ) < 1)),
         eventually_ge_atTop 1] with n hn hn1
@@ -1741,7 +1763,7 @@ theorem lemma_2_4_ii_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
   have hbd1 := hcore n P a b A h w W₀ hn_core hP_lo hP_hi hPa hab hb2P hA hAne
     hnonzero hh_bd hW₀ hw_bd hw_diff hw_tv hT₀_ge1
   have hlog1 : 1 ≤ Real.log n := by
-    have : Real.exp 1 ≤ (n : ℝ) := le_trans (by linarith [Real.exp_one_lt_d9]) (by exact_mod_cast hn16)
+    have : Real.exp 1 ≤ (n : ℝ) := le_trans (by linarith [Real.exp_one_lt_d9] : Real.exp 1 ≤ (16 : ℝ)) (by exact_mod_cast hn16)
     simpa using Real.log_le_log (Real.exp_pos 1) this
   have hP_le_n : P ≤ n := le_trans hP_hi (div_le_self hn_pos.le (one_le_pow₀ hlog1))
   have hlogP_le : Real.log P ≤ Real.log n := Real.log_le_log hP_pos hP_le_n
@@ -1767,7 +1789,7 @@ theorem lemma_2_4_ii_impl (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 3) :
     have : η_δ ≤ δ * η'_δ / 2 := min_le_right _ _
     linarith
   have hprod : (n : ℝ) ^ (-2 * η_δ) * (n : ℝ) ^ η_δ = (n : ℝ) ^ (-η_δ) := by
-    rw [← Real.rpow_add hn_pos]; congr 1; ring
+    rw [← Real.rpow_add hn_pos, show -2 * η_δ + η_δ = -η_δ by ring]
   refine le_trans hbd1 ?_
   calc C_core * W₀ * P * (T₀ ^ (-1 / 6 : ℝ) + P ^ (-η'_δ)) * (Real.log P) ^ 3
       ≤ C_core * W₀ * P * ((n : ℝ) ^ (-2 * η_δ) + (n : ℝ) ^ (-2 * η_δ)) * (n : ℝ) ^ η_δ := by
