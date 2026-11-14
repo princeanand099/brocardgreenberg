@@ -211,3 +211,23 @@ This file documents every substantive mathematical correction discovered during 
 4. **Classification**: **Incorrect argument**.
 5. **Replacement argument**: For `n_1 ≥ N_0`, `k_{n_1} ∈ {1, 2}` gives `n_2 - n_1 > 0.24 n_1 > n_1 / 16597` unconditionally; for `n_1 ≤ 10^9`, Berndt–Galway gives `n_1 ∈ {4, 5, 7}` (`q_4=6, q_5=30, q_7=35`). (Full coverage of `10^9 < n_1 < N_0` requires either an effective `N_0 < e^{6306}` or Erdős–Selfridge (1975) for `n_2 - n_1 ≥ 2`.)
 6. **Lean declarations**: `theorem_1_1` (`BrocardFormalization/PellAndIwasawa.lean`).
+
+---
+
+### Audit Item 17: Theorem 4.2(ii) — Asymptotic Threshold `N₀ ≤ n` for `R_n = A_n mod B_n` Identities (Section 4.2, p. 17)
+1. **Affected manuscript result**: Section 4.2, Theorem 4.2(ii), p. 17.
+2. **Original statement and proof**: States the exact quotient/ceiling identities `B_+ R_n = B_- Z_-^4 + (2/c_0) Z_-^2`, `B_- R_n = B_+ Z_+^4 - (2/c_0) Z_+^2`, `⌊B_+ R_n / B_-⌋ = Z_-^4`, and `⌈B_- R_n / B_+⌉ = Z_+^4` as holding for all `k = 2` solutions `n ≥ 8`, while the proof uses `2/c_0 < B_-` and `Z_±^2 ≤ n^{O(1)} ≪ B_∓` (from Theorem 4.2(i) and Theorem 2.5(ii)) so that `0 ≤ B_- Z_-^4 + (2/c_0) Z_-^2 < B_- B_+` and `(2/c_0) Z_+^2 < B_-`.
+3. **Exact defect**: The `R_n = A_n mod B_n` identities and floor/ceiling formulas require `n ≥ N₀` sufficiently large (where `B_- B_+ = B_n / c_0^2 ≫ Z_±^4` and `2/c_0 Z_+^2 < B_-`), whereas the algebraic factorization `(X_1 ∓ 1)/c_0 = B_∓ Z_∓^2` holds for all `n ≥ 8`.
+4. **Classification**: **Missing hypothesis** (`N₀ ≤ n` scope on the `R_n` clause).
+5. **Replacement argument**: Keep the algebraic coprime factorization `(X_1 ∓ 1)/c_0 = B_∓ Z_∓^2` unconditional for all `n ≥ 8`, and explicitly scope the `R_n = A_n mod B_n` identities and floor/ceiling equalities to `N₀ ≤ n`.
+6. **Lean declarations**: `theorem_4_2_ii` (`BrocardFormalization/CriticalRegimeK2.lean`).
+
+---
+
+### Audit Item 18: Theorem 4.4(i) — Hypothesis `2 r < p` in the Window `n / (2r + 1) < p ≤ n / (2r)` (Section 4.4, p. 20)
+1. **Affected manuscript result**: Section 4.4, Theorem 4.4(i), p. 20.
+2. **Original statement and proof**: For `p ∈ P_even(n)` with `n / (2r + 1) < p ≤ n / (2r)`, expresses `(-q_n / p)` via `(-((2r)! (n - 2rp)!) / p)` using Wilson's theorem and `p ∤ (2r)!`.
+3. **Exact defect**: If `p ≤ 2r`, then `p ∣ (2r)!`, making `jacobiSym (-((2r)! (n - 2rp)!)) p = 0 ≠ ±1`. In the proof's regime `p > n^{1/2}` (or `p > 2r`), `2r < p` holds automatically, but the general `r ≥ 1` statement in Theorem 4.4(i) omits `2r < p`.
+4. **Classification**: **Missing hypothesis**.
+5. **Replacement argument**: Add `2 * r < p` to the window clause of Theorem 4.4(i) (which is satisfied whenever `p > √n` and `n / (2r + 1) < p`, since `2r < n / p < √n < p`).
+6. **Lean declarations**: `theorem_4_4_i` (`BrocardFormalization/CriticalRegimeK2.lean`).
